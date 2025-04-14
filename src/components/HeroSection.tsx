@@ -34,7 +34,7 @@ const HeroSection = () => {
             
             <div className="pt-3 md:pt-4 flex flex-wrap gap-3 justify-center lg:justify-start items-center">
               {isMobile ? (
-                <>
+                <div className="flex flex-wrap gap-3 justify-center w-full">
                   <span className="inline-flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm">
                     <Facebook className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                   </span>
@@ -47,7 +47,7 @@ const HeroSection = () => {
                   <span className="inline-flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-primary/10 backdrop-blur-sm">
                     <Calendar className="h-5 w-5 md:h-6 md:w-6 text-brand-purple" />
                   </span>
-                </>
+                </div>
               ) : (
                 <>
                   <TooltipWrapper>
