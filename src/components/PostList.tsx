@@ -1,12 +1,12 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { Post } from "@/types";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Facebook, Linkedin, Twitter, Edit, Save } from "lucide-react";
+import { Facebook, Linkedin, Twitter, Edit, Save, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 interface PostListProps {
   posts: Post[];
@@ -16,6 +16,7 @@ interface PostListProps {
 const PostList = ({ posts, onEditPost }: PostListProps) => {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>("");
+  const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
 
   const handleEditClick = (post: Post) => {
     setEditingPostId(post.id);
@@ -25,6 +26,20 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
   const handleSaveClick = (postId: string) => {
     onEditPost(postId, editedContent);
     setEditingPostId(null);
+  };
+
+  const handleCopyClick = (content: string, postId: string) => {
+    navigator.clipboard.writeText(content)
+      .then(() => {
+        toast.success("Content copied to clipboard!");
+        setCopiedPostId(postId);
+        // Reset copied state after 2 seconds
+        setTimeout(() => setCopiedPostId(null), 2000);
+      })
+      .catch(err => {
+        toast.error("Failed to copy content");
+        console.error('Copy failed:', err);
+      });
   };
 
   const getPlatformIcon = (platform: string) => {
@@ -81,25 +96,41 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
               </span>
             </div>
             
-            {editingPostId === post.id ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleSaveClick(post.id)}
-                className="h-8 px-2"
-              >
-                <Save className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => handleEditClick(post)}
-                className="h-8 px-2"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {editingPostId === post.id ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleSaveClick(post.id)}
+                  className="h-8 px-2"
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleEditClick(post)}
+                    className="h-8 px-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleCopyClick(post.content, post.id)}
+                    className="h-8 px-2"
+                  >
+                    {copiedPostId === post.id ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </>
+              )}
+            </div>
           </CardHeader>
           
           <CardContent className="p-4 pt-2">
