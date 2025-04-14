@@ -8,6 +8,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BrandInfoForm from "@/components/BrandInfoForm";
 import PlatformTabs from "@/components/PlatformTabs";
+import { Button } from "@/components/ui/button";
+import { ArrowDown, Sparkles } from "lucide-react";
+import HeroSection from "@/components/HeroSection";
 
 const Index = () => {
   const [brandInfo, setBrandInfo] = useState<BrandInfo | null>(null);
@@ -95,36 +98,59 @@ const Index = () => {
       <Header />
       
       <main className="flex-1">
+        {!posts.length && (
+          <HeroSection />
+        )}
+        
         <section className="py-10 px-4 md:py-16">
-          <div className="container">
-            <div className="max-w-3xl mx-auto mb-10 text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
-                Social Media Content Planner
-              </h1>
-              <p className="text-xl text-muted-foreground mb-6">
-                Generate a complete 30-day social media content plan for Facebook, Twitter, and LinkedIn.
-              </p>
-              
-              {hasSavedData && !posts.length && (
-                <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={handleLoadSavedData}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+          <div className="container max-w-7xl mx-auto">
+            {!posts.length && (
+              <div className="max-w-3xl mx-auto mb-12 text-center">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                  Plan Your Social Media Content
+                </h2>
+                <p className="text-lg text-muted-foreground mb-6">
+                  Generate a complete 30-day social media content plan for Facebook, Twitter, and LinkedIn.
+                </p>
+                
+                {hasSavedData && (
+                  <div className="mb-10 flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button
+                      onClick={handleLoadSavedData}
+                      className="gap-2 animate-fade-in"
+                      variant="default"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      Load Saved Content Plan
+                    </Button>
+                    <Button
+                      onClick={handleClearSavedData}
+                      className="gap-2 animate-fade-in delay-100"
+                      variant="destructive"
+                    >
+                      Clear Saved Data
+                    </Button>
+                  </div>
+                )}
+                
+                <div className="mt-12 text-center">
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="mx-auto animate-bounce-slow"
+                    onClick={() => {
+                      document.getElementById('brand-form')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
                   >
-                    Load Saved Content Plan
-                  </button>
-                  <button
-                    onClick={handleClearSavedData}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-destructive text-destructive-foreground shadow hover:bg-destructive/90 h-9 px-4 py-2"
-                  >
-                    Clear Saved Data
-                  </button>
+                    Get Started
+                    <ArrowDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             
             {posts.length > 0 ? (
-              <div className="mb-16">
+              <div className="mb-16 animate-fade-in">
                 <PlatformTabs 
                   posts={posts} 
                   onEditPost={handleEditPost} 
@@ -132,19 +158,20 @@ const Index = () => {
                 />
                 
                 <div className="mt-10 text-center">
-                  <button
+                  <Button
                     onClick={() => {
                       setPosts([]);
                       setBrandInfo(null);
                     }}
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+                    variant="outline"
+                    className="gap-2"
                   >
                     Generate New Content Plan
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
-              <div className="max-w-3xl mx-auto">
+              <div id="brand-form" className="max-w-3xl mx-auto bg-card rounded-lg border shadow-lg p-6 md:p-8 animate-fade-in">
                 <BrandInfoForm onSubmit={handleFormSubmit} isGenerating={isGenerating} />
               </div>
             )}
