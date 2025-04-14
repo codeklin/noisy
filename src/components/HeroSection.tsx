@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Facebook, Twitter, Linkedin } from 'lucide-react';
+import { Calendar, Facebook, Twitter, Linkedin, Sparkles } from 'lucide-react';
 import TooltipWrapper from './TooltipWrapper';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
