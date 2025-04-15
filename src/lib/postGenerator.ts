@@ -1,4 +1,3 @@
-
 import { BrandInfo, Post, PostPlan } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { format, addDays } from "date-fns";
@@ -506,73 +505,7 @@ const placeholders = {
 };
 
 // Generate a single post based on template and placeholder data
-export const generatePost = (date: string, platform: string, theme: string, brandInfo: BrandInfo): Post => {
-  const templates = contentTemplates[platform as keyof typeof contentTemplates][theme as keyof (typeof contentTemplates['facebook' | 'twitter' | 'linkedin'])];
+export const generatePost = (date: string, platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo): Post => {
+  const templates = contentTemplates[platform][theme as keyof (typeof contentTemplates['facebook' | 'twitter' | 'linkedin'])];
   
-  if (!templates || templates.length === 0) {
-    return {
-      id: uuidv4(),
-      date,
-      platform,
-      content: `No templates available for ${platform} and ${theme}`,
-      hashtags: [],
-    };
-  }
-  
-  // Choose a random template
-  const template = templates[Math.floor(Math.random() * templates.length)];
-  
-  // Replace all placeholders in the template
-  let content = template.replace(/{{brandName}}/g, brandInfo.brandName);
-  
-  // Create a brandHashtag from the brand name
-  const brandHashtag = brandInfo.brandName.toLowerCase().replace(/\s+/g, '');
-  content = content.replace(/{{brandHashtag}}/g, brandHashtag);
-  
-  // Replace other placeholders
-  Object.keys(placeholders).forEach(placeholder => {
-    const values = placeholders[placeholder as keyof typeof placeholders];
-    if (values && values.length > 0) {
-      const randomValue = values[Math.floor(Math.random() * values.length)];
-      const regex = new RegExp(`{{${placeholder}}}`, 'g');
-      content = content.replace(regex, randomValue);
-    }
-  });
-  
-  // Generate hashtags
-  const hashtags = generateHashtags(theme, brandInfo, platform);
-  
-  return {
-    id: uuidv4(),
-    date,
-    platform,
-    content,
-    hashtags,
-  };
-};
-
-// Generate a full content plan
-export const generateContentPlan = (
-  startDate: Date,
-  numDays: number,
-  platforms: ('facebook' | 'twitter' | 'linkedin')[],
-  brandInfo: BrandInfo
-): PostPlan => {
-  const posts: Post[] = [];
-  
-  for (let i = 0; i < numDays; i++) {
-    const currentDate = addDays(startDate, i);
-    const dateString = format(currentDate, 'MMM dd, yyyy');
-    
-    // Get theme for this day
-    const theme = getContentThemeForDay(i, brandInfo.contentThemes);
-    
-    // Generate one post per platform for this day
-    platforms.forEach(platform => {
-      const post = generatePost(dateString, platform, theme, brandInfo);
-      posts.push(post);
-    });
-  }
-  
-  return posts;
-};
+  if (!templates || templates.length ===
