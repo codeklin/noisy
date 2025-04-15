@@ -36,8 +36,19 @@ const generateHashtags = (theme: string, brandInfo: BrandInfo, platform: string)
       platformTags = [];
   }
   
+  // Add trending hashtags based on the current year
+  const trendingTags = [
+    'trending2025',
+    'innovation',
+    'digitalmarketing',
+    'sustainability',
+    'artificialintelligence',
+    'remotework',
+    'customerexperience'
+  ];
+  
   // Combine and filter
-  const allTags = [...baseHashtags, ...platformTags];
+  const allTags = [...baseHashtags, ...platformTags, ...trendingTags];
   
   // Take a random subset of 3-5 hashtags
   const numTags = Math.floor(Math.random() * 3) + 3; // 3 to 5 hashtags
@@ -45,137 +56,137 @@ const generateHashtags = (theme: string, brandInfo: BrandInfo, platform: string)
   return shuffled.slice(0, numTags);
 };
 
-// Sample content templates for each platform
+// Updated content templates for 2025 with current trends and topics
 const contentTemplates = {
   facebook: {
     'motivation': [
-      "Looking for some Monday motivation? 🌟 {{brandName}} believes that {{motivationalQuote}}. How do you stay motivated at the start of your week?",
-      "Today we're feeling inspired! 💪 At {{brandName}}, we know that {{motivationalQuote}}. Share your own inspiration in the comments!",
-      "Need a mid-week boost? 🚀 Remember: {{motivationalQuote}}. This principle guides everything we do at {{brandName}}."
+      "Monday motivation for 2025! 🌟 At {{brandName}}, we believe that {{motivationalQuote}}. How are you staying motivated in this fast-paced world? #MondayMotivation",
+      "Feeling inspired by the latest innovations in our industry! 💪 At {{brandName}}, we embrace that {{motivationalQuote}}. What's inspiring you today? Share below! #Innovation2025",
+      "Need a mid-week boost? 🚀 Remember: {{motivationalQuote}}. This principle has guided everything we do at {{brandName}} throughout 2025's challenges and opportunities."
     ],
     'product-highlights': [
-      "Have you discovered our {{productFeature}} yet? It's designed to help {{targetAudience}} achieve {{benefit}}. Learn more on our website! 👉 #{{brandHashtag}}",
-      "What makes {{brandName}} different? Our commitment to {{uniqueSellingPoint}}. That's why our {{productFeature}} stands out in the industry.",
-      "Did you know? Our {{productFeature}} has helped customers increase their {{benefit}} by up to 40%! Discover how {{brandName}} can transform your experience."
+      "Have you explored our latest {{productFeature}} enhanced with AI capabilities? Designed specifically for {{targetAudience}} to achieve {{benefit}} faster than ever! Learn more on our website! 👉 #{{brandHashtag}} #Tech2025",
+      "What makes {{brandName}} stand out in 2025? Our commitment to {{uniqueSellingPoint}} with sustainable practices. That's why our newest {{productFeature}} is making waves in the industry.",
+      "Just launched! Our {{productFeature}} now incorporates the latest virtual reality innovations to help customers increase their {{benefit}} by up to 65%! Discover how {{brandName}} can transform your experience in today's digital landscape."
     ],
     'behind-the-scenes': [
-      "Ever wonder what happens behind the scenes at {{brandName}}? Today we're giving you a peek into our {{behindTheScenesActivity}}! 📸",
-      "Meet the team that makes {{brandName}} possible! Today we're highlighting our {{teamMember}} who ensures {{teamContribution}}.",
-      "From concept to completion: here's how we develop our {{productDevelopmentStage}} to ensure the best experience for our {{targetAudience}}."
+      "Ever wonder what happens behind the scenes at {{brandName}} in 2025? Today we're giving you a peek into our {{behindTheScenesActivity}} with our remote and in-office teams collaborating seamlessly! 📸 #HybridWorkplace",
+      "Meet the diverse team making {{brandName}} possible! Today we're highlighting our {{teamMember}} who ensures {{teamContribution}} while embracing the latest workflow automation tools.",
+      "From concept to completion: here's how we develop our {{productDevelopmentStage}} using AI-assisted design to ensure the best experience for our {{targetAudience}} in today's fast-evolving market."
     ],
     'tips': [
-      "Pro tip from {{brandName}}: Want to improve your {{skillArea}}? Try {{actionableTip}}. This simple change can make a big difference!",
-      "Here's a quick tip to enhance your {{skillArea}} today: {{actionableTip}}. Our {{targetAudience}} have found this particularly helpful!",
-      "Did you know this {{skillArea}} hack? {{actionableTip}}. Share your own tips in the comments!"
+      "2025 Pro tip from {{brandName}}: Want to improve your {{skillArea}} in today's digital landscape? Try {{actionableTip}}. This data-driven approach can make a significant difference!",
+      "Here's a quick tip to enhance your {{skillArea}} this quarter: {{actionableTip}}. Our {{targetAudience}} have reported 40% better results with this method! #ProductivityHack",
+      "Latest {{skillArea}} hack for 2025: {{actionableTip}}. This approach accounts for the recent changes in digital privacy regulations. Share your own tips in the comments!"
     ],
     'quotes': [
-      "\"{{inspirationalQuote}}\" - This quote reminds us at {{brandName}} why we're passionate about helping {{targetAudience}}.",
-      "Words to live by: \"{{inspirationalQuote}}\" How does this resonate with you?",
-      "Our founder's favorite quote: \"{{inspirationalQuote}}\" This philosophy guides everything we do at {{brandName}}."
+      "\"{{inspirationalQuote}}\" - This quote reflects our vision at {{brandName}} as we help {{targetAudience}} navigate the rapidly evolving marketplace of 2025.",
+      "Words to guide us in 2025: \"{{inspirationalQuote}}\" How does this resonate with your business strategy this year? #BusinessWisdom",
+      "Our founder's favorite quote for the current business climate: \"{{inspirationalQuote}}\" This philosophy guides our approach to sustainability and digital transformation at {{brandName}}."
     ],
     'industry-news': [
-      "Breaking news in the {{industry}} industry! {{newsItem}} - Here's what this means for {{targetAudience}} and how {{brandName}} is responding.",
-      "Have you heard? {{newsItem}}. This development could transform how {{targetAudience}} approach {{industryActivity}}.",
-      "Industry update: {{newsItem}}. At {{brandName}}, we're already adapting our {{productFeature}} to align with these changes."
+      "Breaking news in the {{industry}} industry! {{newsItem}} - Here's what this means for {{targetAudience}} and how {{brandName}} is adapting our offerings to help you stay ahead.",
+      "Have you heard about the latest developments? {{newsItem}}. This shift could transform how {{targetAudience}} approach {{industryActivity}} in the coming months.",
+      "Industry update for Q2 2025: {{newsItem}}. At {{brandName}}, we've already enhanced our {{productFeature}} to align with these changes and support your business goals."
     ],
     'case-studies': [
-      "Success story alert! 🌟 See how {{customerName}} used {{brandName}} to {{customerAchievement}}. The results? {{impressiveStats}}!",
-      "Case study: How {{customerName}} overcame {{customerChallenge}} with {{brandName}}. Read the full story on our website!",
-      "From challenge to triumph: {{customerName}} faced {{customerChallenge}} until they discovered our {{productFeature}}. Now they're {{customerAchievement}}!"
+      "Success story alert! 🌟 See how {{customerName}} leveraged {{brandName}}'s new AI-powered solutions to {{customerAchievement}} despite market volatility. The results? {{impressiveStats}}!",
+      "2025 Case study: How {{customerName}} overcame {{customerChallenge}} with {{brandName}}'s sustainable business solutions. Read the full story on our website!",
+      "From challenge to triumph in today's economy: {{customerName}} faced {{customerChallenge}} until they implemented our cloud-based {{productFeature}}. Now they're {{customerAchievement}} while reducing their carbon footprint!"
     ],
     'testimonials': [
-      "\"{{brandName}} completely transformed how we {{customerActivity}}. We've seen {{positiveResult}} since implementing their solution.\" - {{customerName}}",
-      "Don't just take our word for it! Here's what {{customerName}} had to say: \"{{testimonialQuote}}\" #CustomerLove",
-      "We're blushing! 😊 \"{{testimonialQuote}}\" - {{customerName}}, who used {{brandName}} to {{customerAchievement}}."
+      "\"{{brandName}}'s updated platform completely transformed how we {{customerActivity}} in this hybrid work environment. We've seen {{positiveResult}} since implementing their 2025 solution suite.\" - {{customerName}}",
+      "Fresh feedback from our clients! Here's what {{customerName}} said about our latest offerings: \"{{testimonialQuote}}\" #CustomerLove #DigitalTransformation",
+      "We're honored by this recent review! 😊 \"{{testimonialQuote}}\" - {{customerName}}, who used {{brandName}} to {{customerAchievement}} while adapting to the changing market conditions of 2025."
     ]
   },
   twitter: {
     'motivation': [
-      "Monday motivation: {{shortMotivationalQuote}} #MondayMotivation #{{brandHashtag}}",
-      "Feeling inspired today! {{shortMotivationalQuote}} What drives you? #Inspiration",
-      "Remember: {{shortMotivationalQuote}} - This is what powers our work at {{brandName}} 💪"
+      "Monday motivation for 2025: {{shortMotivationalQuote}} How are you innovating this week? #MondayMotivation #{{brandHashtag}} #Future",
+      "Finding inspiration in today's digital landscape! {{shortMotivationalQuote}} What drives your innovation journey? #Inspiration #Tech2025",
+      "Our 2025 mantra: {{shortMotivationalQuote}} - This powers our sustainable approach at {{brandName}} 💪 #BusinessGrowth #GreenTech"
     ],
     'product-highlights': [
-      "Discover how our {{productFeature}} helps {{targetAudience}} achieve {{benefit}} faster! Learn more: #{{brandHashtag}}",
-      "What makes {{brandName}} unique? Our {{uniqueSellingPoint}}. See the difference: #Innovation",
-      "New feature alert! 🚨 Introducing {{productFeature}} - designed to {{benefit}} for our users. #ProductLaunch"
+      "Just launched! Our AI-enhanced {{productFeature}} helps {{targetAudience}} achieve {{benefit}} 3x faster! Details in bio. #Innovation #{{brandHashtag}} #2025Tech",
+      "What makes {{brandName}} unique in 2025? Our carbon-neutral {{uniqueSellingPoint}}. Experience the difference: #SustainableBusiness",
+      "New feature alert! 🚨 Introducing our VR-compatible {{productFeature}} - designed to {{benefit}} for users in today's hybrid environments. #ProductLaunch #FutureOfWork"
     ],
     'behind-the-scenes': [
-      "Behind the scenes at {{brandName}} today: {{behindTheScenesActivity}}! #BehindTheScenes #{{brandHashtag}}",
-      "Meet {{teamMember}}, the genius behind our {{teamContribution}}! #TeamSpotlight",
-      "This is how we {{productDevelopmentStage}} at {{brandName}}. Quality at every step! #ProcessMatters"
+      "Behind the scenes at {{brandName}} today: {{behindTheScenesActivity}} with our global team collaborating across time zones! #RemoteWork #BehindTheScenes #{{brandHashtag}}",
+      "Meet {{teamMember}}, the innovator behind our AI-driven {{teamContribution}}! #TeamSpotlight #WomenInTech #Diversity2025",
+      "This is how we {{productDevelopmentStage}} using carbon-neutral processes at {{brandName}}. Sustainability at every step! #GreenBusiness #ProcessMatters"
     ],
     'tips': [
-      "Quick tip: {{shortActionableTip}} #{{skillArea}}Tips #DidYouKnow",
-      "Pro hack for {{targetAudience}}: {{shortActionableTip}} Try it today! #QuickTip",
-      "Upgrade your {{skillArea}} with this tip: {{shortActionableTip}} #Productivity"
+      "2025 Quick tip: {{shortActionableTip}} based on the latest digital privacy regulations #{{skillArea}}Tips #DataProtection",
+      "Pro hack for {{targetAudience}} in Q2 2025: {{shortActionableTip}} Try it with your distributed team today! #RemoteWork #QuickTip",
+      "Upgrade your {{skillArea}} with this trend-forward tip: {{shortActionableTip}} #Productivity #DigitalTransformation"
     ],
     'quotes': [
-      "\"{{shortInspirationalQuote}}\" Words we live by at {{brandName}}. #QuoteOfTheDay #Inspiration",
-      "Today's thought: \"{{shortInspirationalQuote}}\" How does this resonate with you? #Wisdom",
-      "\"{{shortInspirationalQuote}}\" - The philosophy driving innovation at {{brandName}}. #BusinessWisdom"
+      "\"{{shortInspirationalQuote}}\" Words guiding our sustainable business practices at {{brandName}} in 2025. #QuoteOfTheDay #GreenBusinesses",
+      "Today's thought for digital leaders: \"{{shortInspirationalQuote}}\" How does this align with your 2025 strategy? #LeadershipWisdom",
+      "\"{{shortInspirationalQuote}}\" - The philosophy driving AI-powered innovation at {{brandName}}. #BusinessWisdom #FutureTech"
     ],
     'industry-news': [
-      "Breaking: {{shortNewsItem}} What this means for {{targetAudience}}: #IndustryNews #{{industry}}",
-      "Have you heard? {{shortNewsItem}} Our take: #TrendWatch #{{industry}}",
-      "Industry update: {{shortNewsItem}} How will this affect your {{industryActivity}}? #{{industry}}News"
+      "Breaking: {{shortNewsItem}} What this means for {{targetAudience}} in 2025: #IndustryNews #{{industry}} #FutureTrends",
+      "Just announced! {{shortNewsItem}} Our take: This will reshape digital strategies for Q3 2025 #TrendWatch #{{industry}}",
+      "Industry update: {{shortNewsItem}} How will this affect your sustainable {{industryActivity}}? #{{industry}}News #GreenBusiness"
     ],
     'case-studies': [
-      "Success story: {{customerName}} achieved {{customerAchievement}} with {{brandName}}! Full case study: #SuccessStory",
-      "How {{customerName}} overcame {{customerChallenge}} using our {{productFeature}}. Results: {{shortImpressiveStats}} #CaseStudy",
-      "From problem to solution: See how we helped {{customerName}} achieve {{customerAchievement}}. #CustomerSuccess"
+      "2025 Success story: {{customerName}} achieved {{customerAchievement}} with our AI-powered solutions! Full case study: #SuccessStory #DigitalTransformation",
+      "How {{customerName}} overcame the latest {{customerChallenge}} using our climate-friendly {{productFeature}}. Results: {{shortImpressiveStats}} #CaseStudy #Sustainability",
+      "From challenge to solution: See how we helped {{customerName}} achieve {{customerAchievement}} in today's volatile market. #CustomerSuccess #BusinessResilience"
     ],
     'testimonials': [
-      "\"{{shortTestimonialQuote}}\" - {{customerName}}, {{customerRole}} #CustomerLove #Testimonial",
-      "Our customers speak: \"{{shortTestimonialQuote}}\" - {{customerName}} #Feedback #{{brandHashtag}}",
-      "We're honored! \"{{shortTestimonialQuote}}\" says {{customerName}} about their experience with {{brandName}}. #CustomerFeedback"
+      "\"{{shortTestimonialQuote}}\" - {{customerName}}, {{customerRole}} on implementing our 2025 solutions #CustomerLove #Testimonial",
+      "Recent feedback on our latest platform: \"{{shortTestimonialQuote}}\" - {{customerName}} #Feedback #{{brandHashtag}} #Innovation",
+      "We're honored by this new review! \"{{shortTestimonialQuote}}\" says {{customerName}} about their experience with {{brandName}}'s AI capabilities. #CustomerFeedback"
     ]
   },
   linkedin: {
     'motivation': [
-      "Professional development insight: {{professionalMotivationalQuote}}\n\nAt {{brandName}}, we apply this principle to help {{targetAudience}} achieve their goals through {{productFeature}}.\n\nWhat professional mantras guide your work?",
-      "Leadership perspective: {{professionalMotivationalQuote}}\n\nThis philosophy has guided {{brandName}}'s approach to {{industryActivity}} for our clients. We've found that embracing this mindset has resulted in {{positiveResult}}.",
-      "Success principle worth sharing: {{professionalMotivationalQuote}}\n\nThis idea has transformed how our team at {{brandName}} approaches challenges and delivers value to {{targetAudience}}."
+      "Professional development insight for 2025: {{professionalMotivationalQuote}}\n\nAt {{brandName}}, we apply this principle to help {{targetAudience}} achieve their goals through our AI-enhanced {{productFeature}}.\n\nWhat professional mantras are guiding your organization this year? #ProfessionalDevelopment #2025Strategy",
+      "Leadership perspective for Q2 2025: {{professionalMotivationalQuote}}\n\nThis philosophy has guided {{brandName}}'s approach to sustainable {{industryActivity}} for our clients. We've found that embracing this mindset has resulted in {{positiveResult}} even during market volatility.",
+      "Success principle worth sharing as we navigate 2025's business landscape: {{professionalMotivationalQuote}}\n\nThis idea has transformed how our team at {{brandName}} approaches digital transformation challenges and delivers value to {{targetAudience}} in the age of AI."
     ],
     'product-highlights': [
-      "Innovation spotlight: {{brandName}}'s {{productFeature}}\n\nDesigned specifically for {{targetAudience}}, this solution addresses the challenge of {{customerChallenge}} by providing {{benefit}}.\n\nThe result? Our clients have reported {{positiveResult}}.\n\nLearn more about how we're transforming {{industryActivity}} through thoughtful design and implementation.",
-      "Product insight: How {{brandName}} is revolutionizing {{industryActivity}}\n\nOur {{productFeature}} was developed after extensive research with {{targetAudience}} to address {{customerChallenge}}.\n\nKey advantages include:\n- {{benefit}}\n- {{secondBenefit}}\n- {{thirdBenefit}}\n\nInterested in learning more? Let's connect.",
-      "Solving industry challenges: The story behind {{brandName}}'s {{productFeature}}\n\nWhen we identified that {{targetAudience}} were struggling with {{customerChallenge}}, we developed a solution that would {{benefit}}.\n\nThe impact? {{positiveResult}} for organizations implementing our approach."
+      "Innovation spotlight: {{brandName}}'s AI-powered {{productFeature}} for 2025\n\nDesigned specifically for {{targetAudience}} in today's hybrid work environment, this solution addresses the challenge of {{customerChallenge}} by providing {{benefit}}.\n\nThe result? Our clients have reported {{positiveResult}} while reducing their carbon footprint by 30%.\n\nLearn more about how we're transforming {{industryActivity}} through sustainable design and implementation. #SustainableTech #Innovation2025",
+      "Product insight: How {{brandName}} is revolutionizing {{industryActivity}} in 2025\n\nOur carbon-neutral {{productFeature}} was developed after extensive research with {{targetAudience}} to address evolving {{customerChallenge}}.\n\nKey advantages include:\n- {{benefit}}\n- {{secondBenefit}}\n- {{thirdBenefit}}\n\nInterested in how this aligns with the latest ESG requirements? Let's connect. #SustainableBusiness #DigitalTransformation",
+      "Solving 2025's industry challenges: The story behind {{brandName}}'s AI-enhanced {{productFeature}}\n\nWhen we identified that {{targetAudience}} were struggling with {{customerChallenge}} in today's volatile market, we developed a solution that would {{benefit}}.\n\nThe impact? {{positiveResult}} for organizations implementing our approach while preparing for the upcoming regulatory changes. #Innovation #FutureOfWork"
     ],
     'behind-the-scenes': [
-      "Building excellence: Behind the scenes at {{brandName}}\n\nToday we're sharing insights into our {{behindTheScenesActivity}} process. This critical function ensures we deliver consistent quality to {{targetAudience}}.\n\nOur team, led by {{teamMember}}, has refined this approach over {{timeFrame}}, resulting in {{positiveResult}}.\n\nWhat behind-the-scenes processes are you most proud of in your organization?",
-      "Team spotlight: Meet the experts behind {{brandName}}'s success\n\nToday we're highlighting our {{teamMember}}, whose expertise in {{skillArea}} has been instrumental in developing our {{productFeature}}.\n\n\"{{teamQuote}}\" says {{teamMember}}.\n\nGreat organizations are built by great people committed to excellence.",
-      "Innovation journey: From concept to implementation at {{brandName}}\n\nOur {{productDevelopmentStage}} involves collaborative work between our {{teamDepartment}} teams to ensure we're creating solutions that truly serve {{targetAudience}}.\n\nThis commitment to thorough development has led to {{positiveResult}} for our clients."
+      "Building excellence in 2025: Behind the scenes at {{brandName}}\n\nToday we're sharing insights into our {{behindTheScenesActivity}} process in our distributed teams model. This critical function ensures we deliver consistent quality to {{targetAudience}} regardless of geography.\n\nOur diverse team, led by {{teamMember}}, has refined this approach over {{timeFrame}}, resulting in {{positiveResult}}.\n\nWhat behind-the-scenes processes are you most proud of in your organization's hybrid work model? #RemoteWork #DistributedTeams",
+      "Team spotlight: Meet the experts behind {{brandName}}'s 2025 success\n\nToday we're highlighting our {{teamMember}}, whose expertise in AI-powered {{skillArea}} has been instrumental in developing our carbon-neutral {{productFeature}}.\n\n\"{{teamQuote}}\" says {{teamMember}}.\n\nGreat organizations are built by diverse teams committed to innovation and sustainability. #TeamSpotlight #DiversityInTech",
+      "Innovation journey: From concept to implementation at {{brandName}} in 2025\n\nOur {{productDevelopmentStage}} involves collaborative work between our global {{teamDepartment}} teams using the latest virtual collaboration tools to ensure we're creating solutions that truly serve {{targetAudience}}.\n\nThis commitment to sustainable development has led to {{positiveResult}} for our clients while reducing our collective carbon footprint. #SustainableInnovation #GlobalTeams"
     ],
     'tips': [
-      "Professional development: 3 strategies to enhance your {{skillArea}}\n\n1. {{actionableTip}}\n2. {{secondActionableTip}}\n3. {{thirdActionableTip}}\n\nAt {{brandName}}, we've implemented these approaches with our {{targetAudience}} clients, resulting in {{positiveResult}}.\n\nWhat strategies have you found effective in developing this crucial skill?",
-      "Industry insight: Optimizing your {{industryActivity}}\n\nBased on our work with {{targetAudience}}, we've identified that {{actionableTip}} can significantly improve outcomes.\n\nThe data shows organizations implementing this approach have experienced {{positiveResult}}.\n\nAt {{brandName}}, we help implement this strategy through our {{productFeature}}.",
-      "Leadership perspective: Elevating your {{skillArea}}\n\nOne often overlooked approach we recommend to {{targetAudience}} is to {{actionableTip}}.\n\nThis simple yet effective strategy has helped our clients achieve {{positiveResult}}.\n\nHow are you currently approaching this challenge in your organization?"
+      "Professional development for 2025: 3 strategies to enhance your {{skillArea}} in the age of AI\n\n1. {{actionableTip}}\n2. {{secondActionableTip}}\n3. {{thirdActionableTip}}\n\nAt {{brandName}}, we've implemented these approaches with our {{targetAudience}} clients, resulting in {{positiveResult}} even amid today's rapid technological changes.\n\nWhat strategies have you found effective in developing this crucial skill in your distributed teams? #ProfessionalDevelopment #AI2025",
+      "Industry insight: Optimizing your {{industryActivity}} for 2025's challenges\n\nBased on our work with {{targetAudience}}, we've identified that {{actionableTip}} can significantly improve outcomes in today's privacy-focused digital landscape.\n\nThe data shows organizations implementing this approach have experienced {{positiveResult}} while maintaining compliance with the latest regulations.\n\nAt {{brandName}}, we help implement this strategy through our climate-friendly {{productFeature}}. #DataPrivacy #Compliance2025",
+      "Leadership perspective: Elevating your {{skillArea}} in Q2 2025\n\nOne often overlooked approach we recommend to {{targetAudience}} navigating today's market volatility is to {{actionableTip}}.\n\nThis sustainable yet effective strategy has helped our clients achieve {{positiveResult}} while preparing for upcoming regulatory changes.\n\nHow is your organization currently approaching this challenge? #LeadershipInsights #MarketAdaptation"
     ],
     'quotes': [
-      "\"{{professionalInspirationalQuote}}\"\n\nThis principle resonates deeply with our mission at {{brandName}}. We've applied this thinking to how we develop {{productFeature}} for {{targetAudience}}.\n\nThe result has been {{positiveResult}} for organizations we work with.\n\nWhat professional philosophies guide your organization's approach?",
-      "Leadership reflection: \"{{professionalInspirationalQuote}}\"\n\nThis perspective has shaped {{brandName}}'s approach to {{industryActivity}} and how we serve {{targetAudience}}.\n\nBy embracing this principle, we've been able to {{positiveResult}} for our clients when implementing our {{productFeature}}.",
-      "Professional wisdom worth sharing: \"{{professionalInspirationalQuote}}\"\n\nAt {{brandName}}, we've found this approach particularly valuable when helping {{targetAudience}} overcome {{customerChallenge}}.\n\nHas this philosophy influenced your professional journey?"
+      "\"{{professionalInspirationalQuote}}\"\n\nThis principle resonates deeply with our mission at {{brandName}} as we navigate 2025's business landscape. We've applied this thinking to how we develop sustainable {{productFeature}} for {{targetAudience}}.\n\nThe result has been {{positiveResult}} for organizations adapting to market volatility.\n\nWhat professional philosophies guide your organization's approach to sustainability and innovation? #BusinessPhilosophy #Sustainability",
+      "Leadership reflection for Q2 2025: \"{{professionalInspirationalQuote}}\"\n\nThis perspective has shaped {{brandName}}'s approach to carbon-neutral {{industryActivity}} and how we serve {{targetAudience}} in today's evolving regulatory environment.\n\nBy embracing this principle, we've been able to {{positiveResult}} for our clients when implementing our AI-enhanced {{productFeature}}. #LeadershipInsights #SustainableBusiness",
+      "Professional wisdom worth sharing as we navigate 2025's challenges: \"{{professionalInspirationalQuote}}\"\n\nAt {{brandName}}, we've found this approach particularly valuable when helping {{targetAudience}} overcome {{customerChallenge}} in today's privacy-focused marketplace.\n\nHas this philosophy influenced your organization's approach to digital transformation? #BusinessWisdom #DigitalEthics"
     ],
     'industry-news': [
-      "Industry analysis: {{newsItem}}\n\nWhat this means for {{targetAudience}}:\n- {{firstImplication}}\n- {{secondImplication}}\n- {{thirdImplication}}\n\nAt {{brandName}}, we're responding by enhancing our {{productFeature}} to help organizations navigate this change.\n\nHow is your organization adapting to this development?",
-      "Market insight: Understanding the impact of {{newsItem}}\n\nThis development represents a significant shift in {{industryActivity}} that will affect how {{targetAudience}} approach {{customerChallenge}}.\n\nOur team at {{brandName}} has analyzed the implications and is prepared to help organizations respond effectively through our {{productFeature}}.",
-      "Strategic perspective: {{newsItem}}\n\nThis change in the {{industry}} landscape presents both challenges and opportunities for {{targetAudience}}.\n\nKey considerations include:\n1. {{firstConsideration}}\n2. {{secondConsideration}}\n3. {{thirdConsideration}}\n\n{{brandName}} is positioned to support organizations navigating this shift."
+      "Industry analysis: {{newsItem}}\n\nWhat this means for {{targetAudience}} in Q2 2025:\n- {{firstImplication}}\n- {{secondImplication}}\n- {{thirdImplication}}\n\nAt {{brandName}}, we're responding by enhancing our sustainable {{productFeature}} to help organizations navigate this change while meeting ESG requirements.\n\nHow is your organization adapting to this development? #IndustryAnalysis #ESG2025",
+      "Market insight: Understanding the impact of {{newsItem}} in today's economy\n\nThis development represents a significant shift in {{industryActivity}} that will affect how {{targetAudience}} approach {{customerChallenge}} amid increasing regulatory scrutiny.\n\nOur team at {{brandName}} has analyzed the implications for both business performance and sustainability metrics and is prepared to help organizations respond effectively through our carbon-neutral {{productFeature}}. #MarketInsight #SustainableTransformation",
+      "Strategic perspective for Q2 2025: {{newsItem}}\n\nThis change in the {{industry}} landscape presents both challenges and opportunities for {{targetAudience}} navigating today's volatile market.\n\nKey considerations include:\n1. {{firstConsideration}}\n2. {{secondConsideration}}\n3. {{thirdConsideration}}\n\n{{brandName}} is positioned to support organizations navigating this shift while maintaining their sustainability commitments. #StrategicPlanning #MarketAdaptation"
     ],
     'case-studies': [
-      "Success story: How {{customerName}} transformed their {{industryActivity}}\n\nChallenge: {{customerChallenge}}\n\nSolution: Implementing {{brandName}}'s {{productFeature}} to {{benefit}}.\n\nResults: {{impressiveStats}}\n\n\"{{testimonialQuote}}\" - {{customerContact}}, {{customerRole}} at {{customerName}}.\n\nLearn how we can help your organization achieve similar outcomes.",
-      "Case study: {{customerName}} achieves {{customerAchievement}} with {{brandName}}\n\nFacing the challenge of {{customerChallenge}}, {{customerName}} partnered with {{brandName}} to implement a solution that would {{benefit}}.\n\nThe impact was significant: {{impressiveStats}}\n\nDiscover how our approach can be tailored to your organization's needs.",
-      "Transformation journey: {{customerName}}'s path to {{customerAchievement}}\n\nBefore working with {{brandName}}, {{customerName}} struggled with {{customerChallenge}} that limited their ability to {{industryActivity}} effectively.\n\nBy implementing our {{productFeature}}, they were able to {{benefit}}, resulting in {{impressiveStats}}.\n\nKey to their success was {{successFactor}}."
+      "2025 Success story: How {{customerName}} transformed their {{industryActivity}} amid market volatility\n\nChallenge: {{customerChallenge}} exacerbated by recent regulatory changes\n\nSolution: Implementing {{brandName}}'s AI-powered, carbon-neutral {{productFeature}} to {{benefit}}.\n\nResults: {{impressiveStats}} while reducing their environmental impact by 35%\n\n\"{{testimonialQuote}}\" - {{customerContact}}, {{customerRole}} at {{customerName}}.\n\nLearn how we can help your organization achieve similar outcomes in today's challenging business environment. #CaseStudy #SustainableBusiness",
+      "Q2 2025 Case study: {{customerName}} achieves {{customerAchievement}} with {{brandName}} while meeting new ESG requirements\n\nFacing the dual challenge of {{customerChallenge}} and increasingly stringent sustainability metrics, {{customerName}} partnered with {{brandName}} to implement a carbon-neutral solution that would {{benefit}}.\n\nThe impact was significant: {{impressiveStats}} and a 40% reduction in their carbon footprint\n\nDiscover how our approach can be tailored to your organization's needs in today's regulatory landscape. #ESG #BusinessPerformance",
+      "Transformation journey: {{customerName}}'s path to {{customerAchievement}} in 2025's challenging market\n\nBefore working with {{brandName}}, {{customerName}} struggled with {{customerChallenge}} that limited their ability to {{industryActivity}} effectively while meeting new regulatory requirements.\n\nBy implementing our AI-enhanced, sustainable {{productFeature}}, they were able to {{benefit}}, resulting in {{impressiveStats}} and full compliance with the latest ESG standards.\n\nKey to their success was {{successFactor}} paired with sustainable business practices. #BusinessTransformation #ESGCompliance"
     ],
     'testimonials': [
-      "Client perspective: {{customerName}}'s experience with {{brandName}}\n\n\"{{testimonialQuote}}\" - {{customerContact}}, {{customerRole}}\n\nWe're honored to partner with forward-thinking organizations like {{customerName}} to help them achieve {{customerAchievement}}.\n\nLearn more about how we support {{targetAudience}} in overcoming {{customerChallenge}}.",
-      "Partnership spotlight: {{brandName}} and {{customerName}}\n\nWe're proud to share this feedback from our valued client:\n\n\"{{testimonialQuote}}\" - {{customerContact}}, {{customerRole}} at {{customerName}}.\n\nCollaboration is at the heart of how we help {{targetAudience}} achieve {{customerAchievement}} through our {{productFeature}}.",
-      "Client success: {{customerName}}'s transformation with {{brandName}}\n\n\"{{testimonialQuote}}\"\n\nThis feedback from {{customerContact}} at {{customerName}} reflects our commitment to helping {{targetAudience}} overcome {{customerChallenge}}.\n\nTheir team has achieved {{customerAchievement}} since implementing our {{productFeature}}."
+      "Client perspective: {{customerName}}'s experience with {{brandName}}'s 2025 sustainable solutions\n\n\"{{testimonialQuote}}\" - {{customerContact}}, {{customerRole}}\n\nWe're honored to partner with forward-thinking organizations like {{customerName}} to help them achieve {{customerAchievement}} while navigating today's complex regulatory environment.\n\nLearn more about how we support {{targetAudience}} in overcoming {{customerChallenge}} with climate-friendly technology solutions. #ClientTestimonial #SustainableTech",
+      "Partnership spotlight: {{brandName}} and {{customerName}} in Q2 2025\n\nWe're proud to share this feedback from our valued client:\n\n\"{{testimonialQuote}}\" - {{customerContact}}, {{customerRole}} at {{customerName}}.\n\nCollaboration is at the heart of how we help {{targetAudience}} achieve {{customerAchievement}} through our carbon-neutral {{productFeature}} while adapting to market volatility. #Partnership #SustainableBusiness",
+      "Client success amid 2025's challenges: {{customerName}}'s transformation with {{brandName}}\n\n\"{{testimonialQuote}}\"\n\nThis feedback from {{customerContact}} at {{customerName}} reflects our commitment to helping {{targetAudience}} overcome {{customerChallenge}} while meeting increasingly stringent ESG requirements.\n\nTheir team has achieved {{customerAchievement}} since implementing our AI-powered, sustainable {{productFeature}}. #ClientSuccess #ESGCompliance"
     ]
   }
 };
 
-// Sample placeholders data
+// Updated placeholders data for 2025 with current trends and topics
 const placeholders = {
   motivationalQuote: [
     "every challenge is an opportunity for growth",
@@ -485,71 +496,81 @@ const placeholders = {
     "we're constantly balancing immediate needs with long-term strategic direction",
     "the best solutions emerge from collaboration between diverse perspectives"
   ],
+  customerActivity: [
+    "manage client relationships",
+    "analyze market trends",
+    "streamline operations",
+    "train team members",
+    "engage with customers"
+  ]
 };
 
-// Function to replace placeholders in templates
-const replacePlaceholders = (template: string, brandInfo: BrandInfo, theme: string) => {
-  let result = template;
+// Generate a single post based on template and placeholder data
+export const generatePost = (date: string, platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo): Post => {
+  const templates = contentTemplates[platform][theme as keyof (typeof contentTemplates['facebook' | 'twitter' | 'linkedin'])];
   
-  // Replace brand-specific information
-  result = result.replace(/\{\{brandName\}\}/g, brandInfo.brandName);
-  result = result.replace(/\{\{brandHashtag\}\}/g, brandInfo.brandName.toLowerCase().replace(/\s+/g, ''));
-  result = result.replace(/\{\{targetAudience\}\}/g, brandInfo.targetAudience);
+  if (!templates || templates.length === 0) {
+    return {
+      id: uuidv4(),
+      date,
+      platform,
+      content: `No templates available for ${platform} and ${theme}`,
+      hashtags: [],
+    };
+  }
   
-  // Replace random placeholders with sample content
-  Object.keys(placeholders).forEach(key => {
-    const placeholderArray = placeholders[key as keyof typeof placeholders];
-    const randomIndex = Math.floor(Math.random() * placeholderArray.length);
-    const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-    result = result.replace(regex, placeholderArray[randomIndex]);
+  // Choose a random template
+  const template = templates[Math.floor(Math.random() * templates.length)];
+  
+  // Replace all placeholders in the template
+  let content = template.replace(/{{brandName}}/g, brandInfo.brandName);
+  
+  // Create a brandHashtag from the brand name
+  const brandHashtag = brandInfo.brandName.toLowerCase().replace(/\s+/g, '');
+  content = content.replace(/{{brandHashtag}}/g, brandHashtag);
+  
+  // Replace other placeholders
+  Object.keys(placeholders).forEach(placeholder => {
+    const values = placeholders[placeholder as keyof typeof placeholders];
+    if (values && values.length > 0) {
+      const randomValue = values[Math.floor(Math.random() * values.length)];
+      const regex = new RegExp(`{{${placeholder}}}`, 'g');
+      content = content.replace(regex, randomValue);
+    }
   });
   
-  return result;
+  // Generate hashtags
+  const hashtags = generateHashtags(theme, brandInfo, platform);
+  
+  return {
+    id: uuidv4(),
+    date,
+    platform,
+    content,
+    hashtags,
+  };
 };
 
-// Main function to generate a 30-day content plan
-const generateContentPlan = (brandInfo: BrandInfo): PostPlan => {
+// Generate a full content plan
+export const generateContentPlan = (brandInfo: BrandInfo): PostPlan => {
+  const startDate = new Date();
+  const numDays = 14; // Generate 2 weeks worth of content
+  const platforms: ('facebook' | 'twitter' | 'linkedin')[] = ['facebook', 'twitter', 'linkedin'];
   const posts: Post[] = [];
-  const startDate = new Date(); // Today
-  const platforms = ['facebook', 'twitter', 'linkedin'] as const;
   
-  // Generate posts for 30 days across all platforms
-  for (let day = 0; day < 30; day++) {
-    const currentDate = addDays(startDate, day);
-    const dateStr = format(currentDate, 'yyyy-MM-dd');
-    const theme = getContentThemeForDay(day, brandInfo.contentThemes);
+  for (let i = 0; i < numDays; i++) {
+    const currentDate = addDays(startDate, i);
+    const dateString = format(currentDate, 'MMM dd, yyyy');
     
-    // Generate posts for each platform
+    // Get theme for this day
+    const theme = getContentThemeForDay(i, brandInfo.contentThemes);
+    
+    // Generate one post per platform for this day
     platforms.forEach(platform => {
-      // Get templates for this theme and platform
-      const templates = contentTemplates[platform][theme as keyof typeof contentTemplates[typeof platform]];
-      
-      if (templates && templates.length > 0) {
-        // Pick a random template
-        const templateIndex = Math.floor(Math.random() * templates.length);
-        const template = templates[templateIndex];
-        
-        // Replace placeholders with actual content
-        const content = replacePlaceholders(template, brandInfo, theme);
-        
-        // Generate hashtags
-        const hashtags = generateHashtags(theme, brandInfo, platform);
-        
-        // Create post
-        const post: Post = {
-          id: uuidv4(),
-          date: dateStr,
-          platform,
-          content,
-          hashtags
-        };
-        
-        posts.push(post);
-      }
+      const post = generatePost(dateString, platform, theme, brandInfo);
+      posts.push(post);
     });
   }
   
   return posts;
 };
-
-export { generateContentPlan };
