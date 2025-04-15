@@ -1,61 +1,40 @@
+
 import { useState, useEffect } from "react";
 import { BrandInfo, PostPlan } from "@/types";
-import { generateContentPlan } from "@/lib/postGenerator";
-import { exportToPDF, exportToDOCX, saveToLocalStorage, loadFromLocalStorage } from "@/lib/exportHelpers";
+import { exportToPDF, exportToDOCX } from "@/lib/exportHelpers";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BrandInfoForm from "@/components/BrandInfoForm";
 import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Sparkles, LightbulbIcon, FileTextIcon, CheckCircleIcon, RefreshCw } from "lucide-react";
+import { ArrowDown, Sparkles, LightbulbIcon, FileTextIcon, CheckCircleIcon, RefreshCw, Save } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
+import { useContentPlan } from "@/hooks/useContentPlan";
+import { useAuth } from "@/context/AuthContext";
+import { SaveContentDialog } from "@/components/SaveContentDialog";
 
 const Index = () => {
   const [brandInfo, setBrandInfo] = useState<BrandInfo | null>(null);
   const [posts, setPosts] = useState<PostPlan>([]);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [hasSavedData, setHasSavedData] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'ideas' | 'posts' | 'results'>('ideas');
-  const [lastGenerated, setLastGenerated] = useState<string | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
+  const { generatePlan } = useContentPlan();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    // Check if there's saved data in localStorage
-    const savedData = loadFromLocalStorage();
-    if (savedData.posts && savedData.brandInfo) {
-      setHasSavedData(true);
-      // Set last generated date if available
-      if (savedData.generatedDate) {
-        setLastGenerated(savedData.generatedDate);
-      }
+  const handleFormSubmit = async (formData: BrandInfo) => {
+    try {
+      const contentPlan = await generatePlan(formData);
+      setPosts(contentPlan);
+      setBrandInfo(formData);
+      setActiveTab('posts');
+      
+      toast.success("Up-to-date content plan generated successfully for 2025!");
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error("Error generating content plan:", error);
+      toast.error("Failed to generate content plan. Please try again.");
     }
-  }, []);
-
-  const handleFormSubmit = (formData: BrandInfo) => {
-    setIsGenerating(true);
-    
-    // Simulate loading time for content generation
-    setTimeout(() => {
-      try {
-        const contentPlan = generateContentPlan(formData);
-        setPosts(contentPlan);
-        setBrandInfo(formData);
-        setActiveTab('posts');
-        
-        // Save to localStorage with generation date
-        const currentDate = new Date().toISOString();
-        setLastGenerated(currentDate);
-        saveToLocalStorage(contentPlan, formData, currentDate);
-        
-        toast.success("Up-to-date content plan generated successfully for 2025!");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (error) {
-        console.error("Error generating content plan:", error);
-        toast.error("Failed to generate content plan. Please try again.");
-      } finally {
-        setIsGenerating(false);
-      }
-    }, 2000);
   };
 
   const handleEditPost = (postId: string, newContent: string) => {
@@ -64,7 +43,6 @@ const Index = () => {
     );
     
     setPosts(updatedPosts);
-    saveToLocalStorage(updatedPosts, brandInfo, lastGenerated);
     toast.success("Post updated successfully!");
   };
 
@@ -83,57 +61,22 @@ const Index = () => {
     }
   };
 
-  const handleLoadSavedData = () => {
-    const savedData = loadFromLocalStorage();
-    if (savedData.posts && savedData.brandInfo) {
-      setPosts(savedData.posts);
-      setBrandInfo(savedData.brandInfo);
-      if (savedData.generatedDate) {
-        setLastGenerated(savedData.generatedDate);
-      }
-      setActiveTab('posts');
-      toast.success("Loaded saved content plan!");
-    }
-  };
-
-  const handleRegenerateContent = () => {
+  const handleRegenerateContent = async () => {
     if (!brandInfo) {
       toast.error("No brand information available. Please fill the form first.");
       setActiveTab('ideas');
       return;
     }
     
-    setIsGenerating(true);
-    
-    setTimeout(() => {
-      try {
-        const contentPlan = generateContentPlan(brandInfo);
-        setPosts(contentPlan);
-        
-        // Save to localStorage with new generation date
-        const currentDate = new Date().toISOString();
-        setLastGenerated(currentDate);
-        saveToLocalStorage(contentPlan, brandInfo, currentDate);
-        
-        toast.success("Fresh 2025 content plan regenerated successfully!");
-      } catch (error) {
-        console.error("Error regenerating content plan:", error);
-        toast.error("Failed to regenerate content plan. Please try again.");
-      } finally {
-        setIsGenerating(false);
-      }
-    }, 2000);
-  };
-
-  const handleClearSavedData = () => {
-    localStorage.removeItem('contentPlan');
-    localStorage.removeItem('brandInfo');
-    localStorage.removeItem('generatedDate');
-    setPosts([]);
-    setBrandInfo(null);
-    setLastGenerated(null);
-    setHasSavedData(false);
-    toast.success("Saved data cleared successfully!");
+    try {
+      const contentPlan = await generatePlan(brandInfo);
+      setPosts(contentPlan);
+      
+      toast.success("Fresh 2025 content plan regenerated successfully!");
+    } catch (error) {
+      console.error("Error regenerating content plan:", error);
+      toast.error("Failed to regenerate content plan. Please try again.");
+    }
   };
 
   return (
@@ -193,32 +136,8 @@ const Index = () => {
                       Generate up-to-date 2025 content for your brand!
                     </h2>
                     
-                    {hasSavedData && (
-                      <div className="mb-10 flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                          onClick={handleLoadSavedData}
-                          className="gap-2 bg-[#6E5DC6] hover:bg-[#5D4DB3]"
-                        >
-                          <Sparkles className="h-4 w-4" />
-                          Load Saved Content Plan
-                          {lastGenerated && (
-                            <span className="text-xs opacity-80 ml-1">
-                              ({new Date(lastGenerated).toLocaleDateString()})
-                            </span>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={handleClearSavedData}
-                          className="gap-2"
-                          variant="destructive"
-                        >
-                          Clear Saved Data
-                        </Button>
-                      </div>
-                    )}
-                    
                     <div className="mt-8">
-                      <BrandInfoForm onSubmit={handleFormSubmit} isGenerating={isGenerating} />
+                      <BrandInfoForm onSubmit={handleFormSubmit} isGenerating={false} />
                     </div>
                   </div>
                 )}
@@ -227,18 +146,27 @@ const Index = () => {
                   <div>
                     <div className="mb-4 flex justify-between items-center">
                       <div className="text-sm text-gray-500">
-                        {lastGenerated && (
-                          <span>Generated: {new Date(lastGenerated).toLocaleString()}</span>
-                        )}
+                        {posts.length} posts generated
                       </div>
-                      <Button
-                        onClick={handleRegenerateContent}
-                        className="gap-2 bg-[#6E5DC6] hover:bg-[#5D4DB3]"
-                        disabled={isGenerating}
-                      >
-                        <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                        Regenerate Fresh Content
-                      </Button>
+                      <div className="flex flex-wrap gap-2">
+                        {user && (
+                          <Button
+                            onClick={() => setSaveDialogOpen(true)}
+                            className="gap-2 bg-[#6E5DC6] hover:bg-[#5D4DB3]"
+                          >
+                            <Save className="h-4 w-4" />
+                            Save Content Plan
+                          </Button>
+                        )}
+                        <Button
+                          onClick={handleRegenerateContent}
+                          className="gap-2"
+                          variant="outline"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          Regenerate Content
+                        </Button>
+                      </div>
                     </div>
                     
                     <PlatformTabs 
@@ -279,6 +207,15 @@ const Index = () => {
                       >
                         Export All Posts
                       </Button>
+                      {user && (
+                        <Button 
+                          onClick={() => setSaveDialogOpen(true)}
+                          className="bg-[#6E5DC6] hover:bg-[#5D4DB3]"
+                        >
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Content Plan
+                        </Button>
+                      )}
                       <Button 
                         onClick={() => setActiveTab('posts')}
                         variant="outline"
@@ -295,6 +232,21 @@ const Index = () => {
       </main>
       
       <Footer />
+
+      {/* Save Dialog */}
+      {brandInfo && (
+        <SaveContentDialog
+          open={saveDialogOpen}
+          onOpenChange={setSaveDialogOpen}
+          brandInfo={brandInfo}
+          posts={posts}
+          onSaveComplete={(id) => {
+            if (id) {
+              toast.success("Content plan saved successfully!");
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

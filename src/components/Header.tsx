@@ -1,92 +1,37 @@
 
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
+import { Sparkles } from 'lucide-react';
+import UserMenu from "./UserMenu";
 
 const Header = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
   return (
-    <header 
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        scrolled ? "bg-background/80 backdrop-blur-md shadow-sm" : "bg-transparent"
-      }`}
-    >
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex h-16 items-center justify-between py-4">
-          <div className="flex items-center gap-2 font-bold text-xl">
-            <div className="flex">
-              <span className="text-[#6E5DC6] font-bold text-2xl">post</span>
-              <span className="text-[#FF6B6B] font-bold text-2xl">it</span>
+    <header className="border-b bg-white py-3">
+      <div className="container max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="bg-[#6E5DC6] p-1.5 rounded-md">
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
-          </div>
+            <span className="font-bold text-xl text-[#6E5DC6]">
+              PostIt
+            </span>
+          </Link>
           
-          {isMobile ? (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Toggle Menu"
-                onClick={toggleMobileMenu}
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
-              
-              {/* Mobile menu */}
-              {mobileMenuOpen && (
-                <div className="absolute top-16 left-0 right-0 bg-background border-b border-border animate-fade-in">
-                  <nav className="container flex flex-col py-4 space-y-3">
-                    <Link 
-                      to="/" 
-                      className="px-4 py-2 text-foreground hover:bg-accent rounded-md transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Home
-                    </Link>
-                    <Link 
-                      to="/about" 
-                      className="px-4 py-2 text-foreground hover:bg-accent rounded-md transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      About
-                    </Link>
-                  </nav>
-                </div>
-              )}
-            </>
-          ) : (
-            <nav className="flex items-center gap-6">
-              <Link 
-                to="/" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full"
-              >
+          <nav className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
+              <Link to="/" className="text-gray-600 hover:text-[#6E5DC6] text-sm font-medium transition-colors">
                 Home
               </Link>
-              <Link 
-                to="/about" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-primary after:transition-all hover:after:w-full"
-              >
+              <Link to="/saved-plans" className="text-gray-600 hover:text-[#6E5DC6] text-sm font-medium transition-colors">
+                Saved Plans
+              </Link>
+              <Link to="/about" className="text-gray-600 hover:text-[#6E5DC6] text-sm font-medium transition-colors">
                 About
               </Link>
-            </nav>
-          )}
+            </div>
+            
+            <UserMenu />
+          </nav>
         </div>
       </div>
     </header>
