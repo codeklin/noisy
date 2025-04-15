@@ -14,7 +14,7 @@ const Header = () => {
             </div>
             <span className="font-bold text-xl">
               <span className="text-[#6E5DC6]">Post</span>
-              <span className="text-[#ea384c]">It</span>
+              <span className="text-[#ea384c]">it</span>
             </span>
           </Link>
           
