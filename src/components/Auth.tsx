@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Facebook, Twitter, Linkedin, Toggle } from "lucide-react";
+import { Facebook, Twitter, Linkedin } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SocialMediaConnection } from "@/types/socialMedia";
 

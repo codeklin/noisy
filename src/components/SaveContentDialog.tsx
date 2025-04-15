@@ -23,10 +23,10 @@ export function SaveContentDialog({
   onSaveComplete 
 }: SaveContentDialogProps) {
   const [planName, setPlanName] = useState<string>("");
-  const { savePlan, isSaving } = useContentPlan();
+  const { saveContentPlan, isGenerating } = useContentPlan();
 
   const handleSave = async () => {
-    const id = await savePlan(planName, brandInfo, posts);
+    const id = await saveContentPlan(planName, brandInfo, posts);
     if (onSaveComplete) {
       onSaveComplete(id);
     }
@@ -63,15 +63,15 @@ export function SaveContentDialog({
           <Button 
             variant="outline" 
             onClick={() => onOpenChange(false)}
-            disabled={isSaving}
+            disabled={isGenerating}
           >
             Cancel
           </Button>
           <Button 
             onClick={handleSave} 
-            disabled={!planName.trim() || isSaving}
+            disabled={!planName.trim() || isGenerating}
           >
-            {isSaving ? "Saving..." : "Save Content Plan"}
+            {isGenerating ? "Saving..." : "Save Content Plan"}
           </Button>
         </DialogFooter>
       </DialogContent>
