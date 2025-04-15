@@ -9,7 +9,7 @@ import Footer from "@/components/Footer";
 import BrandInfoForm from "@/components/BrandInfoForm";
 import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Sparkles, LightbulbIcon, FileTextIcon, CheckCircleIcon } from "lucide-react";
+import { ArrowDown, Sparkles, LightbulbIcon, FileTextIcon, CheckCircleIcon, RefreshCw } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 
 const Index = () => {
@@ -18,12 +18,17 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [hasSavedData, setHasSavedData] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'ideas' | 'posts' | 'results'>('ideas');
+  const [lastGenerated, setLastGenerated] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if there's saved data in localStorage
     const savedData = loadFromLocalStorage();
     if (savedData.posts && savedData.brandInfo) {
       setHasSavedData(true);
+      // Set last generated date if available
+      if (savedData.generatedDate) {
+        setLastGenerated(savedData.generatedDate);
+      }
     }
   }, []);
 
@@ -38,10 +43,12 @@ const Index = () => {
         setBrandInfo(formData);
         setActiveTab('posts');
         
-        // Save to localStorage
-        saveToLocalStorage(contentPlan, formData);
+        // Save to localStorage with generation date
+        const currentDate = new Date().toISOString();
+        setLastGenerated(currentDate);
+        saveToLocalStorage(contentPlan, formData, currentDate);
         
-        toast.success("Content plan generated successfully!");
+        toast.success("Up-to-date content plan generated successfully for 2025!");
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (error) {
         console.error("Error generating content plan:", error);
@@ -58,7 +65,7 @@ const Index = () => {
     );
     
     setPosts(updatedPosts);
-    saveToLocalStorage(updatedPosts, brandInfo);
+    saveToLocalStorage(updatedPosts, brandInfo, lastGenerated);
     toast.success("Post updated successfully!");
   };
 
@@ -82,16 +89,50 @@ const Index = () => {
     if (savedData.posts && savedData.brandInfo) {
       setPosts(savedData.posts);
       setBrandInfo(savedData.brandInfo);
+      if (savedData.generatedDate) {
+        setLastGenerated(savedData.generatedDate);
+      }
       setActiveTab('posts');
       toast.success("Loaded saved content plan!");
     }
   };
 
+  const handleRegenerateContent = () => {
+    if (!brandInfo) {
+      toast.error("No brand information available. Please fill the form first.");
+      setActiveTab('ideas');
+      return;
+    }
+    
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      try {
+        const contentPlan = generateContentPlan(brandInfo);
+        setPosts(contentPlan);
+        
+        // Save to localStorage with new generation date
+        const currentDate = new Date().toISOString();
+        setLastGenerated(currentDate);
+        saveToLocalStorage(contentPlan, brandInfo, currentDate);
+        
+        toast.success("Fresh 2025 content plan regenerated successfully!");
+      } catch (error) {
+        console.error("Error regenerating content plan:", error);
+        toast.error("Failed to regenerate content plan. Please try again.");
+      } finally {
+        setIsGenerating(false);
+      }
+    }, 2000);
+  };
+
   const handleClearSavedData = () => {
     localStorage.removeItem('contentPlan');
     localStorage.removeItem('brandInfo');
+    localStorage.removeItem('generatedDate');
     setPosts([]);
     setBrandInfo(null);
+    setLastGenerated(null);
     setHasSavedData(false);
     toast.success("Saved data cleared successfully!");
   };
@@ -150,7 +191,7 @@ const Index = () => {
                 {activeTab === 'ideas' && (
                   <div className="max-w-3xl mx-auto">
                     <h2 className="text-2xl font-bold text-center text-[#6E5DC6] mb-6">
-                      Now let's start generating the next post!
+                      Generate up-to-date 2025 content for your brand!
                     </h2>
                     
                     {hasSavedData && (
@@ -161,6 +202,11 @@ const Index = () => {
                         >
                           <Sparkles className="h-4 w-4" />
                           Load Saved Content Plan
+                          {lastGenerated && (
+                            <span className="text-xs opacity-80 ml-1">
+                              ({new Date(lastGenerated).toLocaleDateString()})
+                            </span>
+                          )}
                         </Button>
                         <Button
                           onClick={handleClearSavedData}
@@ -180,6 +226,22 @@ const Index = () => {
                 
                 {activeTab === 'posts' && posts.length > 0 && (
                   <div>
+                    <div className="mb-4 flex justify-between items-center">
+                      <div className="text-sm text-gray-500">
+                        {lastGenerated && (
+                          <span>Generated: {new Date(lastGenerated).toLocaleString()}</span>
+                        )}
+                      </div>
+                      <Button
+                        onClick={handleRegenerateContent}
+                        className="gap-2 bg-[#6E5DC6] hover:bg-[#5D4DB3]"
+                        disabled={isGenerating}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                        Regenerate Fresh Content
+                      </Button>
+                    </div>
+                    
                     <PlatformTabs 
                       posts={posts} 
                       onEditPost={handleEditPost} 
@@ -207,7 +269,7 @@ const Index = () => {
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold text-[#6E5DC6] mb-4">Content Generation Complete</h2>
                       <p className="text-gray-600">
-                        Your content plan is ready! You can now export it or continue editing.
+                        Your up-to-date 2025 content plan is ready! You can now export it or continue editing.
                       </p>
                     </div>
                     
