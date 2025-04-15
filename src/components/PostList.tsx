@@ -1,160 +1,114 @@
 
 import { useState } from "react";
-import { format } from "date-fns";
 import { Post } from "@/types";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Facebook, Linkedin, Pencil, Twitter } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Facebook, Linkedin, Twitter, Edit, Save, Copy, Check } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { ShareContent } from "./ShareContent";
+import { useAuth } from "@/context/AuthContext";
 
 interface PostListProps {
   posts: Post[];
   onEditPost: (postId: string, newContent: string) => void;
 }
 
+const platformColors = {
+  facebook: "bg-blue-100 text-blue-800 border-blue-200",
+  twitter: "bg-blue-50 text-blue-500 border-blue-100",
+  linkedin: "bg-blue-200 text-blue-900 border-blue-300"
+};
+
+const platformIcons = {
+  facebook: <Facebook className="h-4 w-4" />,
+  twitter: <Twitter className="h-4 w-4" />,
+  linkedin: <Linkedin className="h-4 w-4" />
+};
+
 const PostList = ({ posts, onEditPost }: PostListProps) => {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
-  const [editedContent, setEditedContent] = useState<string>("");
-  const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState("");
+  const { user } = useAuth();
 
   const handleEditClick = (post: Post) => {
     setEditingPostId(post.id);
     setEditedContent(post.content);
   };
 
-  const handleSaveClick = (postId: string) => {
+  const handleSaveEdit = (postId: string) => {
     onEditPost(postId, editedContent);
     setEditingPostId(null);
   };
 
-  const handleCopyClick = (content: string, postId: string) => {
-    navigator.clipboard.writeText(content)
-      .then(() => {
-        toast.success("Content copied to clipboard!");
-        setCopiedPostId(postId);
-        // Reset copied state after 2 seconds
-        setTimeout(() => setCopiedPostId(null), 2000);
-      })
-      .catch(err => {
-        toast.error("Failed to copy content");
-        console.error('Copy failed:', err);
-      });
+  const handleCancelEdit = () => {
+    setEditingPostId(null);
+    setEditedContent("");
   };
-
-  const getPlatformIcon = (platform: string) => {
-    switch (platform) {
-      case "facebook":
-        return <Facebook className="h-5 w-5 text-[#4267B2]" />;
-      case "twitter":
-        return <Twitter className="h-5 w-5 text-[#1DA1F2]" />;
-      case "linkedin":
-        return <Linkedin className="h-5 w-5 text-[#0077B5]" />;
-      default:
-        return null;
-    }
-  };
-
-  const getPlatformClass = (platform: string) => {
-    switch (platform) {
-      case "facebook":
-        return "border-l-[#4267B2]";
-      case "twitter":
-        return "border-l-[#1DA1F2]";
-      case "linkedin":
-        return "border-l-[#0077B5]";
-      default:
-        return "";
-    }
-  };
-
-  if (posts.length === 0) {
-    return (
-      <div className="p-8 text-center">
-        <p className="text-muted-foreground">No posts found for this platform.</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <div className="grid grid-cols-1 gap-6">
       {posts.map((post) => (
-        <Card 
-          key={post.id} 
-          className={`post-card border-l-4 ${getPlatformClass(post.platform)} hover:shadow-md transition-all duration-200`}
-        >
-          <CardHeader className="p-4 pb-2 flex flex-row justify-between items-start">
-            <div className="flex flex-col">
-              <div className="flex items-center space-x-2">
-                {getPlatformIcon(post.platform)}
-                <span className="font-medium capitalize">
-                  {post.platform}
-                </span>
-              </div>
-              <span className="text-sm text-muted-foreground">
-                {format(new Date(post.date), "MMMM d, yyyy")}
-              </span>
+        <Card key={post.id} className="overflow-hidden">
+          <CardHeader className="bg-gray-50 py-3 px-4 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Badge 
+                className={`flex items-center gap-1 ${platformColors[post.platform]}`}
+                variant="outline"
+              >
+                {platformIcons[post.platform]}
+                <span className="capitalize">{post.platform}</span>
+              </Badge>
+              <Badge variant="outline" className="text-gray-500">
+                {post.date}
+              </Badge>
             </div>
             
-            <div className="flex gap-2">
-              {editingPostId === post.id ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleSaveClick(post.id)}
-                  className="h-8 px-2"
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEditClick(post)}
-                    className="h-8 px-2"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleCopyClick(post.content, post.id)}
-                    className="h-8 px-2"
-                  >
-                    {copiedPostId === post.id ? (
-                      <Check className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </>
-              )}
+            <div className="flex items-center gap-2">
+              {user && <ShareContent post={post} />}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => handleEditClick(post)}
+                className="flex items-center gap-1"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
             </div>
           </CardHeader>
           
-          <CardContent className="p-4 pt-2">
+          <CardContent className="p-4">
             {editingPostId === post.id ? (
-              <Textarea
-                value={editedContent}
-                onChange={(e) => setEditedContent(e.target.value)}
-                className="min-h-[100px]"
-              />
+              <div className="space-y-4">
+                <Textarea 
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                  rows={5}
+                  className="w-full"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={() => handleSaveEdit(post.id)}>
+                    Save
+                  </Button>
+                </div>
+              </div>
             ) : (
-              <div className="text-sm whitespace-pre-wrap">
-                {post.content}
+              <div>
+                <p className="whitespace-pre-wrap">{post.content}</p>
+                {post.hashtags && post.hashtags.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {post.hashtags.map((tag, i) => (
+                      <Badge key={i} variant="secondary">#{tag}</Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
-          
-          <CardFooter className="p-4 pt-0 flex flex-wrap gap-1">
-            {post.hashtags.map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                #{tag}
-              </Badge>
-            ))}
-          </CardFooter>
         </Card>
       ))}
     </div>

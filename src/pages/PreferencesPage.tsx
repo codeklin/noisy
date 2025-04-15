@@ -1,176 +1,241 @@
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useUserPreferences } from "@/hooks/useUserPreferences";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { LoaderCircle, Save } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Facebook, Linkedin, Loader2, Twitter } from "lucide-react";
+import { parseJsonObject } from "@/types/supabase";
+import { SocialMediaConnection } from "@/types/socialMedia";
 
 export default function PreferencesPage() {
-  const { user, isLoading: authLoading } = useAuth();
-  const { preferences, updatePreferences, isLoading, isSaving } = useUserPreferences();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  
-  const form = useForm({
-    defaultValues: {
-      defaultPlatforms: ["facebook", "twitter", "linkedin"],
-      emailNotifications: true,
-      theme: "light"
-    }
-  });
+  const { preferences, updatePreferences, isLoading, isSaving } = useUserPreferences();
+  const [socialConnections, setSocialConnections] = useState<SocialMediaConnection[]>(
+    user?.user_metadata?.social_media 
+      ? parseJsonObject<SocialMediaConnection[]>(user?.user_metadata?.social_media)
+      : []
+  );
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    if (!isLoading && preferences) {
-      form.reset({
-        defaultPlatforms: preferences.defaultPlatforms || ["facebook", "twitter", "linkedin"],
-        emailNotifications: preferences.emailNotifications !== undefined ? preferences.emailNotifications : true,
-        theme: preferences.theme || "light"
+  const updateSocialAccount = async (platform: 'facebook' | 'twitter' | 'linkedin', isConnected: boolean) => {
+    try {
+      // Update the social media connections state
+      const updatedConnections = socialConnections.map(conn => 
+        conn.platform === platform ? { ...conn, isConnected } : conn
+      );
+      
+      setSocialConnections(updatedConnections);
+      
+      // In a real app, this would connect to the actual social media platform
+      // Here we're just updating the user metadata
+      
+      toast.success(`${isConnected ? 'Connected to' : 'Disconnected from'} ${platform}`);
+      
+      // Update preferences to store this connection info
+      await updatePreferences({
+        socialMediaAccounts: {
+          ...preferences.socialMediaAccounts,
+          [platform]: { connected: isConnected }
+        }
       });
+      
+    } catch (error) {
+      console.error(`Error ${isConnected ? 'connecting to' : 'disconnecting from'} ${platform}:`, error);
+      toast.error(`Failed to ${isConnected ? 'connect to' : 'disconnect from'} ${platform}`);
     }
-  }, [preferences, isLoading, form]);
-
-  const onSubmit = async (values: any) => {
-    await updatePreferences(values);
   };
 
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 bg-[#F5F4FF]/30 py-10 flex items-center justify-center">
-          <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+        <main className="flex-1 bg-[#F5F4FF]/30 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#6E5DC6]" />
         </main>
         <Footer />
       </div>
     );
   }
 
-  const platforms = [
-    { id: "facebook", label: "Facebook" },
-    { id: "twitter", label: "Twitter" },
-    { id: "linkedin", label: "LinkedIn" }
-  ];
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 bg-[#F5F4FF]/30 py-10">
-        <div className="container max-w-3xl mx-auto px-4">
+        <div className="container max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-[#6E5DC6] mb-6">Your Preferences</h1>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Generation Settings</CardTitle>
-              <CardDescription>
-                Configure your default settings for content generation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="defaultPlatforms"
-                    render={() => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel>Default Platforms</FormLabel>
-                          <FormDescription>
-                            Select the platforms you want to include by default when generating content
-                          </FormDescription>
+          <Tabs defaultValue="general" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="social">Social Media</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="general" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>General Settings</CardTitle>
+                  <CardDescription>
+                    Manage your account preferences and settings.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Dark Mode</Label>
+                      <p className="text-sm text-gray-500">
+                        Switch between dark and light mode
+                      </p>
+                    </div>
+                    <Switch
+                      checked={preferences.theme === "dark"}
+                      onCheckedChange={(checked) => {
+                        updatePreferences({ theme: checked ? "dark" : "light" });
+                      }}
+                    />
+                  </div>
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Default Platforms</Label>
+                      <p className="text-sm text-gray-500">
+                        Platforms to include by default when generating content
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      {/* Default platform toggles would go here */}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="social" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Social Media Accounts</CardTitle>
+                  <CardDescription>
+                    Connect your social media accounts to enable direct sharing of content.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Facebook className="h-6 w-6 text-blue-600" />
+                        <div>
+                          <p className="font-medium">Facebook</p>
+                          <p className="text-sm text-gray-500">
+                            {socialConnections.find(c => c.platform === "facebook")?.isConnected 
+                              ? "Connected" 
+                              : "Not connected"}
+                          </p>
                         </div>
-                        <div className="grid gap-4">
-                          {platforms.map((platform) => (
-                            <FormField
-                              key={platform.id}
-                              control={form.control}
-                              name="defaultPlatforms"
-                              render={({ field }) => {
-                                return (
-                                  <FormItem
-                                    key={platform.id}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(platform.id)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, platform.id])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value: string) => value !== platform.id
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal">
-                                      {platform.label}
-                                    </FormLabel>
-                                  </FormItem>
-                                )
-                              }}
-                            />
-                          ))}
+                      </div>
+                      <Button 
+                        variant={socialConnections.find(c => c.platform === "facebook")?.isConnected ? "destructive" : "default"}
+                        size="sm"
+                        onClick={() => {
+                          const isCurrentlyConnected = !!socialConnections.find(c => c.platform === "facebook")?.isConnected;
+                          updateSocialAccount("facebook", !isCurrentlyConnected);
+                        }}
+                      >
+                        {socialConnections.find(c => c.platform === "facebook")?.isConnected ? "Disconnect" : "Connect"}
+                      </Button>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Twitter className="h-6 w-6 text-blue-400" />
+                        <div>
+                          <p className="font-medium">Twitter</p>
+                          <p className="text-sm text-gray-500">
+                            {socialConnections.find(c => c.platform === "twitter")?.isConnected 
+                              ? "Connected" 
+                              : "Not connected"}
+                          </p>
                         </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="emailNotifications"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">
-                            Email Notifications
-                          </FormLabel>
-                          <FormDescription>
-                            Receive email updates about your content plans
-                          </FormDescription>
+                      </div>
+                      <Button 
+                        variant={socialConnections.find(c => c.platform === "twitter")?.isConnected ? "destructive" : "default"}
+                        size="sm"
+                        onClick={() => {
+                          const isCurrentlyConnected = !!socialConnections.find(c => c.platform === "twitter")?.isConnected;
+                          updateSocialAccount("twitter", !isCurrentlyConnected);
+                        }}
+                      >
+                        {socialConnections.find(c => c.platform === "twitter")?.isConnected ? "Disconnect" : "Connect"}
+                      </Button>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Linkedin className="h-6 w-6 text-blue-700" />
+                        <div>
+                          <p className="font-medium">LinkedIn</p>
+                          <p className="text-sm text-gray-500">
+                            {socialConnections.find(c => c.platform === "linkedin")?.isConnected 
+                              ? "Connected" 
+                              : "Not connected"}
+                          </p>
                         </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <Button type="submit" disabled={isSaving} className="w-full">
-                    {isSaving ? (
-                      <>
-                        <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        Save Preferences
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                      </div>
+                      <Button 
+                        variant={socialConnections.find(c => c.platform === "linkedin")?.isConnected ? "destructive" : "default"}
+                        size="sm"
+                        onClick={() => {
+                          const isCurrentlyConnected = !!socialConnections.find(c => c.platform === "linkedin")?.isConnected;
+                          updateSocialAccount("linkedin", !isCurrentlyConnected);
+                        }}
+                      >
+                        {socialConnections.find(c => c.platform === "linkedin")?.isConnected ? "Disconnect" : "Connect"}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="notifications" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notification Settings</CardTitle>
+                  <CardDescription>
+                    Control when and how you get notified.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Email Notifications</Label>
+                      <p className="text-sm text-gray-500">
+                        Receive updates and alerts via email
+                      </p>
+                    </div>
+                    <Switch
+                      checked={!!preferences.emailNotifications}
+                      onCheckedChange={(checked) => {
+                        updatePreferences({ emailNotifications: checked });
+                      }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
       <Footer />

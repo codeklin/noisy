@@ -7,11 +7,19 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Facebook, Twitter, Linkedin, Toggle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { SocialMediaConnection } from "@/types/socialMedia";
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [socialConnections, setSocialConnections] = useState<SocialMediaConnection[]>([
+    { platform: "facebook", isConnected: false },
+    { platform: "twitter", isConnected: false },
+    { platform: "linkedin", isConnected: false }
+  ]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +27,14 @@ export default function Auth() {
     try {
       setLoading(true);
       
-      const { error } = await supabase.auth.signUp({
+      const { error, data } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            social_media: socialConnections
+          }
+        }
       });
 
       if (error) throw error;
@@ -55,6 +68,16 @@ export default function Auth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleSocialConnection = (platform: 'facebook' | 'twitter' | 'linkedin') => {
+    setSocialConnections(prev => 
+      prev.map(conn => 
+        conn.platform === platform 
+          ? { ...conn, isConnected: !conn.isConnected } 
+          : conn
+      )
+    );
   };
 
   return (
@@ -124,6 +147,50 @@ export default function Auth() {
                     required
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <Label>Connect Social Media Accounts</Label>
+                  <p className="text-sm text-gray-500 mb-3">Choose platforms to share your content</p>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="facebook" 
+                        checked={socialConnections.find(c => c.platform === 'facebook')?.isConnected}
+                        onCheckedChange={() => toggleSocialConnection('facebook')}
+                      />
+                      <Label htmlFor="facebook" className="flex items-center">
+                        <Facebook className="h-4 w-4 mr-2 text-blue-600" />
+                        Facebook
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="twitter" 
+                        checked={socialConnections.find(c => c.platform === 'twitter')?.isConnected}
+                        onCheckedChange={() => toggleSocialConnection('twitter')}
+                      />
+                      <Label htmlFor="twitter" className="flex items-center">
+                        <Twitter className="h-4 w-4 mr-2 text-blue-400" />
+                        Twitter
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="linkedin" 
+                        checked={socialConnections.find(c => c.platform === 'linkedin')?.isConnected}
+                        onCheckedChange={() => toggleSocialConnection('linkedin')}
+                      />
+                      <Label htmlFor="linkedin" className="flex items-center">
+                        <Linkedin className="h-4 w-4 mr-2 text-blue-700" />
+                        LinkedIn
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+                
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>

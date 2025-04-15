@@ -3,11 +3,17 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { parseJsonObject } from "@/types/supabase";
 
 interface Preferences {
   theme?: string;
   defaultPlatforms?: string[];
   emailNotifications?: boolean;
+  socialMediaAccounts?: {
+    facebook?: { connected: boolean, username?: string },
+    twitter?: { connected: boolean, username?: string },
+    linkedin?: { connected: boolean, username?: string }
+  };
   [key: string]: any;
 }
 
@@ -46,7 +52,8 @@ export const useUserPreferences = () => {
           throw error;
         }
       } else {
-        setPreferences(data.preferences);
+        const parsedPreferences = parseJsonObject<Preferences>(data.preferences);
+        setPreferences(parsedPreferences);
       }
     } catch (error) {
       console.error("Error loading preferences:", error);
@@ -61,13 +68,18 @@ export const useUserPreferences = () => {
     const defaultPreferences = {
       theme: "light",
       defaultPlatforms: ["facebook", "twitter", "linkedin"],
-      emailNotifications: true
+      emailNotifications: true,
+      socialMediaAccounts: {
+        facebook: { connected: false },
+        twitter: { connected: false },
+        linkedin: { connected: false }
+      }
     };
     
     try {
       const { error } = await supabase.from("user_preferences").insert({
         user_id: user.id,
-        preferences: defaultPreferences
+        preferences: JSON.stringify(defaultPreferences)
       });
       
       if (error) throw error;
@@ -101,7 +113,7 @@ export const useUserPreferences = () => {
         // Record doesn't exist, create it
         const { error } = await supabase.from("user_preferences").insert({
           user_id: user.id,
-          preferences: updatedPreferences
+          preferences: JSON.stringify(updatedPreferences)
         });
         
         if (error) throw error;
@@ -109,7 +121,7 @@ export const useUserPreferences = () => {
         // Record exists, update it
         const { error } = await supabase
           .from("user_preferences")
-          .update({ preferences: updatedPreferences })
+          .update({ preferences: JSON.stringify(updatedPreferences) })
           .eq("user_id", user.id);
         
         if (error) throw error;
@@ -122,7 +134,7 @@ export const useUserPreferences = () => {
       await supabase.from("analytics").insert({
         user_id: user.id,
         event_type: "update_preferences",
-        event_data: { preferences: newPreferences }
+        event_data: JSON.stringify({ preferences: newPreferences })
       });
       
       return true;

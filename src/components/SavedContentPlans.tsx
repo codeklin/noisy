@@ -1,103 +1,145 @@
 
 import { useState, useEffect } from "react";
-import { useContentPlan } from "@/hooks/useContentPlan";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { LoaderCircle, Edit, Trash, Calendar, FileText, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/context/AuthContext";
+import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ContentPlanItem {
   id: string;
   name: string;
   created_at: string;
   updated_at: string;
-  brand_info: any;
-  posts: any[];
 }
 
 export default function SavedContentPlans() {
-  const [plans, setPlans] = useState<ContentPlanItem[]>([]);
-  const { getUserContentPlans, deleteContentPlan, isLoading } = useContentPlan();
+  const [contentPlans, setContentPlans] = useState<ContentPlanItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({});
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    loadPlans();
-  }, []);
+    if (user) {
+      loadContentPlans();
+    }
+  }, [user]);
 
-  const loadPlans = async () => {
-    const userPlans = await getUserContentPlans();
-    setPlans(userPlans);
+  const loadContentPlans = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("content_plans")
+        .select("id, name, created_at, updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false });
+
+      if (error) throw error;
+
+      setContentPlans(data as ContentPlanItem[]);
+    } catch (error) {
+      console.error("Error loading content plans:", error);
+      toast.error("Failed to load your saved content plans");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this content plan?")) {
-      const success = await deleteContentPlan(id);
-      if (success) {
-        setPlans(plans.filter(plan => plan.id !== id));
-      }
+  const handleDeletePlan = async (id: string) => {
+    if (!user) return;
+
+    setIsDeleting(prev => ({ ...prev, [id]: true }));
+
+    try {
+      const { error } = await supabase
+        .from("content_plans")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setContentPlans(prev => prev.filter(plan => plan.id !== id));
+      toast.success("Content plan deleted successfully");
+    } catch (error) {
+      console.error("Error deleting content plan:", error);
+      toast.error("Failed to delete content plan");
+    } finally {
+      setIsDeleting(prev => ({ ...prev, [id]: false }));
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <LoaderCircle className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-[#6E5DC6]" />
       </div>
     );
   }
 
-  if (plans.length === 0) {
+  if (contentPlans.length === 0) {
     return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-medium mb-2">No saved content plans</h3>
-        <p className="text-muted-foreground mb-4">
-          When you save content plans, they'll appear here.
-        </p>
-        <Button variant="outline" onClick={() => window.location.href = "/"}>
-          Generate New Content
-        </Button>
-      </div>
+      <Card className="border-dashed border-gray-300 bg-gray-50/50">
+        <CardContent className="flex flex-col items-center justify-center py-10">
+          <p className="text-gray-500 mb-4 text-center">You don't have any saved content plans yet.</p>
+          <Button onClick={() => navigate("/")}>Create a Content Plan</Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-6">
-      {plans.map(plan => (
-        <Card key={plan.id} className="overflow-hidden hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="truncate">{plan.name}</CardTitle>
-            <CardDescription className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {format(new Date(plan.created_at), "MMMM d, yyyy")}
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {contentPlans.map((plan) => (
+        <Card key={plan.id} className="overflow-hidden">
+          <CardHeader>
+            <CardTitle className="line-clamp-1">{plan.name}</CardTitle>
+            <CardDescription>
+              Updated {formatDate(plan.updated_at)}
             </CardDescription>
           </CardHeader>
-          <CardContent className="pb-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <FileText className="h-3 w-3" />
-                {plan.posts.length} posts
-              </span>
-              <span>
-                {plan.posts.filter(p => p.platform === "facebook").length} FB, 
-                {plan.posts.filter(p => p.platform === "twitter").length} TW, 
-                {plan.posts.filter(p => p.platform === "linkedin").length} LI
-              </span>
-            </div>
+          <CardContent>
+            <p className="text-sm text-gray-500">
+              Created {formatDate(plan.created_at)}
+            </p>
           </CardContent>
-          <CardFooter className="pt-2 flex justify-between">
-            <Button
+          <CardFooter className="flex justify-between gap-2 bg-gray-50/50 border-t py-3">
+            <Button 
               variant="outline"
               size="sm"
-              onClick={() => handleDelete(plan.id)}
+              className="flex-1"
+              onClick={() => navigate(`/plan/${plan.id}`)}
             >
-              <Trash className="h-4 w-4 mr-1" />
-              Delete
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => window.location.href = `/plan/${plan.id}`}
-            >
-              <ExternalLink className="h-4 w-4 mr-1" />
               View
+            </Button>
+            <Button 
+              variant="destructive"
+              size="sm"
+              className="flex items-center gap-1"
+              onClick={() => handleDeletePlan(plan.id)}
+              disabled={isDeleting[plan.id]}
+            >
+              {isDeleting[plan.id] ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Trash2 className="h-3 w-3" />
+              )}
+              Delete
             </Button>
           </CardFooter>
         </Card>

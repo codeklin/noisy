@@ -1,208 +1,139 @@
 
 import { useState } from "react";
-import { BrandInfo, PostPlan } from "@/types";
+import { BrandInfo, Post, PostPlan } from "@/types";
+import { v4 as uuidv4 } from "uuid";
 import { generateContentPlan } from "@/lib/postGenerator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-import { useNavigate } from "react-router-dom";
+import { parseJsonArray, parseJsonObject } from "@/types/supabase";
+import { Json } from "@/integrations/supabase/types";
 
 export const useContentPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const generatePlan = async (brandInfo: BrandInfo): Promise<PostPlan> => {
     setIsGenerating(true);
     
     try {
-      // Track event in analytics
+      // Track analytics event if user is logged in
       if (user) {
         await supabase.from("analytics").insert({
           user_id: user.id,
-          event_type: "generate_content",
-          event_data: { brand_info: brandInfo }
+          event_type: "generate_content_plan",
+          event_data: { brandInfo: JSON.stringify(brandInfo) }
         });
       }
       
-      // Generate content plan
-      const contentPlan = generateContentPlan(brandInfo);
+      // Generate the content plan
+      const contentPlan = await generateContentPlan(brandInfo);
       
-      // Return generated plan
       return contentPlan;
     } catch (error) {
       console.error("Error generating content plan:", error);
-      toast.error("Failed to generate content plan. Please try again.");
       throw error;
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const savePlan = async (name: string, brandInfo: BrandInfo, posts: PostPlan) => {
+  const saveContentPlan = async (name: string, brandInfo: BrandInfo, posts: PostPlan): Promise<string | null> => {
     if (!user) {
-      toast.error("You must be logged in to save your content plan");
-      navigate("/auth");
+      toast.error("You must be logged in to save content plans");
       return null;
     }
-    
-    setIsSaving(true);
-    
-    try {
-      const { data, error } = await supabase.from("content_plans").insert({
-        user_id: user.id,
-        name,
-        brand_info: brandInfo,
-        posts
-      }).select("id").single();
-      
-      if (error) throw error;
-      
-      toast.success("Content plan saved successfully!");
-      
-      // Track event in analytics
-      await supabase.from("analytics").insert({
-        user_id: user.id,
-        event_type: "save_content_plan",
-        event_data: { plan_id: data.id, plan_name: name }
-      });
-      
-      return data.id;
-    } catch (error: any) {
-      console.error("Error saving content plan:", error);
-      toast.error(error.message || "Failed to save content plan");
-      return null;
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const getUserContentPlans = async () => {
-    if (!user) return [];
-    
-    setIsLoading(true);
     
     try {
       const { data, error } = await supabase
         .from("content_plans")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .insert({
+          user_id: user.id,
+          name,
+          brand_info: JSON.stringify(brandInfo),
+          posts: JSON.stringify(posts)
+        })
+        .select("id")
+        .single();
       
       if (error) throw error;
       
-      return data || [];
+      return data.id;
     } catch (error) {
-      console.error("Error loading content plans:", error);
-      toast.error("Failed to load your content plans");
-      return [];
-    } finally {
-      setIsLoading(false);
+      console.error("Error saving content plan:", error);
+      throw error;
     }
   };
 
-  const getContentPlanById = async (id: string) => {
-    if (!user) return null;
-    
-    setIsLoading(true);
+  const getContentPlan = async (id: string): Promise<{ brandInfo: BrandInfo, posts: PostPlan, name: string } | null> => {
+    if (!user) {
+      toast.error("You must be logged in to view content plans");
+      return null;
+    }
     
     try {
       const { data, error } = await supabase
         .from("content_plans")
         .select("*")
         .eq("id", id)
+        .eq("user_id", user.id)
         .single();
       
       if (error) throw error;
       
-      // Track event in analytics
-      await supabase.from("analytics").insert({
-        user_id: user.id,
-        event_type: "view_content_plan",
-        event_data: { plan_id: id, plan_name: data.name }
-      });
+      if (!data) return null;
       
-      return data;
+      return {
+        brandInfo: parseJsonObject<BrandInfo>(data.brand_info),
+        posts: parseJsonArray<Post>(data.posts),
+        name: data.name
+      };
     } catch (error) {
-      console.error("Error loading content plan:", error);
-      toast.error("Failed to load content plan");
+      console.error("Error getting content plan:", error);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const updateContentPlan = async (id: string, posts: PostPlan) => {
-    if (!user) return false;
-    
-    setIsSaving(true);
+  const updateContentPlan = async (
+    id: string, 
+    updates: { 
+      name?: string, 
+      brandInfo?: BrandInfo, 
+      posts?: PostPlan 
+    }
+  ): Promise<boolean> => {
+    if (!user) {
+      toast.error("You must be logged in to update content plans");
+      return false;
+    }
     
     try {
+      const updateData: any = {};
+      
+      if (updates.name) updateData.name = updates.name;
+      if (updates.brandInfo) updateData.brand_info = JSON.stringify(updates.brandInfo);
+      if (updates.posts) updateData.posts = JSON.stringify(updates.posts);
+      
       const { error } = await supabase
         .from("content_plans")
-        .update({ posts })
-        .eq("id", id);
+        .update(updateData)
+        .eq("id", id)
+        .eq("user_id", user.id);
       
       if (error) throw error;
-      
-      toast.success("Content plan updated successfully!");
-      
-      // Track event in analytics
-      await supabase.from("analytics").insert({
-        user_id: user.id,
-        event_type: "update_content_plan",
-        event_data: { plan_id: id }
-      });
       
       return true;
     } catch (error) {
       console.error("Error updating content plan:", error);
-      toast.error("Failed to update content plan");
-      return false;
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const deleteContentPlan = async (id: string) => {
-    if (!user) return false;
-    
-    try {
-      const { error } = await supabase
-        .from("content_plans")
-        .delete()
-        .eq("id", id);
-      
-      if (error) throw error;
-      
-      toast.success("Content plan deleted successfully");
-      
-      // Track event in analytics
-      await supabase.from("analytics").insert({
-        user_id: user.id,
-        event_type: "delete_content_plan",
-        event_data: { plan_id: id }
-      });
-      
-      return true;
-    } catch (error) {
-      console.error("Error deleting content plan:", error);
-      toast.error("Failed to delete content plan");
       return false;
     }
   };
 
   return {
     generatePlan,
-    savePlan,
-    getUserContentPlans,
-    getContentPlanById,
+    saveContentPlan,
+    getContentPlan,
     updateContentPlan,
-    deleteContentPlan,
-    isGenerating,
-    isSaving,
-    isLoading
+    isGenerating
   };
 };
