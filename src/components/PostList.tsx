@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { format } from "date-fns";
 import { Post } from "@/types";
@@ -45,11 +46,11 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
       case "facebook":
-        return <Facebook className="h-5 w-5 text-blue-600" />;
+        return <Facebook className="h-5 w-5 text-[#4267B2]" />;
       case "twitter":
-        return <Twitter className="h-5 w-5 text-sky-400" />;
+        return <Twitter className="h-5 w-5 text-[#1DA1F2]" />;
       case "linkedin":
-        return <Linkedin className="h-5 w-5 text-blue-800" />;
+        return <Linkedin className="h-5 w-5 text-[#0077B5]" />;
       default:
         return null;
     }
@@ -58,11 +59,11 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
   const getPlatformClass = (platform: string) => {
     switch (platform) {
       case "facebook":
-        return "card-facebook";
+        return "border-l-[#4267B2]";
       case "twitter":
-        return "card-twitter";
+        return "border-l-[#1DA1F2]";
       case "linkedin":
-        return "card-linkedin";
+        return "border-l-[#0077B5]";
       default:
         return "";
     }
@@ -81,7 +82,7 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
       {posts.map((post) => (
         <Card 
           key={post.id} 
-          className={`post-card ${getPlatformClass(post.platform)}`}
+          className={`post-card border-l-4 ${getPlatformClass(post.platform)} hover:shadow-md transition-all duration-200`}
         >
           <CardHeader className="p-4 pb-2 flex flex-row justify-between items-start">
             <div className="flex flex-col">

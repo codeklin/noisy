@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 260 84% 74%;
+    --primary: 260 60% 55%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -33,7 +33,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 260 84% 74%;
+    --ring: 260 60% 55%;
 
     --radius: 0.5rem;
 
@@ -57,7 +57,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 260 84% 74%;
+    --primary: 260 60% 55%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -66,7 +66,7 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 260 84% 30%;
+    --accent: 260 60% 30%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -74,7 +74,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 260 84% 74%;
+    --ring: 260 60% 55%;
     
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -101,14 +101,28 @@
   @apply bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200;
 }
 
-.card-facebook {
-  @apply border-l-4 border-l-blue-600;
+/* Custom colors for the new design */
+.postit-purple {
+  color: #6E5DC6;
 }
 
-.card-twitter {
-  @apply border-l-4 border-l-sky-400;
+.postit-coral {
+  color: #FF6B6B;
 }
 
-.card-linkedin {
-  @apply border-l-4 border-l-blue-800;
+.bg-postit-purple {
+  background-color: #6E5DC6;
+}
+
+.bg-postit-coral {
+  background-color: #FF6B6B;
+}
+
+.bg-postit-light-purple {
+  background-color: #F5F4FF;
+}
+
+/* Update button styles */
+.generate-button {
+  @apply bg-postit-coral text-white font-medium py-3 px-6 rounded-full hover:bg-opacity-90 transition-all;
 }

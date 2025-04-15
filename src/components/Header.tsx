@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { CalendarDays, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
@@ -32,15 +32,10 @@ const Header = () => {
       <div className="container max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between py-4">
           <div className="flex items-center gap-2 font-bold text-xl">
-            <span className="bg-primary rounded-full p-1.5 text-primary-foreground">
-              <CalendarDays className="h-5 w-5" />
-            </span>
-            <Link 
-              to="/" 
-              className="bg-gradient-to-r from-primary to-brand-blue bg-clip-text text-transparent hover:opacity-80 transition-all"
-            >
-              ContentCrafter
-            </Link>
+            <div className="flex">
+              <span className="text-[#6E5DC6] font-bold text-2xl">post</span>
+              <span className="text-[#FF6B6B] font-bold text-2xl">it</span>
+            </div>
           </div>
           
           {isMobile ? (
