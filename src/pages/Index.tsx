@@ -19,7 +19,7 @@ const Index = () => {
   const [posts, setPosts] = useState<PostPlan>([]);
   const [activeTab, setActiveTab] = useState<'ideas' | 'posts' | 'results'>('ideas');
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
-  const { generatePlan } = useContentPlan();
+  const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
   const { user } = useAuth();
 
   const handleFormSubmit = async (formData: BrandInfo) => {
@@ -28,7 +28,7 @@ const Index = () => {
       setPosts(contentPlan);
       setBrandInfo(formData);
       setActiveTab('posts');
-      
+
       toast.success("Up-to-date content plan generated successfully for 2025!");
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -38,10 +38,10 @@ const Index = () => {
   };
 
   const handleEditPost = (postId: string, newContent: string) => {
-    const updatedPosts = posts.map(post => 
+    const updatedPosts = posts.map(post =>
       post.id === postId ? { ...post, content: newContent } : post
     );
-    
+
     setPosts(updatedPosts);
     toast.success("Post updated successfully!");
   };
@@ -50,10 +50,10 @@ const Index = () => {
     try {
       // Export to PDF
       await exportToPDF(posts, platform);
-      
+
       // Export to DOCX
       await exportToDOCX(posts, platform);
-      
+
       toast.success(`Content plan exported successfully!`);
     } catch (error) {
       console.error("Export error:", error);
@@ -67,11 +67,11 @@ const Index = () => {
       setActiveTab('ideas');
       return;
     }
-    
+
     try {
       const contentPlan = await generatePlan(brandInfo);
       setPosts(contentPlan);
-      
+
       toast.success("Fresh 2025 content plan regenerated successfully!");
     } catch (error) {
       console.error("Error regenerating content plan:", error);
@@ -82,12 +82,12 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1">
         {!posts.length && (
           <HeroSection />
         )}
-        
+
         <section className="py-10 px-4 md:py-16 bg-[#F5F4FF]/30">
           <div className="container max-w-7xl mx-auto">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -95,8 +95,8 @@ const Index = () => {
               <div className="flex border-b">
                 <button
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
-                    activeTab === 'ideas' 
-                      ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]' 
+                    activeTab === 'ideas'
+                      ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]'
                       : 'text-gray-500 hover:text-[#6E5DC6] transition-colors'
                   }`}
                   onClick={() => setActiveTab('ideas')}
@@ -106,8 +106,8 @@ const Index = () => {
                 </button>
                 <button
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
-                    activeTab === 'posts' 
-                      ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]' 
+                    activeTab === 'posts'
+                      ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]'
                       : 'text-gray-500 hover:text-[#6E5DC6] transition-colors'
                   }`}
                   onClick={() => posts.length > 0 && setActiveTab('posts')}
@@ -117,8 +117,8 @@ const Index = () => {
                 </button>
                 <button
                   className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
-                    activeTab === 'results' 
-                      ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]' 
+                    activeTab === 'results'
+                      ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]'
                       : 'text-gray-500 hover:text-[#6E5DC6] transition-colors'
                   }`}
                   onClick={() => posts.length > 0 && setActiveTab('results')}
@@ -127,7 +127,7 @@ const Index = () => {
                   Results
                 </button>
               </div>
-              
+
               {/* Tab Content */}
               <div className="p-6">
                 {activeTab === 'ideas' && (
@@ -135,13 +135,18 @@ const Index = () => {
                     <h2 className="text-2xl font-bold text-center text-[#6E5DC6] mb-6">
                       Generate up-to-date 2025 content for your brand!
                     </h2>
-                    
+
                     <div className="mt-8">
-                      <BrandInfoForm onSubmit={handleFormSubmit} isGenerating={false} />
+                      <BrandInfoForm
+                        onSubmit={handleFormSubmit}
+                        isGenerating={isGenerating}
+                        useAI={useAI}
+                        setUseAI={setUseAI}
+                      />
                     </div>
                   </div>
                 )}
-                
+
                 {activeTab === 'posts' && posts.length > 0 && (
                   <div>
                     <div className="mb-4 flex justify-between items-center">
@@ -168,13 +173,13 @@ const Index = () => {
                         </Button>
                       </div>
                     </div>
-                    
-                    <PlatformTabs 
-                      posts={posts} 
-                      onEditPost={handleEditPost} 
-                      onExport={handleExport} 
+
+                    <PlatformTabs
+                      posts={posts}
+                      onEditPost={handleEditPost}
+                      onExport={handleExport}
                     />
-                    
+
                     <div className="mt-10 text-center">
                       <Button
                         onClick={() => {
@@ -190,7 +195,7 @@ const Index = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {activeTab === 'results' && posts.length > 0 && (
                   <div className="text-center">
                     <div className="mb-8">
@@ -199,16 +204,16 @@ const Index = () => {
                         Your up-to-date 2025 content plan is ready! You can now export it or continue editing.
                       </p>
                     </div>
-                    
+
                     <div className="flex flex-wrap justify-center gap-4">
-                      <Button 
+                      <Button
                         onClick={() => handleExport('all')}
                         className="bg-[#6E5DC6] hover:bg-[#5D4DB3]"
                       >
                         Export All Posts
                       </Button>
                       {user && (
-                        <Button 
+                        <Button
                           onClick={() => setSaveDialogOpen(true)}
                           className="bg-[#6E5DC6] hover:bg-[#5D4DB3]"
                         >
@@ -216,7 +221,7 @@ const Index = () => {
                           Save Content Plan
                         </Button>
                       )}
-                      <Button 
+                      <Button
                         onClick={() => setActiveTab('posts')}
                         variant="outline"
                       >
@@ -230,7 +235,7 @@ const Index = () => {
           </div>
         </section>
       </main>
-      
+
       <Footer />
 
       {/* Save Dialog */}

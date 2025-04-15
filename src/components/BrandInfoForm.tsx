@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 const defaultThemes = [
@@ -32,9 +33,11 @@ const defaultTones = [
 interface BrandInfoFormProps {
   onSubmit: (brandInfo: BrandInfo) => void;
   isGenerating: boolean;
+  useAI: boolean;
+  setUseAI: (useAI: boolean) => void;
 }
 
-const BrandInfoForm = ({ onSubmit, isGenerating }: BrandInfoFormProps) => {
+const BrandInfoForm = ({ onSubmit, isGenerating, useAI, setUseAI }: BrandInfoFormProps) => {
   const [brandInfo, setBrandInfo] = useState<BrandInfo>({
     brandName: "",
     businessDescription: "",
@@ -71,23 +74,23 @@ const BrandInfoForm = ({ onSubmit, isGenerating }: BrandInfoFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (!brandInfo.brandName.trim()) {
       toast.error("Please enter your brand name");
       return;
     }
-    
+
     if (!brandInfo.businessDescription.trim()) {
       toast.error("Please enter a business description");
       return;
     }
-    
+
     if (!brandInfo.targetAudience.trim()) {
       toast.error("Please describe your target audience");
       return;
     }
-    
+
     if (brandInfo.contentThemes.length === 0) {
       toast.error("Please select at least one content theme");
       return;
@@ -209,11 +212,25 @@ const BrandInfoForm = ({ onSubmit, isGenerating }: BrandInfoFormProps) => {
                 onChange={handleInputChange}
               />
             </div>
+
+            <div className="flex items-center space-x-2 pt-4 border-t">
+              <Switch
+                id="ai-toggle"
+                checked={useAI}
+                onCheckedChange={setUseAI}
+              />
+              <Label htmlFor="ai-toggle" className="font-medium">
+                Use AI-powered content generation
+              </Label>
+              <div className="text-sm text-gray-500 ml-2">
+                {useAI ? "(Recommended for unique, tailored content)" : "(Using template-based generation)"}
+              </div>
+            </div>
           </div>
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full" disabled={isGenerating}>
-            {isGenerating ? "Generating Plan..." : "Generate 30-Day Content Plan"}
+            {isGenerating ? "Generating Plan..." : `Generate ${useAI ? "AI-Powered" : "Template-Based"} Content Plan`}
           </Button>
         </CardFooter>
       </Card>
