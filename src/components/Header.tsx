@@ -12,8 +12,9 @@ const Header = () => {
             <div className="bg-[#6E5DC6] p-1.5 rounded-md">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <span className="font-bold text-xl text-[#6E5DC6]">
-              PostIt
+            <span className="font-bold text-xl">
+              <span className="text-[#6E5DC6]">Post</span>
+              <span className="text-[#ea384c]">It</span>
             </span>
           </Link>
           
