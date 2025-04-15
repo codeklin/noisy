@@ -58,7 +58,7 @@ const HeroSection = () => {
               <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-[#6E5DC6] to-[#FF6B6B] opacity-30 blur"></div>
               <div className="relative rounded-2xl bg-card p-3 md:p-4 shadow-xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1586798271654-0471bb1b0517?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+                  src="https://images.unsplash.com/photo-1671418285905-acc08f6c4b59?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
                   alt="Young woman typing on a smartphone"
                   className="w-full h-auto rounded-lg shadow-md transition-all duration-300 hover:shadow-lg"
                 />
