@@ -1,60 +1,300 @@
-import { HfInference } from '@huggingface/inference';
 import { BrandInfo, Post, PostPlan } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { format, addDays } from "date-fns";
 
-// Initialize the Hugging Face Inference client
-// You can use a free API token from Hugging Face
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY || 'hf_dummy_key_for_testing');
+// We'll use a mock generator when no API keys are available
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
+const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 
-// Helper function to generate content for a specific platform and theme
+// Create platform-specific prompts
+const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo): string => {
+  // Base prompt information
+  const basePrompt = `
+Create a social media post for ${platform.toUpperCase()} with the theme "${theme}" for a brand called "${brandInfo.brandName}".
+
+BRAND INFORMATION:
+- Description: ${brandInfo.businessDescription}
+- Target audience: ${brandInfo.targetAudience}
+- Tone: ${brandInfo.tone}
+- Call to action examples: ${brandInfo.ctaExamples || "Visit our website, Learn more, Contact us"}
+`;
+
+  // Platform-specific instructions
+  let platformInstructions = '';
+
+  switch (platform) {
+    case 'facebook':
+      platformInstructions = `
+FACEBOOK POST GUIDELINES:
+- Create an engaging, conversational post that encourages interaction
+- Length: 100-250 words
+- Include a question or call-to-action to encourage comments
+- Use emojis appropriately to enhance engagement
+- Make it personal and relatable to the target audience
+- Format with paragraph breaks for readability
+`;
+      break;
+    case 'twitter':
+      platformInstructions = `
+TWITTER POST GUIDELINES:
+- Create a concise, impactful post
+- Maximum 280 characters
+- Be direct and attention-grabbing
+- Use a conversational tone
+- Include a clear call-to-action if appropriate
+- Make it shareable and relevant to current trends
+`;
+      break;
+    case 'linkedin':
+      platformInstructions = `
+LINKEDIN POST GUIDELINES:
+- Create a professional, value-driven post
+- Length: 150-300 words
+- Include industry insights or professional advice
+- Format with paragraph breaks and bullet points if appropriate
+- Maintain a professional tone while being conversational
+- Focus on providing value and establishing expertise
+- Include a thoughtful question or call-to-action at the end
+`;
+      break;
+  }
+
+  // Final instructions
+  const finalInstructions = `
+IMPORTANT:
+- DO NOT include hashtags in the content as they will be added separately
+- Create ONLY the post content, no title or other metadata
+- Make sure the content is unique and specifically tailored to this brand
+- Ensure the content reflects the specified theme: "${theme}"
+- Match the brand's tone: "${brandInfo.tone}"
+
+POST CONTENT:
+`;
+
+  return basePrompt + platformInstructions + finalInstructions;
+};
+
+// Try to generate content using Google Gemini API (free tier available)
+const generateWithGemini = async (prompt: string): Promise<string | null> => {
+  if (!GEMINI_API_KEY) return null;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800,
+          topP: 0.95
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    // Extract the text from the response
+    if (data.candidates && data.candidates[0] && data.candidates[0].content &&
+        data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+      return data.candidates[0].content.parts[0].text.trim();
+    }
+    return null;
+  } catch (error) {
+    console.error('Gemini generation error:', error);
+    return null;
+  }
+};
+
+// Try to generate content using Hugging Face API
+const generateWithHuggingFace = async (prompt: string): Promise<string | null> => {
+  if (!HUGGINGFACE_API_KEY) return null;
+
+  try {
+    const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 500,
+          temperature: 0.7,
+          top_p: 0.95,
+          repetition_penalty: 1.2,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Hugging Face API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.generated_text?.trim() || null;
+  } catch (error) {
+    console.error('Hugging Face generation error:', error);
+    return null;
+  }
+};
+
+// Try to generate content using Together.ai API (free tier available)
+const generateWithTogether = async (prompt: string): Promise<string | null> => {
+  if (!TOGETHER_API_KEY) return null;
+
+  try {
+    const response = await fetch('https://api.together.xyz/v1/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TOGETHER_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        prompt: prompt,
+        max_tokens: 500,
+        temperature: 0.7,
+        top_p: 0.95,
+        repetition_penalty: 1.2,
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Together.ai API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.text?.trim() || null;
+  } catch (error) {
+    console.error('Together.ai generation error:', error);
+    return null;
+  }
+};
+
+// Generate mock content for testing without API keys
+const generateMockContent = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo): string => {
+  const { brandName, targetAudience, tone } = brandInfo;
+
+  // Platform-specific templates
+  const templates = {
+    facebook: [
+      `🌟 Exciting news from ${brandName}! We've been working on some amazing ${theme} solutions designed specifically for ${targetAudience}.
+
+Our team has been listening to your feedback and we're thrilled to share our latest innovations. What features would you most like to see in our upcoming releases? Drop your thoughts in the comments below! 💭
+
+Remember to check out our website for more details on how we're revolutionizing ${theme} in 2025!`,
+
+      `Hey there! 👋 Did you know that ${brandName} has been helping ${targetAudience} transform their approach to ${theme} since 2023?
+
+We're passionate about creating solutions that actually work for real people with real challenges.
+
+What's your biggest struggle with ${theme} right now? Share below and let's start a conversation about how we can help!`,
+
+      `Monday motivation from the ${brandName} team! 💪
+
+We believe that every ${targetAudience} deserves access to quality ${theme} resources. That's why we've dedicated ourselves to creating the most user-friendly, effective solutions on the market.
+
+What motivates YOU to improve your ${theme} strategy? Let us know in the comments!`
+    ],
+    twitter: [
+      `New ${theme} insights from ${brandName}! We're helping ${targetAudience} achieve better results in 2025. Check out our latest solutions!`,
+
+      `${brandName} tip: The key to successful ${theme} is consistency and quality. Our team is here to help ${targetAudience} excel!`,
+
+      `Just launched: Our updated ${theme} toolkit for ${targetAudience}. Designed with your feedback in mind. What feature are you most excited about?`
+    ],
+    linkedin: [
+      `At ${brandName}, we're committed to transforming how ${targetAudience} approach ${theme} in today's rapidly evolving landscape.
+
+Our research indicates that organizations implementing strategic ${theme} solutions are seeing 37% better outcomes compared to traditional approaches.
+
+We've identified three key factors driving this success:
+
+1. Data-driven decision making
+2. Customized implementation strategies
+3. Ongoing optimization and support
+
+How is your organization currently measuring the effectiveness of your ${theme} initiatives? We'd love to hear your experiences in the comments below.`,
+
+      `Industry Insight: The Future of ${theme} for ${targetAudience}
+
+At ${brandName}, we've been tracking the evolution of ${theme} methodologies since 2020, and the transformation has been remarkable.
+
+What we're seeing in 2025 is a fundamental shift toward more integrated, holistic approaches that consider the entire ecosystem rather than isolated components.
+
+This perspective has allowed our clients to achieve significantly better outcomes while actually reducing implementation complexity.
+
+What changes have you observed in your ${theme} strategy over the past few years? Has your approach evolved to keep pace with industry developments?`,
+
+      `Professional development in the ${theme} space continues to be a critical factor for ${targetAudience} looking to advance their careers in 2025.
+
+At ${brandName}, we've developed a comprehensive framework to help professionals identify and address skill gaps in this rapidly evolving field.
+
+Our latest research indicates that professionals who engage in structured, continuous learning in ${theme} see 42% faster career advancement compared to those who rely solely on on-the-job experience.
+
+What professional development resources have you found most valuable in your ${theme} journey? Share your recommendations below.`
+    ]
+  };
+
+  // Select a random template based on platform
+  const platformTemplates = templates[platform];
+  const randomTemplate = platformTemplates[Math.floor(Math.random() * platformTemplates.length)];
+
+  return randomTemplate;
+};
+
+// Main function to generate content with LLM or fallback to mock
 const generateContentWithLLM = async (
   platform: 'facebook' | 'twitter' | 'linkedin',
   theme: string,
   brandInfo: BrandInfo
 ): Promise<string> => {
-  // Create a prompt for the LLM based on the brand info and content requirements
-  const prompt = `
-Generate a social media post for ${platform} with the theme "${theme}" for a brand called "${brandInfo.brandName}".
-
-Brand information:
-- Description: ${brandInfo.businessDescription}
-- Target audience: ${brandInfo.targetAudience}
-- Tone: ${brandInfo.tone}
-- Call to action examples: ${brandInfo.ctaExamples || "Visit our website, Learn more, Contact us"}
-
-The post should be engaging, relevant to the platform (${platform}), and include appropriate formatting.
-For Twitter, keep it concise (under 280 characters).
-For LinkedIn, make it professional and industry-relevant.
-For Facebook, make it conversational and engaging.
-
-Do not include hashtags in the content as they will be added separately.
-`;
+  // Create the appropriate prompt
+  const prompt = createPromptForPlatform(platform, theme, brandInfo);
 
   try {
-    // Use a text generation model from Hugging Face
-    const response = await hf.textGeneration({
-      model: 'mistralai/Mistral-7B-Instruct-v0.2',
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: 250,
-        temperature: 0.7,
-        top_p: 0.95,
-        repetition_penalty: 1.2,
-      }
-    });
+    // Try Gemini first (best free option)
+    let content = await generateWithGemini(prompt);
+
+    // If Gemini fails, try Together.ai
+    if (!content) {
+      content = await generateWithTogether(prompt);
+    }
+
+    // If Together.ai fails, try Hugging Face
+    if (!content) {
+      content = await generateWithHuggingFace(prompt);
+    }
+
+    // If all APIs fail, use mock content
+    if (!content) {
+      console.log('Using mock content generator as fallback');
+      content = generateMockContent(platform, theme, brandInfo);
+    }
 
     // Clean up the response
-    let content = response.generated_text.trim();
-    
+    content = content.trim();
+
     // Remove any hashtags that might have been generated
     content = content.replace(/#\w+/g, '').trim();
-    
+
     return content;
   } catch (error) {
     console.error("Error generating content with LLM:", error);
-    // Fallback to a simple template if the LLM fails
-    return `Check out ${brandInfo.brandName} for the best ${theme} solutions for ${brandInfo.targetAudience}!`;
+    // Fallback to mock content if everything fails
+    return generateMockContent(platform, theme, brandInfo);
   }
 };
 
@@ -66,7 +306,7 @@ const generateHashtags = (theme: string, brandInfo: BrandInfo, platform: string)
     theme.replace(/[-\\s]+/g, ''),
     brandInfo.tone.toLowerCase().replace(/\s+/g, '')
   ];
-  
+
   // Add platform-specific hashtags
   const platformTags: string[] = [];
   switch (platform) {
@@ -80,7 +320,7 @@ const generateHashtags = (theme: string, brandInfo: BrandInfo, platform: string)
       platformTags.push('professional', 'business');
       break;
   }
-  
+
   // Add trending hashtags
   const trendingTags = [
     'trending2025',
@@ -88,7 +328,7 @@ const generateHashtags = (theme: string, brandInfo: BrandInfo, platform: string)
     'digitalmarketing',
     'artificialintelligence'
   ];
-  
+
   // Combine all hashtags and take a subset
   const allTags = [...baseHashtags, ...platformTags, ...trendingTags];
   const numTags = Math.floor(Math.random() * 3) + 3; // 3 to 5 hashtags
@@ -105,10 +345,10 @@ export const generateAIPost = async (
 ): Promise<Post> => {
   // Generate content using LLM
   const content = await generateContentWithLLM(platform, theme, brandInfo);
-  
+
   // Generate hashtags
   const hashtags = generateHashtags(theme, brandInfo, platform);
-  
+
   return {
     id: uuidv4(),
     date,
@@ -124,26 +364,26 @@ export const generateAIContentPlan = async (brandInfo: BrandInfo): Promise<PostP
   const numDays = 14; // Generate 2 weeks worth of content
   const platforms: ('facebook' | 'twitter' | 'linkedin')[] = ['facebook', 'twitter', 'linkedin'];
   const posts: Post[] = [];
-  
+
   // Helper function to get content theme for each day
   const getContentThemeForDay = (day: number, contentThemes: string[]) => {
     return contentThemes[day % contentThemes.length];
   };
-  
+
   // Generate posts for each day and platform
   for (let i = 0; i < numDays; i++) {
     const currentDate = addDays(startDate, i);
     const dateString = format(currentDate, 'MMM dd, yyyy');
-    
+
     // Get theme for this day
     const theme = getContentThemeForDay(i, brandInfo.contentThemes);
-    
+
     // Generate one post per platform for this day
     for (const platform of platforms) {
       const post = await generateAIPost(dateString, platform, theme, brandInfo);
       posts.push(post);
     }
   }
-  
+
   return posts;
 };
