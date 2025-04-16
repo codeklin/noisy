@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
       host: "::",
       port: 8080,
     },
+    base: "/",
     plugins: [
       react(),
     ].filter(Boolean),
