@@ -2,26 +2,31 @@
 
 ![Noisy Logo](public/plogo.png)
 
-Noisy is a powerful AI-powered social media content generator that helps you create engaging, viral content for multiple platforms. With Noisy, you can save hours of work by generating a month's worth of content in minutes.
+Noisy is a powerful AI-powered social media content generator built in Nigeria, for Nigerians. It helps you create engaging, viral content for multiple platforms using proven strategies that resonate with Nigerian and African audiences. With Noisy, you can save hours of work by generating a month's worth of content in minutes.
 
 ## Our Story: Making Noise That Matters
 
-In a digital world filled with constant chatter, we founded Noisy with a simple yet powerful belief: not all noise is created equal. Some noise gets lost in the void, while other noise—the right kind of noise—cuts through the clutter and resonates with people.
+In a digital world filled with constant chatter, we founded Noisy in Lagos, Nigeria with a simple yet powerful belief: not all noise is created equal. Some noise gets lost in the void, while other noise—the right kind of noise—cuts through the clutter and resonates with people.
 
-Noisy was born from the frustration of watching brilliant businesses and creators struggle to be heard. We saw talented entrepreneurs spending countless hours crafting social media content that barely made a ripple, while their competitors with mediocre offerings but better content strategies were making waves.
+Noisy was born from the frustration of watching brilliant Nigerian businesses and creators struggle to be heard. We saw talented entrepreneurs spending countless hours crafting social media content that barely made a ripple, while their competitors with mediocre offerings but better content strategies were making waves.
 
-We asked ourselves: What if we could democratize viral content creation? What if we could give every business the power to make the kind of noise that turns heads, sparks conversations, and drives real business results?
+We asked ourselves: What if we could democratize viral content creation for the Nigerian market? What if we could give every Nigerian business the power to make the kind of noise that turns heads, sparks conversations, and drives real business results?
 
-That's exactly what we've built. Noisy isn't just about creating content—it's about creating the right kind of noise that amplifies your brand's voice and message. It's about transforming the time-consuming process of content creation into a strategic advantage that helps you rise above the digital cacophony.
+That's exactly what we've built. Noisy isn't just about creating content—it's about creating the right kind of noise that amplifies your brand's voice and message in a way that resonates with Nigerian audiences. It's about transforming the time-consuming process of content creation into a strategic advantage that helps you rise above the digital cacophony.
 
-Today, Noisy helps thousands of businesses and creators make noise that matters—noise that converts followers into customers and builds lasting brand resonance in an increasingly crowded marketplace.
+Today, Noisy helps thousands of Nigerian businesses and creators make noise that matters—noise that converts followers into customers and builds lasting brand resonance in an increasingly crowded marketplace.
 
 ## Features
 
 - **AI-Powered Content**: Generate engaging posts with advanced AI technology
-- **Viral Strategies**: Implement proven tactics that boost engagement
+- **Viral Strategies**: Implement proven tactics that boost engagement for Nigerian audiences
 - **Save Hours Weekly**: Create a month of content in minutes, not days
 - **Premium Results**: Get professional-quality content every time
+- **One-Time Payment**: Pay ₦1,000 once and use forever, no subscriptions
+- **Nigerian-Focused Templates**: Content templates designed specifically for Nigerian businesses
+- **Platform-Specific Content**: Generate content optimized for Facebook, Twitter, LinkedIn, and Instagram
+- **Viral Content Generator**: Create high-converting viral content using proven formulas
+- **Export Options**: Export your content plans as documents for easy sharing
 
 ## Technologies Used
 
@@ -35,7 +40,9 @@ This project is built with modern web technologies:
 - **Framer Motion**: Animation library for React
 - **React Router**: Routing library for React applications
 - **Supabase**: Backend-as-a-Service for authentication and database
-- **React Query**: Data fetching and state management library
+- **Paystack**: Nigerian payment gateway for secure transactions
+- **Gemini & Together AI**: AI models for content generation
+- **HuggingFace**: AI models for natural language processing
 
 ## Getting Started
 
@@ -64,12 +71,13 @@ The application will be available at `http://localhost:8080`.
 
 ## Environment Variables
 
-To use the AI features, you'll need to set up the following environment variables in a `.env` file:
+To use the AI features and payment processing, you'll need to set up the following environment variables in a `.env` file:
 
 ```env
 HUGGINGFACE_API_KEY=your_huggingface_api_key
 GEMINI_API_KEY=your_gemini_api_key
 TOGETHER_API_KEY=your_together_api_key
+PAYSTACK_PUBLIC_KEY=your_paystack_public_key
 ```
 
 ## Building for Production
@@ -95,6 +103,19 @@ npm run preview
   /types         # TypeScript type definitions
 ```
 
+## Recent Updates
+
+### May 2024
+
+- **Payment Integration**: Added Paystack payment gateway for one-time ₦1,000 payment
+- **Subscription Section**: Added compelling subscription section with testimonials and FAQ
+- **Dedicated Generator Page**: Moved content generator to its own page with improved UI
+- **Viral Content Generator**: Enhanced with detailed instructions, sample templates, and tips
+- **UI Improvements**: Added animations, transitions, and improved mobile responsiveness
+- **Nigerian-Focused Content**: Added templates and strategies specifically for Nigerian audiences
+- **Navigation Enhancements**: Improved mobile navigation with bottom bar and hamburger menu
+- **User Experience**: Added detailed instructions and sample templates to help users create better content
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -102,3 +123,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+### Made with ❤️ in Nigeria, for Nigerians
+
+Noisy is proudly Nigerian, built to address the specific content needs of Nigerian businesses and creators. Our templates, strategies, and user experience are all designed with the Nigerian market in mind.

@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Clock } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import TryFreeDemo from './TryFreeDemo';
 
 const HeroSection = () => {
   const [currentPhrase, setCurrentPhrase] = useState(0);
@@ -63,12 +64,10 @@ const HeroSection = () => {
                 </Button>
               </Link>
 
-              <Link to="/">
-                <Button variant="outline" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300">
-                  <Clock className="h-5 w-5 text-[#4ECDC4]" />
-                  <span className="text-[#4ECDC4]">Try Free Demo</span>
-                </Button>
-              </Link>
+              <div className="flex gap-4">
+                <TryFreeDemo type="generator" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 text-[#4ECDC4]" />
+                <TryFreeDemo type="viral" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 text-[#4ECDC4]" />
+              </div>
             </div>
 
 

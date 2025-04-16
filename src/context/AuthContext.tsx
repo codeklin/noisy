@@ -9,7 +9,11 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isPaidUser: boolean;
+  hasUsedGeneratorDemo: boolean;
+  hasUsedViralGeneratorDemo: boolean;
   updateUserPaymentStatus?: (status: boolean) => void;
+  markGeneratorDemoAsUsed: () => void;
+  markViralGeneratorDemoAsUsed: () => void;
   signOut: () => Promise<void>;
 };
 
@@ -20,6 +24,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaidUser, setIsPaidUser] = useState(false);
+  const [hasUsedGeneratorDemo, setHasUsedGeneratorDemo] = useState(false);
+  const [hasUsedViralGeneratorDemo, setHasUsedViralGeneratorDemo] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,22 +57,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [navigate]);
 
-  // Check if user has paid
+  // Check if user has paid and demo usage status
   useEffect(() => {
-    const checkPaymentStatus = async () => {
+    const checkUserStatus = async () => {
       if (user) {
         try {
-          // In a real app, you would check the database for payment status
+          // In a real app, you would check the database for these statuses
           // For now, we'll check localStorage as a simple demonstration
           const paymentStatus = localStorage.getItem(`payment_status_${user.id}`);
+          const generatorDemoStatus = localStorage.getItem(`generator_demo_${user.id}`);
+          const viralGeneratorDemoStatus = localStorage.getItem(`viral_generator_demo_${user.id}`);
+
           setIsPaidUser(paymentStatus === 'true');
+          setHasUsedGeneratorDemo(generatorDemoStatus === 'true');
+          setHasUsedViralGeneratorDemo(viralGeneratorDemoStatus === 'true');
         } catch (error) {
-          console.error('Error checking payment status:', error);
+          console.error('Error checking user status:', error);
         }
       }
     };
 
-    checkPaymentStatus();
+    checkUserStatus();
   }, [user]);
 
   const updateUserPaymentStatus = (status: boolean) => {
@@ -75,6 +86,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // For now, we'll use localStorage as a simple demonstration
       localStorage.setItem(`payment_status_${user.id}`, status.toString());
       setIsPaidUser(status);
+    }
+  };
+
+  const markGeneratorDemoAsUsed = () => {
+    if (user) {
+      localStorage.setItem(`generator_demo_${user.id}`, 'true');
+      setHasUsedGeneratorDemo(true);
+    }
+  };
+
+  const markViralGeneratorDemoAsUsed = () => {
+    if (user) {
+      localStorage.setItem(`viral_generator_demo_${user.id}`, 'true');
+      setHasUsedViralGeneratorDemo(true);
     }
   };
 
@@ -88,7 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isLoading,
       isPaidUser,
+      hasUsedGeneratorDemo,
+      hasUsedViralGeneratorDemo,
       updateUserPaymentStatus,
+      markGeneratorDemoAsUsed,
+      markViralGeneratorDemoAsUsed,
       signOut
     }}>
       {children}

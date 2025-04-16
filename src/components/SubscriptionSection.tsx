@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { usePaystackPayment } from "react-paystack";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Zap, Star, MessageCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, Sparkles, Zap, Star, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import TryFreeDemo from "./TryFreeDemo";
 
 // Define the Paystack config type
 type PaystackConfig = {
@@ -192,20 +193,27 @@ const SubscriptionSection = () => {
                   ))}
                 </ul>
 
-                <Button
-                  className="w-full bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] hover:opacity-90 text-white py-6 rounded-md flex items-center justify-center gap-2"
-                  onClick={handleSubscribe}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    "Processing..."
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5" />
-                      Subscribe Now
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-4">
+                  <Button
+                    className="w-full bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] hover:opacity-90 text-white py-6 rounded-md flex items-center justify-center gap-2"
+                    onClick={handleSubscribe}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      "Processing..."
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        Subscribe Now
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="flex justify-center gap-4">
+                    <TryFreeDemo type="generator" className="text-sm" />
+                    <TryFreeDemo type="viral" className="text-sm" />
+                  </div>
+                </div>
 
                 <div className="mt-6 flex items-center justify-center gap-2">
                   <div className="p-1 rounded-full bg-green-100">
@@ -356,20 +364,27 @@ const SubscriptionSection = () => {
           </div>
 
           <div className="mt-8 text-center">
-            <Button
-              className="bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] hover:opacity-90 text-white py-6 px-8 rounded-md flex items-center justify-center gap-2 mx-auto"
-              onClick={handleSubscribe}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                "Processing..."
-              ) : (
-                <>
-                  <Sparkles className="h-5 w-5" />
-                  Get Started Now
-                </>
-              )}
-            </Button>
+            <div className="space-y-4 flex flex-col items-center">
+              <Button
+                className="bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] hover:opacity-90 text-white py-6 px-8 rounded-md flex items-center justify-center gap-2 mx-auto"
+                onClick={handleSubscribe}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  "Processing..."
+                ) : (
+                  <>
+                    <Sparkles className="h-5 w-5" />
+                    Get Started Now
+                  </>
+                )}
+              </Button>
+
+              <div className="flex justify-center gap-4">
+                <TryFreeDemo type="generator" className="text-sm" />
+                <TryFreeDemo type="viral" className="text-sm" />
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>

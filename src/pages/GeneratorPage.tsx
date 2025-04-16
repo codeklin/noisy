@@ -20,11 +20,16 @@ const GeneratorPage = () => {
   const [posts, setPosts] = useState<PostPlan>([]);
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
   const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
-  const { user, isPaidUser } = useAuth();
+  const { user, isPaidUser, hasUsedGeneratorDemo, markGeneratorDemoAsUsed } = useAuth();
 
   const handleFormSubmit = async (formData: BrandInfo) => {
-    if (!user || !isPaidUser) {
-      toast.error("Please subscribe to access the content generator.");
+    if (!user) {
+      toast.error("Please login to use the content generator.");
+      return;
+    }
+
+    if (!isPaidUser && hasUsedGeneratorDemo) {
+      toast.error("You've already used your free demo. Please subscribe to continue.");
       return;
     }
 
@@ -32,6 +37,11 @@ const GeneratorPage = () => {
       const contentPlan = await generatePlan(formData);
       setPosts(contentPlan);
       setBrandInfo(formData);
+
+      // Mark demo as used if user is not paid
+      if (!isPaidUser && !hasUsedGeneratorDemo) {
+        markGeneratorDemoAsUsed();
+      }
 
       toast.success("Up-to-date content plan generated successfully for 2025!");
       window.scrollTo({ top: 0, behavior: 'smooth' });

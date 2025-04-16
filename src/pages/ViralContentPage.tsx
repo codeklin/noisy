@@ -20,9 +20,19 @@ const ViralContentPage = () => {
   const [posts, setPosts] = useState<PostPlan>([]);
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
   const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
-  const { user } = useAuth();
+  const { user, isPaidUser, hasUsedViralGeneratorDemo, markViralGeneratorDemoAsUsed } = useAuth();
 
   const handleFormSubmit = async (formData: ViralContentFormData) => {
+    if (!user) {
+      toast.error("Please login to use the viral content generator.");
+      return;
+    }
+
+    if (!isPaidUser && hasUsedViralGeneratorDemo) {
+      toast.error("You've already used your free demo. Please subscribe to continue.");
+      return;
+    }
+
     try {
       // Create a minimal brand info object for the generator
       const brandInfo = {
@@ -51,6 +61,12 @@ const ViralContentPage = () => {
       if (contentPlan && contentPlan.length > 0) {
         console.log(`Setting ${contentPlan.length} posts to state`);
         setPosts(contentPlan);
+
+        // Mark demo as used if user is not paid
+        if (!isPaidUser && !hasUsedViralGeneratorDemo) {
+          markViralGeneratorDemoAsUsed();
+        }
+
         toast.success("Viral content plan generated successfully!");
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
