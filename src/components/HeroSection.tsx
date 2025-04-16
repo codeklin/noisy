@@ -1,12 +1,42 @@
 
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Lock } from 'lucide-react';
 import TryFreeDemo from './TryFreeDemo';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 const HeroSection = () => {
   const [currentPhrase, setCurrentPhrase] = useState(0);
+  const { user, isPaidUser, hasUsedViralGeneratorDemo, markViralGeneratorDemoAsUsed } = useAuth();
+  const navigate = useNavigate();
+
+  const handleViralContentClick = () => {
+    if (!user) {
+      // Redirect to auth page if not logged in
+      toast.error("Please login to use the viral content generator.");
+      navigate("/auth");
+      return;
+    }
+
+    if (isPaidUser) {
+      // Paid users have unlimited access
+      navigate("/viral-content");
+      return;
+    }
+
+    if (hasUsedViralGeneratorDemo) {
+      // User has already used their demo
+      toast.error("You've already used your free viral content demo. Please subscribe to continue.");
+      return;
+    }
+
+    // Mark demo as used and navigate to generator
+    markViralGeneratorDemoAsUsed();
+    toast.success("Enjoy your free Viral Content Generator demo!");
+    navigate("/viral-content");
+  };
 
   const phrases = [
     "Stop scrolling. Start converting.",
@@ -57,17 +87,29 @@ const HeroSection = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mt-8 animate-fade-in">
-              <Link to="/viral-content">
-                <Button className="bg-gradient-to-r from-[#FF3B45] to-[#FF8E53] hover:from-[#FF8E53] hover:to-[#FF3B45] text-white border-0 shadow-lg gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-105">
-                  <Sparkles className="h-5 w-5" />
-                  Create Viral Content
-                </Button>
-              </Link>
+              <Button
+                onClick={handleViralContentClick}
+                className="bg-gradient-to-r from-[#FF3B45] to-[#FF8E53] hover:from-[#FF8E53] hover:to-[#FF3B45] text-white border-0 shadow-lg gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+              >
+                {isPaidUser ? (
+                  <>
+                    <Sparkles className="h-5 w-5" />
+                    Create Viral Content
+                  </>
+                ) : hasUsedViralGeneratorDemo ? (
+                  <>
+                    <Lock className="h-5 w-5" />
+                    Subscribe for Access
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-5 w-5" />
+                    Create Viral Content
+                  </>
+                )}
+              </Button>
 
-              <div className="flex gap-4">
-                <TryFreeDemo type="generator" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 text-[#4ECDC4]" />
-                <TryFreeDemo type="viral" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 text-[#4ECDC4]" />
-              </div>
+              <TryFreeDemo type="both" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 text-[#4ECDC4]" />
             </div>
 
 

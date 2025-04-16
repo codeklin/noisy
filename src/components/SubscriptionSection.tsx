@@ -209,10 +209,7 @@ const SubscriptionSection = () => {
                     )}
                   </Button>
 
-                  <div className="flex justify-center gap-4">
-                    <TryFreeDemo type="generator" className="text-sm" />
-                    <TryFreeDemo type="viral" className="text-sm" />
-                  </div>
+                  <TryFreeDemo type="both" className="text-sm w-full" />
                 </div>
 
                 <div className="mt-6 flex items-center justify-center gap-2">
@@ -380,10 +377,7 @@ const SubscriptionSection = () => {
                 )}
               </Button>
 
-              <div className="flex justify-center gap-4">
-                <TryFreeDemo type="generator" className="text-sm" />
-                <TryFreeDemo type="viral" className="text-sm" />
-              </div>
+              <TryFreeDemo type="both" className="text-sm" />
             </div>
           </div>
         </motion.div>
