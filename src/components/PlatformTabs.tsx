@@ -14,37 +14,38 @@ interface PlatformTabsProps {
 const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
   const [activeTab, setActiveTab] = useState<string>("all");
 
-  const filteredPosts = activeTab === "all" 
-    ? posts 
+  const filteredPosts = activeTab === "all"
+    ? posts
     : posts.filter(post => post.platform === activeTab);
 
   return (
     <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-        <TabsList>
-          <TabsTrigger value="all" className="flex items-center gap-1">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
+        <TabsList className="h-auto p-1 w-full sm:w-auto overflow-x-auto">
+          <TabsTrigger value="all" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
             All
           </TabsTrigger>
-          <TabsTrigger value="facebook" className="flex items-center gap-1">
-            <Facebook className="h-4 w-4" />
-            <span className="hidden sm:inline">Facebook</span>
+          <TabsTrigger value="facebook" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
+            <Facebook className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">FB</span>
+            <span className="hidden sm:inline">acebook</span>
           </TabsTrigger>
-          <TabsTrigger value="twitter" className="flex items-center gap-1">
-            <Twitter className="h-4 w-4" />
-            <span className="hidden sm:inline">Twitter</span>
+          <TabsTrigger value="twitter" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
+            <Twitter className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Twitter</span>
           </TabsTrigger>
-          <TabsTrigger value="linkedin" className="flex items-center gap-1">
-            <Linkedin className="h-4 w-4" />
-            <span className="hidden sm:inline">LinkedIn</span>
+          <TabsTrigger value="linkedin" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
+            <Linkedin className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">LinkedIn</span>
           </TabsTrigger>
         </TabsList>
-        
+
         <div className="flex space-x-2">
           <button
             onClick={() => onExport(activeTab as any)}
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-primary text-primary-foreground shadow hover:bg-primary/90 h-7 sm:h-9 px-2 sm:px-4 py-1 sm:py-2"
           >
-            Export {activeTab === "all" ? "All" : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            Export {activeTab === "all" ? "All" : activeTab === "facebook" ? "FB" : activeTab === "twitter" ? "Twitter" : "LinkedIn"}
           </button>
         </div>
       </div>
@@ -52,15 +53,15 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
       <TabsContent value="all">
         <PostList posts={filteredPosts} onEditPost={onEditPost} />
       </TabsContent>
-      
+
       <TabsContent value="facebook">
         <PostList posts={filteredPosts} onEditPost={onEditPost} />
       </TabsContent>
-      
+
       <TabsContent value="twitter">
         <PostList posts={filteredPosts} onEditPost={onEditPost} />
       </TabsContent>
-      
+
       <TabsContent value="linkedin">
         <PostList posts={filteredPosts} onEditPost={onEditPost} />
       </TabsContent>

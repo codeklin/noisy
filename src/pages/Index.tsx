@@ -96,44 +96,44 @@ const Index = () => {
           <div className="container max-w-7xl mx-auto">
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               {/* Tab Navigation */}
-              <div className="flex border-b">
+              <div className="flex border-b overflow-x-auto">
                 <button
-                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
+                  className={`flex items-center gap-1 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
                     activeTab === 'ideas'
                       ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]'
                       : 'text-gray-500 hover:text-[#6E5DC6] transition-colors'
                   }`}
                   onClick={() => setActiveTab('ideas')}
                 >
-                  <LightbulbIcon size={18} />
+                  <LightbulbIcon size={16} />
                   Ideas
                 </button>
                 <button
-                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
+                  className={`flex items-center gap-1 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
                     activeTab === 'posts'
                       ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]'
                       : 'text-gray-500 hover:text-[#6E5DC6] transition-colors'
                   }`}
                   onClick={() => posts.length > 0 && setActiveTab('posts')}
                 >
-                  <FileTextIcon size={18} />
+                  <FileTextIcon size={16} />
                   Posts
                 </button>
                 <button
-                  className={`flex items-center gap-2 px-6 py-4 text-sm font-medium ${
+                  className={`flex items-center gap-1 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap ${
                     activeTab === 'results'
                       ? 'border-b-2 border-[#6E5DC6] text-[#6E5DC6]'
                       : 'text-gray-500 hover:text-[#6E5DC6] transition-colors'
                   }`}
                   onClick={() => posts.length > 0 && setActiveTab('results')}
                 >
-                  <CheckCircleIcon size={18} />
+                  <CheckCircleIcon size={16} />
                   Results
                 </button>
               </div>
 
               {/* Tab Content */}
-              <div className="p-6">
+              <div className="p-3 sm:p-6">
                 {activeTab === 'ideas' && (
                   <div className="max-w-3xl mx-auto">
                     <h2 className="text-2xl font-bold text-center text-[#6E5DC6] mb-6">
@@ -153,27 +153,29 @@ const Index = () => {
 
                 {activeTab === 'posts' && posts.length > 0 && (
                   <div>
-                    <div className="mb-4 flex justify-between items-center">
-                      <div className="text-sm text-gray-500">
+                    <div className="mb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 sm:gap-0">
+                      <div className="text-xs sm:text-sm text-gray-500">
                         {posts.length} posts generated
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {user && (
                           <Button
                             onClick={() => setSaveDialogOpen(true)}
-                            className="gap-2 bg-[#6E5DC6] hover:bg-[#5D4DB3]"
+                            className="gap-1 sm:gap-2 bg-[#6E5DC6] hover:bg-[#5D4DB3] text-xs sm:text-sm"
+                            size="sm"
                           >
-                            <Save className="h-4 w-4" />
-                            Save Content Plan
+                            <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                            Save Plan
                           </Button>
                         )}
                         <Button
                           onClick={handleRegenerateContent}
-                          className="gap-2"
+                          className="gap-1 sm:gap-2 text-xs sm:text-sm"
                           variant="outline"
+                          size="sm"
                         >
-                          <RefreshCw className="h-4 w-4" />
-                          Regenerate Content
+                          <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Regenerate
                         </Button>
                       </div>
                     </div>
@@ -184,7 +186,7 @@ const Index = () => {
                       onExport={handleExport}
                     />
 
-                    <div className="mt-10 text-center">
+                    <div className="mt-6 sm:mt-10 text-center">
                       <Button
                         onClick={() => {
                           setPosts([]);
@@ -192,9 +194,10 @@ const Index = () => {
                           setActiveTab('ideas');
                         }}
                         variant="outline"
-                        className="gap-2"
+                        className="gap-1 sm:gap-2 text-xs sm:text-sm"
+                        size="sm"
                       >
-                        Generate New Content Plan
+                        Generate New Plan
                       </Button>
                     </div>
                   </div>
@@ -202,32 +205,36 @@ const Index = () => {
 
                 {activeTab === 'results' && posts.length > 0 && (
                   <div className="text-center">
-                    <div className="mb-8">
-                      <h2 className="text-2xl font-bold text-[#6E5DC6] mb-4">Content Generation Complete</h2>
-                      <p className="text-gray-600">
+                    <div className="mb-6 sm:mb-8">
+                      <h2 className="text-xl sm:text-2xl font-bold text-[#6E5DC6] mb-3 sm:mb-4">Content Generation Complete</h2>
+                      <p className="text-sm sm:text-base text-gray-600">
                         Your up-to-date 2025 content plan is ready! You can now export it or continue editing.
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4">
                       <Button
                         onClick={() => handleExport('all')}
-                        className="bg-[#6E5DC6] hover:bg-[#5D4DB3]"
+                        className="bg-[#6E5DC6] hover:bg-[#5D4DB3] text-sm"
+                        size="sm"
                       >
                         Export All Posts
                       </Button>
                       {user && (
                         <Button
                           onClick={() => setSaveDialogOpen(true)}
-                          className="bg-[#6E5DC6] hover:bg-[#5D4DB3]"
+                          className="bg-[#6E5DC6] hover:bg-[#5D4DB3] text-sm"
+                          size="sm"
                         >
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Content Plan
+                          <Save className="h-3 w-3 mr-1 sm:h-4 sm:w-4 sm:mr-2" />
+                          Save Plan
                         </Button>
                       )}
                       <Button
                         onClick={() => setActiveTab('posts')}
                         variant="outline"
+                        className="text-sm"
+                        size="sm"
                       >
                         Back to Posts
                       </Button>

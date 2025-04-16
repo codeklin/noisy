@@ -1,62 +1,183 @@
 import React from 'react';
-import { Zap, TrendingUp, Clock, Target, Award } from 'lucide-react';
+import { Zap, TrendingUp, Clock, Award } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const FeaturesSection = () => {
-  return (
-    <section className="py-12 md:py-16 bg-[#1a1e3a]">
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-10 text-white">
-          Create Content That Converts
-        </h2>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  };
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 md:gap-8">
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
+    }
+  };
+
+  const iconVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 150,
+        damping: 15
+      }
+    },
+    hover: {
+      scale: 1.1,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    }
+  };
+  return (
+    <motion.section
+      className="py-6 md:py-10 bg-[#F48FB1]/10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6">
+        <motion.h2
+          className="text-lg md:text-xl font-bold text-center mb-5 text-[#1a1e3a]"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          Create Content That Converts
+        </motion.h2>
+
+        <motion.div
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           {/* Feature 1 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center mb-4">
-              <Zap className="h-8 w-8 text-[#FF6B6B]" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-white">AI-Powered Content</h3>
-            <p className="text-sm text-gray-300">Generate engaging posts with advanced AI technology</p>
-          </div>
+          <motion.div
+            className="flex flex-col items-center text-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#FF6B6B]/20 flex items-center justify-center mb-3"
+              variants={iconVariants}
+              whileHover="hover"
+            >
+              <Zap className="h-6 w-6 md:h-7 md:w-7 text-[#FF6B6B]" />
+            </motion.div>
+            <motion.h3
+              className="text-base font-semibold mb-1 text-[#1a1e3a]"
+              variants={itemVariants}
+            >
+              AI-Powered Content
+            </motion.h3>
+            <motion.p
+              className="text-[10px] md:text-xs text-[#1a1e3a]/80"
+              variants={itemVariants}
+            >
+              Generate engaging posts with advanced AI technology
+            </motion.p>
+          </motion.div>
 
           {/* Feature 2 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#6E5DC6]/20 flex items-center justify-center mb-4">
-              <TrendingUp className="h-8 w-8 text-[#6E5DC6]" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-white">Viral Strategies</h3>
-            <p className="text-sm text-gray-300">Implement proven tactics that boost engagement</p>
-          </div>
+          <motion.div
+            className="flex flex-col items-center text-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#6E5DC6]/20 flex items-center justify-center mb-3"
+              variants={iconVariants}
+              whileHover="hover"
+            >
+              <TrendingUp className="h-6 w-6 md:h-7 md:w-7 text-[#6E5DC6]" />
+            </motion.div>
+            <motion.h3
+              className="text-base font-semibold mb-1 text-[#1a1e3a]"
+              variants={itemVariants}
+            >
+              Viral Strategies
+            </motion.h3>
+            <motion.p
+              className="text-[10px] md:text-xs text-[#1a1e3a]/80"
+              variants={itemVariants}
+            >
+              Implement proven tactics that boost engagement
+            </motion.p>
+          </motion.div>
 
           {/* Feature 3 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center mb-4">
-              <Clock className="h-8 w-8 text-[#4ECDC4]" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-white">Save Hours Weekly</h3>
-            <p className="text-sm text-gray-300">Create a month of content in minutes, not days</p>
-          </div>
+          <motion.div
+            className="flex flex-col items-center text-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#4ECDC4]/20 flex items-center justify-center mb-3"
+              variants={iconVariants}
+              whileHover="hover"
+            >
+              <Clock className="h-6 w-6 md:h-7 md:w-7 text-[#4ECDC4]" />
+            </motion.div>
+            <motion.h3
+              className="text-base font-semibold mb-1 text-[#1a1e3a]"
+              variants={itemVariants}
+            >
+              Save Hours Weekly
+            </motion.h3>
+            <motion.p
+              className="text-[10px] md:text-xs text-[#1a1e3a]/80"
+              variants={itemVariants}
+            >
+              Create a month of content in minutes, not days
+            </motion.p>
+          </motion.div>
 
           {/* Feature 4 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#FFD166]/20 flex items-center justify-center mb-4">
-              <Target className="h-8 w-8 text-[#FFD166]" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-white">Targeted Messaging</h3>
-            <p className="text-sm text-gray-300">Customize content for your specific audience</p>
-          </div>
-
-          {/* Feature 5 */}
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/10 flex items-center justify-center mb-4">
-              <Award className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2 text-white">Premium Results</h3>
-            <p className="text-sm text-gray-300">Get professional-quality content every time</p>
-          </div>
-        </div>
+          <motion.div
+            className="flex flex-col items-center text-center"
+            variants={itemVariants}
+          >
+            <motion.div
+              className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#1a1e3a]/20 flex items-center justify-center mb-3"
+              variants={iconVariants}
+              whileHover="hover"
+            >
+              <Award className="h-6 w-6 md:h-7 md:w-7 text-[#1a1e3a]" />
+            </motion.div>
+            <motion.h3
+              className="text-base font-semibold mb-1 text-[#1a1e3a]"
+              variants={itemVariants}
+            >
+              Premium Results
+            </motion.h3>
+            <motion.p
+              className="text-[10px] md:text-xs text-[#1a1e3a]/80"
+              variants={itemVariants}
+            >
+              Get professional-quality content every time
+            </motion.p>
+          </motion.div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
