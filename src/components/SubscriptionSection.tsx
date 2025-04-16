@@ -30,7 +30,7 @@ const SubscriptionSection = () => {
     reference,
     email: user?.email || "customer@example.com",
     amount: 100000, // Amount in kobo (N1000)
-    publicKey: "pk_test_your_public_key_here", // Replace with your actual Paystack public key
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here",
   };
 
   const initializePayment = usePaystackPayment(config);
