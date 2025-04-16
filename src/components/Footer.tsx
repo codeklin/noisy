@@ -48,7 +48,7 @@ const Footer = () => {
                 <Facebook className="h-5 w-5 text-blue-600" />
               </a>
               <a
-                href="#"
+                href="https://x.com/noisyHQ"
                 className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
                 aria-label="Twitter"
               >

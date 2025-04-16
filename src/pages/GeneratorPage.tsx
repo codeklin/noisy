@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BrandInfoForm from "@/components/BrandInfoForm";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { BrandInfo, PostPlan } from "@/types";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle } from "lucide-react";
+import { Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useContentPlan } from "@/hooks/useContentPlan";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
@@ -16,11 +16,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const GeneratorPage = () => {
-  const [brandInfo, setBrandInfo] = useState<BrandInfo | null>(null);
-  const [posts, setPosts] = useState<PostPlan>([]);
+  // Load saved state from localStorage if available
+  const [brandInfo, setBrandInfo] = useState<BrandInfo | null>(() => {
+    const saved = localStorage.getItem('generatorBrandInfo');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [posts, setPosts] = useState<PostPlan>(() => {
+    const saved = localStorage.getItem('generatorPosts');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
   const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
   const { user, isPaidUser, hasUsedGeneratorDemo, markGeneratorDemoAsUsed } = useAuth();
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (brandInfo) {
+      localStorage.setItem('generatorBrandInfo', JSON.stringify(brandInfo));
+    }
+  }, [brandInfo]);
+
+  useEffect(() => {
+    if (posts.length > 0) {
+      localStorage.setItem('generatorPosts', JSON.stringify(posts));
+    }
+  }, [posts]);
 
   const handleFormSubmit = async (formData: BrandInfo) => {
     if (!user) {
@@ -162,6 +183,21 @@ const GeneratorPage = () => {
                         >
                           <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
                           Regenerate
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            localStorage.removeItem('generatorBrandInfo');
+                            localStorage.removeItem('generatorPosts');
+                            setPosts([]);
+                            setBrandInfo(null);
+                            toast.success("Content cleared successfully!");
+                          }}
+                          className="gap-1 sm:gap-2 text-xs sm:text-sm"
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Clear
                         </Button>
                       </div>
                     </div>

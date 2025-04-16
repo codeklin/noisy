@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ViralContentForm, { ViralContentFormData } from "@/components/ViralContentForm";
 import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Zap, Flame, TrendingUp, Share2 } from "lucide-react";
+import { ArrowDown, Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Zap, Flame, TrendingUp, Share2, Trash2 } from "lucide-react";
 import { useContentPlan } from "@/hooks/useContentPlan";
 import { useAuth } from "@/context/AuthContext";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
@@ -17,12 +17,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ViralContentPage = () => {
-  const [posts, setPosts] = useState<PostPlan>([]);
+  // Load saved state from localStorage if available
+  const [posts, setPosts] = useState<PostPlan>(() => {
+    const saved = localStorage.getItem('viralGeneratorPosts');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Store the form data for regeneration
+  const [lastFormData, setLastFormData] = useState<ViralContentFormData | null>(() => {
+    const saved = localStorage.getItem('viralGeneratorFormData');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
   const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
   const { user, isPaidUser, hasUsedViralGeneratorDemo, markViralGeneratorDemoAsUsed } = useAuth();
 
   const handleFormSubmit = async (formData: ViralContentFormData) => {
+    // Save the form data for potential regeneration
+    setLastFormData(formData);
     if (!user) {
       toast.error("Please login to use the viral content generator.");
       return;
@@ -102,8 +114,26 @@ const ViralContentPage = () => {
   };
 
   const handleRegenerateContent = async () => {
-    toast.error("Please fill the form again to regenerate content.");
+    if (lastFormData) {
+      // If we have saved form data, use it to regenerate content
+      await handleFormSubmit(lastFormData);
+    } else {
+      toast.error("Please fill the form again to regenerate content.");
+    }
   };
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    if (posts.length > 0) {
+      localStorage.setItem('viralGeneratorPosts', JSON.stringify(posts));
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    if (lastFormData) {
+      localStorage.setItem('viralGeneratorFormData', JSON.stringify(lastFormData));
+    }
+  }, [lastFormData]);
 
   // Use useEffect to log when posts state changes
   useEffect(() => {
@@ -194,6 +224,21 @@ const ViralContentPage = () => {
                         >
                           <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
                           Generate New
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            localStorage.removeItem('viralGeneratorFormData');
+                            localStorage.removeItem('viralGeneratorPosts');
+                            setPosts([]);
+                            setLastFormData(null);
+                            toast.success("Content cleared successfully!");
+                          }}
+                          className="gap-1 sm:gap-2 text-xs sm:text-sm"
+                          variant="outline"
+                          size="sm"
+                        >
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          Clear
                         </Button>
                       </div>
                     </div>

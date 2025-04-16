@@ -89,21 +89,21 @@ const SubscriptionSection = () => {
     {
       name: "Sarah Johnson",
       role: "Marketing Manager",
-      avatar: "/testimonial1.png",
+      avatar: "/plogo.png",
       content: "Noisy has completely transformed our social media strategy. We're seeing 3x more engagement with half the effort!",
       rating: 5
     },
     {
       name: "David Olalade",
       role: "Small Business Owner",
-      avatar: "/testimonial2.png",
+      avatar: "/plogo.png",
       content: "The one-time payment model is perfect for small businesses like mine. No more subscription fatigue!",
       rating: 5
     },
     {
       name: "Amara Okafor",
       role: "Content Creator",
-      avatar: "/testimonial3.png",
+      avatar: "/plogo.png",
       content: "I've tried many content tools, but Noisy's viral strategies are on another level. Worth every naira!",
       rating: 5
     }
