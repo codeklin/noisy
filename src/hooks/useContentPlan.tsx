@@ -16,23 +16,39 @@ export const useContentPlan = () => {
 
   const [useAI, setUseAI] = useState<boolean>(true);
 
-  const generatePlan = async (brandInfo: BrandInfo): Promise<PostPlan> => {
+  // Track whether we're using viral content generation
+  const [useViralContent, setUseViralContent] = useState<boolean>(false);
+  const [viralContentData, setViralContentData] = useState<any>(null);
+
+  const generatePlan = async (brandInfo: BrandInfo, viralData?: any): Promise<PostPlan> => {
     setIsGenerating(true);
 
     try {
+      // If viral data is provided, update the state
+      if (viralData) {
+        setViralContentData(viralData);
+        setUseViralContent(true);
+      }
+
       // Track analytics event if user is logged in
       if (user) {
         await supabase.from("analytics").insert({
           user_id: user.id,
           event_type: "generate_content_plan",
-          event_data: { brandInfo: JSON.stringify(brandInfo), useAI }
+          event_data: {
+            brandInfo: JSON.stringify(brandInfo),
+            useAI,
+            useViralContent: !!viralData,
+            viralContentType: viralData?.useNigerianStyle ? 'nigerian' : 'standard'
+          }
         });
       }
 
       // Generate the content plan using either AI or template-based approach
       let contentPlan: PostPlan;
       if (useAI) {
-        contentPlan = await generateAIContentPlan(brandInfo);
+        // Pass viral content data if available
+        contentPlan = await generateAIContentPlan(brandInfo, viralData || viralContentData);
       } else {
         contentPlan = await generateContentPlan(brandInfo);
       }
@@ -144,6 +160,10 @@ export const useContentPlan = () => {
     updateContentPlan,
     isGenerating,
     useAI,
-    setUseAI
+    setUseAI,
+    useViralContent,
+    setUseViralContent,
+    viralContentData,
+    setViralContentData
   };
 };

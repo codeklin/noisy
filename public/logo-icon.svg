@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="24" cy="24" r="23" fill="white" stroke="#E9E9E9" stroke-width="2"/>
+  
+  <!-- Stylized "P" shape -->
+  <path d="M16 12C16 11.4477 16.4477 11 17 11H30C32.7614 11 35 13.2386 35 16C35 18.7614 32.7614 21 30 21H22V36C22 36.5523 21.5523 37 21 37H17C16.4477 37 16 36.5523 16 36V12Z" fill="#6E5DC6"/>
+  
+  <!-- Notification Dot -->
+  <circle cx="32" cy="16" r="6" fill="#ea384c"/>
+  
+  <!-- Sparkle Element -->
+  <path d="M32 12L33.5 15L36.5 16.5L33.5 18L32 21L30.5 18L27.5 16.5L30.5 15L32 12Z" fill="white"/>
+</svg>

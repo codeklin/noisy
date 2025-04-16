@@ -7,72 +7,62 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 
-// Create platform-specific prompts
-const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo): string => {
-  // Base prompt information
-  const basePrompt = `
-Create a social media post for ${platform.toUpperCase()} with the theme "${theme}" for a brand called "${brandInfo.brandName}".
+import { createBrandContentPrompt, createViralNigerianContentPrompt, createViralSalesCopyPrompt } from './promptTemplates';
 
-BRAND INFORMATION:
-- Description: ${brandInfo.businessDescription}
-- Target audience: ${brandInfo.targetAudience}
-- Tone: ${brandInfo.tone}
-- Call to action examples: ${brandInfo.ctaExamples || "Visit our website, Learn more, Contact us"}
-`;
+// Create platform-specific prompts based on input parameters
+const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo, viralContentData?: any): string => {
+  // If viral content data is provided, use the appropriate viral content prompt
+  if (viralContentData) {
+    const { audience, contentGoal, copyStyle, postType, tonePreference, ageRanges, targetDescription, useNigerianStyle } = viralContentData;
 
-  // Platform-specific instructions
-  let platformInstructions = '';
+    // Map form values to expected prompt parameters
+    const mappedGoal = contentGoal === 'get-followers' ? 'Get followers' :
+                      contentGoal === 'generate-leads' ? 'Generate leads' :
+                      contentGoal === 'book-calls' ? 'Book calls' : 'Sell product';
 
-  switch (platform) {
-    case 'facebook':
-      platformInstructions = `
-FACEBOOK POST GUIDELINES:
-- Create an engaging, conversational post that encourages interaction
-- Length: 100-250 words
-- Include a question or call-to-action to encourage comments
-- Use emojis appropriately to enhance engagement
-- Make it personal and relatable to the target audience
-- Format with paragraph breaks for readability
-`;
-      break;
-    case 'twitter':
-      platformInstructions = `
-TWITTER POST GUIDELINES:
-- Create a concise, impactful post
-- Maximum 280 characters
-- Be direct and attention-grabbing
-- Use a conversational tone
-- Include a clear call-to-action if appropriate
-- Make it shareable and relevant to current trends
-`;
-      break;
-    case 'linkedin':
-      platformInstructions = `
-LINKEDIN POST GUIDELINES:
-- Create a professional, value-driven post
-- Length: 150-300 words
-- Include industry insights or professional advice
-- Format with paragraph breaks and bullet points if appropriate
-- Maintain a professional tone while being conversational
-- Focus on providing value and establishing expertise
-- Include a thoughtful question or call-to-action at the end
-`;
-      break;
+    const mappedStyle = copyStyle === 'friendly-expert' ? 'Friendly Expert' :
+                       copyStyle === 'bold-challenger' ? 'Bold Challenger' : 'Smart Mentor';
+
+    const mappedPostType = postType === 'storytelling' ? 'Storytelling' :
+                          postType === 'how-to' ? 'How-To' :
+                          postType === 'mistake-post' ? 'Mistake Post' :
+                          postType === 'listicle' ? 'Listicle' : 'CTA Promo';
+
+    const mappedTone = tonePreference === 'authoritative' ? 'Authoritative' :
+                      tonePreference === 'empathetic' ? 'Empathetic' : 'Witty';
+
+    // Join audience and age ranges for the prompt
+    const audienceStr = audience.join(', ');
+    const ageRangeStr = ageRanges.join(', ');
+
+    // Use Nigerian content style if selected, otherwise use sales copy style
+    if (useNigerianStyle) {
+      return createViralNigerianContentPrompt(
+        platform,
+        audienceStr,
+        mappedGoal as any,
+        mappedStyle as any,
+        mappedPostType as any,
+        mappedTone as any,
+        ageRangeStr,
+        targetDescription
+      );
+    } else {
+      return createViralSalesCopyPrompt(
+        platform,
+        audienceStr,
+        mappedGoal as any,
+        mappedStyle as any,
+        mappedPostType as any,
+        mappedTone as any,
+        ageRangeStr,
+        targetDescription
+      );
+    }
   }
 
-  // Final instructions
-  const finalInstructions = `
-IMPORTANT:
-- DO NOT include hashtags in the content as they will be added separately
-- Create ONLY the post content, no title or other metadata
-- Make sure the content is unique and specifically tailored to this brand
-- Ensure the content reflects the specified theme: "${theme}"
-- Match the brand's tone: "${brandInfo.tone}"
-
-POST CONTENT:
-`;
-
-  return basePrompt + platformInstructions + finalInstructions;
+  // If no viral content data, use the standard brand content prompt
+  return createBrandContentPrompt(platform, theme, brandInfo);
 };
 
 // Try to generate content using Google Gemini API (free tier available)
@@ -259,10 +249,11 @@ What professional development resources have you found most valuable in your ${t
 const generateContentWithLLM = async (
   platform: 'facebook' | 'twitter' | 'linkedin',
   theme: string,
-  brandInfo: BrandInfo
+  brandInfo: BrandInfo,
+  viralContentData?: any
 ): Promise<string> => {
-  // Create the appropriate prompt
-  const prompt = createPromptForPlatform(platform, theme, brandInfo);
+  // Create the appropriate prompt based on whether viral content data is provided
+  const prompt = createPromptForPlatform(platform, theme, brandInfo, viralContentData);
 
   try {
     // Try Gemini first (best free option)
@@ -341,10 +332,11 @@ export const generateAIPost = async (
   date: string,
   platform: 'facebook' | 'twitter' | 'linkedin',
   theme: string,
-  brandInfo: BrandInfo
+  brandInfo: BrandInfo,
+  viralContentData?: any
 ): Promise<Post> => {
-  // Generate content using LLM
-  const content = await generateContentWithLLM(platform, theme, brandInfo);
+  // Generate content using LLM with optional viral content data
+  const content = await generateContentWithLLM(platform, theme, brandInfo, viralContentData);
 
   // Generate hashtags
   const hashtags = generateHashtags(theme, brandInfo, platform);
@@ -359,7 +351,7 @@ export const generateAIPost = async (
 };
 
 // Generate a full content plan using LLM
-export const generateAIContentPlan = async (brandInfo: BrandInfo): Promise<PostPlan> => {
+export const generateAIContentPlan = async (brandInfo: BrandInfo, viralContentData?: any): Promise<PostPlan> => {
   const startDate = new Date();
   const numDays = 14; // Generate 2 weeks worth of content
   const platforms: ('facebook' | 'twitter' | 'linkedin')[] = ['facebook', 'twitter', 'linkedin'];
@@ -380,7 +372,7 @@ export const generateAIContentPlan = async (brandInfo: BrandInfo): Promise<PostP
 
     // Generate one post per platform for this day
     for (const platform of platforms) {
-      const post = await generateAIPost(dateString, platform, theme, brandInfo);
+      const post = await generateAIPost(dateString, platform, theme, brandInfo, viralContentData);
       posts.push(post);
     }
   }

@@ -1,0 +1,17 @@
+{
+  "name": "Postit - Social Media Content Generator",
+  "short_name": "Postit",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#6E5DC6",
+  "background_color": "#ffffff",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}

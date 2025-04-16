@@ -117,6 +117,24 @@ export default {
 						animationTimingFunction: 'cubic-bezier(0, 0, 0.2, 1)',
 					},
 				},
+				'gradient-xy': {
+					'0%, 100%': {
+						'background-size': '400% 400%',
+						'background-position': 'left center'
+					},
+					'50%': {
+						'background-size': '200% 200%',
+						'background-position': 'right center'
+					}
+				},
+				'pulse-slow': {
+					'0%, 100%': {
+						opacity: 0.4,
+					},
+					'50%': {
+						opacity: 0.8,
+					}
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -127,6 +145,8 @@ export default {
 				'slide-up': 'slide-up 0.5s ease-out forwards',
 				'slide-down': 'slide-down 0.5s ease-out forwards',
 				'bounce-slow': 'bounce-slow 2s infinite',
+				'gradient-xy': 'gradient-xy 15s ease infinite',
+				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
 			}
 		}
 	},
