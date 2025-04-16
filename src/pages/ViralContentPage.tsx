@@ -94,17 +94,24 @@ const ViralContentPage = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 bg-[#F5F4FF]/30 py-10">
+      <main className="flex-1 relative overflow-hidden bg-gradient-to-br from-[#f8e1eb] via-[#f0f4ff] to-[#e6f7ff] py-10">
+        {/* Background dots pattern */}
+        <div className="absolute inset-0 z-0 opacity-20">
+          <div className="absolute inset-0 bg-[radial-gradient(#FF3B45_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        </div>
+        <div className="absolute inset-0 z-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(#0B2D93_1.5px,transparent_1.5px)] [background-size:30px_30px]"></div>
+        </div>
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-[#6E5DC6] mb-2">Viral Content Generator</h1>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <div className="text-center mb-8 relative z-10">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] bg-clip-text text-transparent mb-2">Viral Content Generator</h1>
+            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
               Create high-converting, viral content for social media using proven strategies from top creators
             </p>
           </div>
 
           {posts && posts.length > 0 ? (
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-white/50 relative z-10">
               <div className="p-6">
                 <div className="mb-4 flex justify-between items-center">
                   <div className="text-sm text-gray-500">
@@ -141,7 +148,7 @@ const ViralContentPage = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-8 lg:col-start-3">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-white/50 relative z-10">
                   <div className="p-6">
                     <ViralContentForm
                       onSubmit={handleFormSubmit}
@@ -152,11 +159,11 @@ const ViralContentPage = () => {
                   </div>
                 </div>
 
-                <div className="mt-8 text-center">
-                  <div className="inline-flex items-center text-[#6E5DC6] font-medium">
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Fill out the form above to generate viral content
-                    <ArrowDown className="h-5 w-5 ml-2 animate-bounce" />
+                <div className="mt-8 text-center relative z-10">
+                  <div className="inline-flex items-center bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-md border border-white/50">
+                    <Sparkles className="h-5 w-5 mr-2 text-[#FF3B45]" />
+                    <span className="bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] bg-clip-text text-transparent font-medium">Fill out the form above to generate viral content</span>
+                    <ArrowDown className="h-5 w-5 ml-2 text-[#0B2D93] animate-bounce" />
                   </div>
                 </div>
               </div>
