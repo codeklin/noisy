@@ -135,6 +135,45 @@ const ViralContentPage = () => {
     }
   }, [lastFormData]);
 
+  // Handle window focus/blur events to ensure state persistence
+  useEffect(() => {
+    // Save state when window loses focus
+    const handleBlur = () => {
+      console.log('Window lost focus, saving viral generator state...');
+      if (posts.length > 0) {
+        localStorage.setItem('viralGeneratorPosts', JSON.stringify(posts));
+      }
+      if (lastFormData) {
+        localStorage.setItem('viralGeneratorFormData', JSON.stringify(lastFormData));
+      }
+    };
+
+    // Restore state when window regains focus
+    const handleFocus = () => {
+      console.log('Window regained focus, checking for viral generator state...');
+      const savedPosts = localStorage.getItem('viralGeneratorPosts');
+      const savedFormData = localStorage.getItem('viralGeneratorFormData');
+
+      if (savedPosts && posts.length === 0) {
+        setPosts(JSON.parse(savedPosts));
+      }
+
+      if (savedFormData && !lastFormData) {
+        setLastFormData(JSON.parse(savedFormData));
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [posts, lastFormData]);
+
   // Use useEffect to log when posts state changes
   useEffect(() => {
     console.log(`Posts state updated: ${posts.length} posts available`);

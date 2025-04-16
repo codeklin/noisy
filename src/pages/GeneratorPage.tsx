@@ -43,6 +43,45 @@ const GeneratorPage = () => {
     }
   }, [posts]);
 
+  // Handle window focus/blur events to ensure state persistence
+  useEffect(() => {
+    // Save state when window loses focus
+    const handleBlur = () => {
+      console.log('Window lost focus, saving state...');
+      if (brandInfo) {
+        localStorage.setItem('generatorBrandInfo', JSON.stringify(brandInfo));
+      }
+      if (posts.length > 0) {
+        localStorage.setItem('generatorPosts', JSON.stringify(posts));
+      }
+    };
+
+    // Restore state when window regains focus
+    const handleFocus = () => {
+      console.log('Window regained focus, checking for state...');
+      const savedBrandInfo = localStorage.getItem('generatorBrandInfo');
+      const savedPosts = localStorage.getItem('generatorPosts');
+
+      if (savedBrandInfo && (!brandInfo || Object.keys(brandInfo).length === 0)) {
+        setBrandInfo(JSON.parse(savedBrandInfo));
+      }
+
+      if (savedPosts && posts.length === 0) {
+        setPosts(JSON.parse(savedPosts));
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    // Remove event listeners on cleanup
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [brandInfo, posts]);
+
   const handleFormSubmit = async (formData: BrandInfo) => {
     if (!user) {
       toast.error("Please login to use the content generator.");
