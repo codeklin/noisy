@@ -124,7 +124,7 @@ const ContactPage = () => {
                   <CardContent className="pt-6">
                     <p className="text-gray-600">
                       <a href="tel:+1234567890" className="hover:text-[#0B2D93] transition-colors">
-                        +1 (234) 567-890
+                         Send US a Message
                       </a>
                     </p>
                     <p className="text-gray-500 text-sm mt-2">
@@ -151,11 +151,10 @@ const ContactPage = () => {
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="text-gray-600">
-                      123 Innovation Way<br />
-                      Tech District, CA 94103
-                    </p>
+                      Tech City<br />
+                      Nigeria                    </p>
                     <p className="text-gray-500 text-sm mt-2">
-                      By appointment only
+                      Chat US
                     </p>
                   </CardContent>
                 </Card>
