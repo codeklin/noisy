@@ -10,6 +10,7 @@ import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Sparkles, LightbulbIcon, FileTextIcon, CheckCircleIcon, RefreshCw, Save } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
+import FeaturesSection from "@/components/FeaturesSection";
 import { useContentPlan } from "@/hooks/useContentPlan";
 import { useAuth } from "@/context/AuthContext";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
@@ -85,7 +86,10 @@ const Index = () => {
 
       <main className="flex-1">
         {!posts.length && (
-          <HeroSection />
+          <>
+            <HeroSection />
+            <FeaturesSection />
+          </>
         )}
 
         <section className="py-10 px-4 md:py-16 bg-[#F5F4FF]/30">

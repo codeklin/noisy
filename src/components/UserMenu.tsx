@@ -35,7 +35,7 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
     }
 
     return (
-      <Button onClick={() => navigate("/auth")} variant="outline">
+      <Button onClick={() => navigate("/auth")} className="bg-[#4CAF50] hover:bg-[#45a049] text-white border-0">
         Login
       </Button>
     );
@@ -85,7 +85,7 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="relative">
+        <Button variant="outline" className="relative border-white text-white hover:bg-white/10">
           <User className="h-4 w-4 mr-2" />
           <span className="hidden md:inline">{user.email?.split("@")[0]}</span>
         </Button>

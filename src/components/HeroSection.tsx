@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Zap, TrendingUp, Clock } from 'lucide-react';
+import { Sparkles, Clock } from 'lucide-react';
 
 const HeroSection = () => {
   const isMobile = useIsMobile();
@@ -25,7 +25,7 @@ const HeroSection = () => {
   }, [phrases.length]);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] pt-10 md:pt-16 pb-16 md:pb-24 text-white">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#1a1e3a] via-[#16213e] to-[#0f3460] pt-10 md:pt-14 pb-16 md:pb-24 text-white">
       {/* Background pattern */}
       <div className="absolute inset-0 z-0 opacity-10">
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px]"></div>
@@ -34,7 +34,7 @@ const HeroSection = () => {
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#6E5DC6]/20 via-transparent to-[#FF6B6B]/20 animate-gradient-xy"></div>
 
-      <div className="container relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="container relative z-10 max-w-7xl my-5 mx-auto px-4 sm:px-6">
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
           {/* Left Content */}
           <div className="w-full lg:w-1/2 space-y-6 md:space-y-8 text-center lg:text-left animate-fade-in">
@@ -67,35 +67,14 @@ const HeroSection = () => {
               </Link>
 
               <Link to="/">
-                <Button variant="outline" className="border-white text-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300">
-                  <Clock className="h-5 w-5" />
-                  Try Free Demo
+                <Button variant="outline" className="border-white hover:bg-white/10 gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300">
+                  <Clock className="h-5 w-5 text-[#4ECDC4]" />
+                  <span className="text-[#4ECDC4]">Try Free Demo</span>
                 </Button>
               </Link>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-8 max-w-md mx-auto lg:mx-0 animate-fade-in">
-              <div className="flex flex-col items-center lg:items-start">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#FF6B6B]/20 mb-2">
-                  <Zap className="h-6 w-6 text-[#FF6B6B]" />
-                </div>
-                <p className="text-sm text-gray-300">AI-Powered Content</p>
-              </div>
 
-              <div className="flex flex-col items-center lg:items-start">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#6E5DC6]/20 mb-2">
-                  <TrendingUp className="h-6 w-6 text-[#6E5DC6]" />
-                </div>
-                <p className="text-sm text-gray-300">Viral Strategies</p>
-              </div>
-
-              <div className="flex flex-col items-center lg:items-start">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#4ECDC4]/20 mb-2">
-                  <Clock className="h-6 w-6 text-[#4ECDC4]" />
-                </div>
-                <p className="text-sm text-gray-300">Save Hours Weekly</p>
-              </div>
-            </div>
           </div>
 
           {/* Right Content - Hero Image */}
@@ -104,9 +83,9 @@ const HeroSection = () => {
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#6E5DC6] to-[#FF6B6B] opacity-50 blur-md animate-pulse"></div>
               <div className="relative rounded-2xl bg-[#1a1a2e]/80 p-3 md:p-4 shadow-2xl border border-white/10">
                 <img
-                  src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?q=80&w=2574&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                  alt="Social media content creation"
-                  className="w-full h-auto rounded-lg shadow-md transition-all duration-300 hover:shadow-lg"
+                  src="/hero-image.jpeg"
+                  alt="Viral Creator"
+                  className="w-full h-auto rounded-lg shadow-md transition-all duration-300 hover:shadow-lg object-cover"
                 />
 
                 {/* Floating elements */}
