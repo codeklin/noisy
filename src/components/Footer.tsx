@@ -1,5 +1,6 @@
 
-import { Heart, Calendar, Facebook, Twitter, Linkedin } from "lucide-react";
+import { Heart, Calendar } from "lucide-react";
+import { Facebook, Twitter, LinkedIn } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -30,6 +31,9 @@ const Footer = () => {
               <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 About
               </Link>
+              <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Contact
+              </Link>
             </nav>
           </div>
 
@@ -55,7 +59,7 @@ const Footer = () => {
                 className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
                 aria-label="LinkedIn"
               >
-                <Linkedin className="h-5 w-5 text-blue-800" />
+                <LinkedIn className="h-5 w-5 text-blue-800" />
               </a>
             </div>
           </div>

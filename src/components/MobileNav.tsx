@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Sparkles, BookMarked, Info, User } from "lucide-react";
+import { Home, Sparkles, BookMarked, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const MobileNav = () => {
@@ -16,7 +16,7 @@ const MobileNav = () => {
         <Link
           to="/"
           className={`flex flex-col items-center justify-center w-full h-full ${
-            isActive("/") ? "text-[#6E5DC6]" : "text-gray-500"
+            isActive("/") ? "text-[#0B2D93]" : "text-gray-500"
           }`}
         >
           <Home className="h-5 w-5" />
@@ -26,7 +26,7 @@ const MobileNav = () => {
         <Link
           to="/viral-content"
           className={`flex flex-col items-center justify-center w-full h-full ${
-            isActive("/viral-content") ? "text-[#6E5DC6]" : "text-gray-500"
+            isActive("/viral-content") ? "text-[#FF3B45]" : "text-gray-500"
           }`}
         >
           <Sparkles className="h-5 w-5" />
@@ -36,7 +36,7 @@ const MobileNav = () => {
         <Link
           to="/saved-plans"
           className={`flex flex-col items-center justify-center w-full h-full ${
-            isActive("/saved-plans") ? "text-[#6E5DC6]" : "text-gray-500"
+            isActive("/saved-plans") ? "text-[#0B2D93]" : "text-gray-500"
           }`}
         >
           <BookMarked className="h-5 w-5" />
@@ -46,7 +46,7 @@ const MobileNav = () => {
         <Link
           to={user ? "/preferences" : "/auth"}
           className={`flex flex-col items-center justify-center w-full h-full ${
-            isActive("/preferences") || isActive("/auth") ? "text-[#6E5DC6]" : "text-gray-500"
+            isActive("/preferences") || isActive("/auth") ? "text-[#0B2D93]" : "text-gray-500"
           }`}
         >
           <User className="h-5 w-5" />

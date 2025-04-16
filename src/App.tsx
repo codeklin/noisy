@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import MobileNav from "./components/MobileNav";
 import Index from "./pages/Index";
 import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import SavedPlansPage from "./pages/SavedPlansPage";
@@ -26,6 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/saved-plans" element={<SavedPlansPage />} />
             <Route path="/preferences" element={<PreferencesPage />} />

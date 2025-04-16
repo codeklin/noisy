@@ -24,7 +24,7 @@ const Header = () => {
             </Link>
             <Link to="/viral-content" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
               <span className="flex items-center">
-                <Sparkles className="h-3 w-3 mr-1 text-[#FF6B6B]" />
+                <Sparkles className="h-3 w-3 mr-1 text-[#FF3B45]" />
                 Viral Content
               </span>
             </Link>
@@ -33,6 +33,9 @@ const Header = () => {
             </Link>
             <Link to="/about" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
               About
+            </Link>
+            <Link to="/contact" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+              Contact
             </Link>
           </div>
 
@@ -49,17 +52,20 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px]">
               <div className="flex flex-col space-y-4 mt-8">
-                <Link to="/viral-content" className="text-gray-800 hover:text-[#6E5DC6] text-base font-medium transition-colors py-2">
+                <Link to="/viral-content" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
                   <span className="flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2 text-[#FF6B6B]" />
+                    <Sparkles className="h-4 w-4 mr-2 text-[#FF3B45]" />
                     Viral Content
                   </span>
                 </Link>
-                <Link to="/saved-plans" className="text-gray-800 hover:text-[#6E5DC6] text-base font-medium transition-colors py-2">
+                <Link to="/saved-plans" className="text-gray-800 hover:text-[#0B2D93] text-base font-medium transition-colors py-2">
                   Saved Plans
                 </Link>
-                <Link to="/about" className="text-gray-800 hover:text-[#6E5DC6] text-base font-medium transition-colors py-2">
+                <Link to="/about" className="text-gray-800 hover:text-[#0B2D93] text-base font-medium transition-colors py-2">
                   About
+                </Link>
+                <Link to="/contact" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
+                  Contact
                 </Link>
                 <div className="pt-4 mt-4 border-t">
                   <UserMenu isMobile={true} />
