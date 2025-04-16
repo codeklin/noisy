@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Sparkles, Menu } from 'lucide-react';
+import { Sparkles, Menu, Zap } from 'lucide-react';
 import { useState } from "react";
 import UserMenu from "./UserMenu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -21,6 +21,12 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
               Home
+            </Link>
+            <Link to="/generator" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+              <span className="flex items-center">
+                <Zap className="h-3 w-3 mr-1 text-[#FF3B45]" />
+                Generator
+              </span>
             </Link>
             <Link to="/viral-content" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
               <span className="flex items-center">
@@ -52,6 +58,12 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px]">
               <div className="flex flex-col space-y-4 mt-8">
+                <Link to="/generator" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
+                  <span className="flex items-center">
+                    <Zap className="h-4 w-4 mr-2 text-[#FF3B45]" />
+                    Generator
+                  </span>
+                </Link>
                 <Link to="/viral-content" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
                   <span className="flex items-center">
                     <Sparkles className="h-4 w-4 mr-2 text-[#FF3B45]" />

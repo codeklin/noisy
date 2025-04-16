@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Sparkles, BookMarked, User } from "lucide-react";
+import { Home, Sparkles, BookMarked, User, Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const MobileNav = () => {
@@ -21,6 +21,16 @@ const MobileNav = () => {
         >
           <Home className="h-5 w-5" />
           <span className="text-xs mt-1">Home</span>
+        </Link>
+
+        <Link
+          to="/generator"
+          className={`flex flex-col items-center justify-center w-full h-full ${
+            isActive("/generator") ? "text-[#FF3B45]" : "text-gray-500"
+          }`}
+        >
+          <Zap className="h-5 w-5" />
+          <span className="text-xs mt-1">Generator</span>
         </Link>
 
         <Link
