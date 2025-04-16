@@ -1,15 +1,15 @@
 {
-  "name": "Postit - Social Media Content Generator",
-  "short_name": "Postit",
+  "name": "Noisy - Social Media Content Generator",
+  "short_name": "Noisy",
   "icons": [
     {
-      "src": "/logo.svg",
+      "src": "/plogo.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
-  "theme_color": "#6E5DC6",
+  "theme_color": "#FF3B45",
   "background_color": "#ffffff",
   "start_url": "/",
   "display": "standalone",

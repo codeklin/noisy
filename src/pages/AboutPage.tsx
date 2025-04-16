@@ -13,7 +13,7 @@ const AboutPage = () => {
           <div className="container max-w-4xl">
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-brand-purple to-brand-blue bg-clip-text text-transparent">
-                About Postit
+                About Noisy
               </h1>
               <p className="text-xl text-muted-foreground">
                 Your all-in-one solution for viral social media content planning and generation
@@ -24,14 +24,23 @@ const AboutPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Our Mission</CardTitle>
-                  <CardDescription>Why we built Postit</CardDescription>
+                  <CardDescription>Why we built Noisy</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="text-lg leading-relaxed">
-                    Postit was created to solve a common challenge faced by businesses, marketers, and content creators: maintaining a consistent, engaging, and viral presence across multiple social media platforms. We believe that strategic content planning shouldn't be limited to those with large budgets or specialized teams.
+                    In a digital world filled with constant chatter, we founded Noisy with a simple yet powerful belief: not all noise is created equal. Some noise gets lost in the void, while other noise—the right kind of noise—cuts through the clutter and resonates with people.
                   </p>
                   <p className="text-lg leading-relaxed mt-4">
-                    Our mission is to democratize content planning by providing a tool that generates tailored, platform-specific viral content based on your brand's unique characteristics, allowing you to execute a professional social media strategy without the usual time investment or expertise barriers.
+                    Noisy was born from the frustration of watching brilliant businesses and creators struggle to be heard. We saw talented entrepreneurs spending countless hours crafting social media content that barely made a ripple, while their competitors with mediocre offerings but better content strategies were making waves.
+                  </p>
+                  <p className="text-lg leading-relaxed mt-4">
+                    We asked ourselves: What if we could democratize viral content creation? What if we could give every business the power to make the kind of noise that turns heads, sparks conversations, and drives real business results?
+                  </p>
+                  <p className="text-lg leading-relaxed mt-4">
+                    That's exactly what we've built. Noisy isn't just about creating content—it's about creating the right kind of noise that amplifies your brand's voice and message. It's about transforming the time-consuming process of content creation into a strategic advantage that helps you rise above the digital cacophony.
+                  </p>
+                  <p className="text-lg leading-relaxed mt-4">
+                    Today, Noisy helps thousands of businesses and creators make noise that matters—noise that converts followers into customers and builds lasting brand resonance in an increasingly crowded marketplace.
                   </p>
                 </CardContent>
               </Card>
@@ -39,7 +48,7 @@ const AboutPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>How It Works</CardTitle>
-                  <CardDescription>The technology behind Postit</CardDescription>
+                  <CardDescription>The technology behind Noisy</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ol className="list-decimal list-inside space-y-4 text-lg">
@@ -54,7 +63,7 @@ const AboutPage = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Key Features</CardTitle>
-                  <CardDescription>What makes Postit special</CardDescription>
+                  <CardDescription>What makes Noisy special</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -102,29 +102,29 @@
 }
 
 /* Custom colors for the new design */
-.postit-purple {
+.noisy-purple {
   color: #6E5DC6;
 }
 
-.postit-coral {
+.noisy-coral {
   color: #FF6B6B;
 }
 
-.bg-postit-purple {
+.bg-noisy-purple {
   background-color: #6E5DC6;
 }
 
-.bg-postit-coral {
+.bg-noisy-coral {
   background-color: #FF6B6B;
 }
 
-.bg-postit-light-purple {
+.bg-noisy-light-purple {
   background-color: #F5F4FF;
 }
 
 /* Update button styles */
 .generate-button {
-  @apply bg-postit-coral text-white font-medium py-3 px-6 rounded-full hover:bg-opacity-90 transition-all;
+  @apply bg-noisy-coral text-white font-medium py-3 px-6 rounded-full hover:bg-opacity-90 transition-all;
 }
 
 /* Custom scrollbar styles */

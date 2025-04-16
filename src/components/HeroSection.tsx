@@ -1,12 +1,10 @@
 
-import React, { useEffect, useState } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Clock } from 'lucide-react';
 
 const HeroSection = () => {
-  const isMobile = useIsMobile();
   const [currentPhrase, setCurrentPhrase] = useState(0);
 
   const phrases = [
@@ -32,7 +30,7 @@ const HeroSection = () => {
       </div>
 
       {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#6E5DC6]/20 via-transparent to-[#FF6B6B]/20 animate-gradient-xy"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0B2D93]/20 via-transparent to-[#FF3B45]/20 animate-gradient-xy"></div>
 
       <div className="container relative z-10 max-w-7xl my-5 mx-auto px-4 sm:px-6">
         <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
@@ -48,9 +46,8 @@ const HeroSection = () => {
 
             <div>
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
-                <span className="text-[#FF6B6B] font-bold text-xl">Post</span>
-                <span className="text-[#6E5DC6] font-bold text-xl">it</span>
-                <span className="bg-gradient-to-r from-[#6E5DC6] to-[#FF6B6B] px-3 py-1 rounded-full text-xs font-semibold text-white">AI-Powered</span>
+                <span className="font-bold text-xl bg-gradient-to-r from-white to-[#FF3B45] bg-clip-text text-transparent">Noisy</span>
+                <span className="bg-gradient-to-r from-[#6E5DC6] to-[#FF3B45] px-3 py-1 rounded-full text-xs font-semibold text-white">AI-Powered</span>
               </div>
             </div>
 
@@ -60,7 +57,7 @@ const HeroSection = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mt-8 animate-fade-in">
               <Link to="/viral-content">
-                <Button className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] hover:from-[#FF8E53] hover:to-[#FF6B6B] text-white border-0 shadow-lg gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+                <Button className="bg-gradient-to-r from-[#FF3B45] to-[#FF8E53] hover:from-[#FF8E53] hover:to-[#FF3B45] text-white border-0 shadow-lg gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-105">
                   <Sparkles className="h-5 w-5" />
                   Create Viral Content
                 </Button>
@@ -80,7 +77,7 @@ const HeroSection = () => {
           {/* Right Content - Hero Image */}
           <div className="w-full lg:w-1/2 relative mt-8 lg:mt-0 animate-fade-in">
             <div className="relative mx-auto max-w-lg">
-              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#6E5DC6] to-[#FF6B6B] opacity-50 blur-md animate-pulse"></div>
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#0B2D93] to-[#FF3B45] opacity-50 blur-md animate-pulse"></div>
               <div className="relative rounded-2xl bg-[#1a1a2e]/80 p-3 md:p-4 shadow-2xl border border-white/10">
                 <img
                   src="/hero-image.jpeg"
@@ -89,11 +86,11 @@ const HeroSection = () => {
                 />
 
                 {/* Floating elements */}
-                <div className="absolute -top-4 -right-4 bg-[#FF6B6B] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-bounce-slow">
+                <div className="absolute -top-4 -right-4 bg-[#FF3B45] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-bounce-slow">
                   Viral Content
                 </div>
 
-                <div className="absolute -bottom-4 -left-4 bg-[#6E5DC6] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-bounce-slow">
+                <div className="absolute -bottom-4 -left-4 bg-[#0B2D93] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-bounce-slow">
                   AI-Powered
                 </div>
               </div>

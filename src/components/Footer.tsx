@@ -11,10 +11,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
             <div className="flex items-center gap-2 font-bold text-xl">
-              <img src="/logo-icon.svg" alt="Postit Logo" className="h-9 w-9" />
+              <img src="/plogo.png" alt="Noisy Logo" className="h-9 w-9 rounded-md" />
               <span className="font-bold text-xl">
-                <span className="text-[#6E5DC6]">Post</span>
-                <span className="text-[#ea384c]">it</span>
+                <span className="bg-gradient-to-r from-[#FF3B45] to-[#6E5DC6] bg-clip-text text-transparent">Noisy</span>
               </span>
             </div>
             <p className="text-sm text-muted-foreground max-w-xs">
@@ -64,10 +63,10 @@ const Footer = () => {
 
         <div className="mt-8 pt-6 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-center text-sm text-muted-foreground">
-            Built with <Heart className="inline-block h-4 w-4 text-[#ea384c]" /> by Postit
+            Built with <Heart className="inline-block h-4 w-4 text-[#FF3B45]" /> by Noisy
           </p>
           <p className="text-center text-sm text-muted-foreground">
-            © {currentYear} Postit. All rights reserved.
+            © {currentYear} Noisy. All rights reserved.
           </p>
         </div>
       </div>

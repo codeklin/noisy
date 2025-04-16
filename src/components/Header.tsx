@@ -10,10 +10,9 @@ const Header = () => {
     <header className="sticky top-0 z-50 py-3 bg-[#1a1e3a] text-white transition-all duration-300 ease-in-out border-b border-[#2a2e4a]">
       <div className="flex justify-between items-center px-4 sm:px-6 max-w-7xl mx-auto">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo-icon.svg" alt="Postit Logo" className="h-9 w-9" />
+          <img src="/plogo.png" alt="Noisy Logo" className="h-9 w-9 rounded-md" />
           <span className="font-bold text-xl">
-            <span className="text-[#6E5DC6]">Post</span>
-            <span className="text-[#ea384c]">it</span>
+            <span className="text-white">Noisy</span>
           </span>
         </Link>
 
