@@ -137,7 +137,7 @@ const AboutPage = () => {
                         </div>
                         <div>
                           <h3 className="font-semibold text-[#333]">Export and implement</h3>
-                          <p className="text-gray-600">Download your complete content plan in PDF or DOCX format, ready to use in your favorite scheduling tool.</p>
+                          <p className="text-gray-600">Download your complete content plan in DOCX format, ready to use in your favorite scheduling tool.</p>
                         </div>
                       </div>
                     </div>

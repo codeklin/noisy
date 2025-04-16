@@ -79,9 +79,8 @@ const SubscriptionSection = () => {
     "Full access to AI-powered content generator",
     "Proven viral content strategies from top creators",
     "Unlimited content plans for all platforms",
-    "Export to PDF and DOCX formats",
-    "No monthly fees or hidden charges",
-    "Lifetime updates and new features",
+    "Export to DOCX formats",
+    "No hidden monthly charges",
     "Save and organize your content plans",
     "24/7 access from any device"
   ];
@@ -112,8 +111,8 @@ const SubscriptionSection = () => {
 
   const faqs = [
     {
-      question: "Is it really a one-time payment?",
-      answer: "Yes! Pay once and get lifetime access to Noisy. No hidden fees, no monthly charges, and no surprise bills. All future updates are included."
+      question: "Is it really a monthly payment?",
+      answer: "Yes! Only pay for the month you need access to Noisy for projects. No hidden monthly charges, and no surprise bills. All future updates are included."
     },
     {
       question: "How does the content generator work?",
@@ -176,12 +175,12 @@ const SubscriptionSection = () => {
                 </div>
 
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Lifetime Access</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Subscribe when needed</h3>
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-4xl font-bold text-[#FF3B45]">₦1,000</span>
-                    <span className="text-gray-500 line-through">₦5,000</span>
+                    <span className="text-4xl font-bold text-[#FF3B45]">₦996</span>
+                    <span className="text-gray-500 line-through">₦3,000</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">One-time payment, lifetime access</p>
+                  <p className="text-sm text-gray-500 mt-1">Monthly subscriptions as projects requires.</p>
                 </div>
 
                 <ul className="space-y-3 mb-8">
@@ -254,7 +253,7 @@ const SubscriptionSection = () => {
                     </div>
                     <h4 className="font-semibold text-gray-800">One-Time Payment</h4>
                   </div>
-                  <p className="text-gray-600 text-sm pl-10">No monthly subscriptions or hidden fees. Pay once and get lifetime access to all features.</p>
+                  <p className="text-gray-600 text-sm pl-10">Monthly subscriptions and no hidden fees. Pay only when you need it, and get access to all features.</p>
                 </div>
 
                 <div className="space-y-2">

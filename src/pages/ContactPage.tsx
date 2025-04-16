@@ -95,8 +95,8 @@ const ContactPage = () => {
                   </CardHeader>
                   <CardContent className="pt-6">
                     <p className="text-gray-600">
-                      <a href="mailto:hello@noisy.com" className="hover:text-[#FF3B45] transition-colors">
-                        hello@noisy.com
+                      <a href="mailto:hello@noisyng.com" className="hover:text-[#FF3B45] transition-colors">
+                        hello@noisyng.com
                       </a>
                     </p>
                     <p className="text-gray-500 text-sm mt-2">
