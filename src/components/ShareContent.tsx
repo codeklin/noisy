@@ -18,16 +18,16 @@ export function ShareContent({ post }: ShareContentProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const { user } = useAuth();
-  
-  const socialConnections: SocialMediaConnection[] = user?.user_metadata?.social_media 
+
+  const socialConnections: SocialMediaConnection[] = user?.user_metadata?.social_media
     ? parseJsonArray<SocialMediaConnection>(user.user_metadata.social_media)
     : [];
-  
+
   const connectedAccounts = socialConnections.filter(conn => conn.isConnected);
 
   const togglePlatform = (platform: string) => {
-    setSelectedPlatforms(prev => 
-      prev.includes(platform) 
+    setSelectedPlatforms(prev =>
+      prev.includes(platform)
         ? prev.filter(p => p !== platform)
         : [...prev, platform]
     );
@@ -44,10 +44,10 @@ export function ShareContent({ post }: ShareContentProps) {
     try {
       // In a real app, we would send this to a backend API
       // to handle the actual posting to social media platforms
-      
+
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Show success message
       toast.success(`Content shared to ${selectedPlatforms.join(", ")}!`);
       setIsOpen(false);
@@ -72,30 +72,33 @@ export function ShareContent({ post }: ShareContentProps) {
           Share
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar">
         <DialogHeader>
           <DialogTitle>Share to Social Media</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="border rounded-md p-4">
             <p className="text-sm font-medium mb-2">Post content:</p>
-            <p className="text-sm text-gray-500">{post.content}</p>
-            {post.hashtags && post.hashtags.length > 0 && (
-              <p className="text-sm text-blue-500 mt-2">
-                {post.hashtags.map(tag => `#${tag}`).join(' ')}
-              </p>
-            )}
+            <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+              <p className="text-sm text-gray-500">{post.content}</p>
+              {post.hashtags && post.hashtags.length > 0 && (
+                <p className="text-sm text-blue-500 mt-2">
+                  {post.hashtags.map(tag => `#${tag}`).join(' ')}
+                </p>
+              )}
+            </div>
           </div>
-          
+
           <div>
             <p className="text-sm font-medium mb-2">Choose platforms:</p>
-            <div className="space-y-2">
-              {connectedAccounts.map((account) => (
-                <div 
+            <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-2">
+                {connectedAccounts.map((account) => (
+                <div
                   key={account.platform}
                   className={`flex items-center p-2 rounded-md cursor-pointer ${
-                    selectedPlatforms.includes(account.platform) 
-                      ? 'bg-primary/10 border border-primary/30' 
+                    selectedPlatforms.includes(account.platform)
+                      ? 'bg-primary/10 border border-primary/30'
                       : 'hover:bg-muted border'
                   }`}
                   onClick={() => togglePlatform(account.platform)}
@@ -109,6 +112,7 @@ export function ShareContent({ post }: ShareContentProps) {
                   )}
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </div>

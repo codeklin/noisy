@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -22,7 +22,7 @@ const ViralContentPage = () => {
     try {
       // Create a minimal brand info object for the generator
       const brandInfo = {
-        brandName: "Your Brand",
+        brandName: formData.brandName || "Your Brand",
         businessDescription: formData.targetDescription || "A business targeting " + formData.audience.join(", "),
         targetAudience: formData.audience.join(", "),
         contentThemes: [formData.postType],
@@ -31,20 +31,26 @@ const ViralContentPage = () => {
         ctaExamples: ""
       };
 
-      // Show loading toast
-      toast.loading("Generating your viral content plan...");
+      // Show loading toast with ID for tracking
+      const loadingToastId = toast.loading("Generating your viral content plan...");
+
+      console.log("Starting content generation with:", { brandInfo, formData });
 
       // Generate content plan using the viral content data
       const contentPlan = await generatePlan(brandInfo, formData);
 
-      // Dismiss loading toast
-      toast.dismiss();
+      // Dismiss specific loading toast
+      toast.dismiss(loadingToastId);
+
+      console.log("Content plan received:", contentPlan);
 
       if (contentPlan && contentPlan.length > 0) {
+        console.log(`Setting ${contentPlan.length} posts to state`);
         setPosts(contentPlan);
         toast.success("Viral content plan generated successfully!");
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
+        console.error("Content plan is empty or invalid", contentPlan);
         throw new Error("No content was generated");
       }
     } catch (error) {
@@ -65,13 +71,10 @@ const ViralContentPage = () => {
 
   const handleExport = async (platform: 'facebook' | 'twitter' | 'linkedin' | 'all') => {
     try {
-      // Export to PDF
-      await exportToPDF(posts, platform);
-
-      // Export to DOCX
+      // Export only to DOCX format
       await exportToDOCX(posts, platform);
 
-      toast.success(`Content plan exported successfully!`);
+      toast.success(`Content plan exported as document successfully!`);
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Failed to export content plan. Please try again.");
@@ -81,6 +84,11 @@ const ViralContentPage = () => {
   const handleRegenerateContent = async () => {
     toast.error("Please fill the form again to regenerate content.");
   };
+
+  // Use useEffect to log when posts state changes
+  useEffect(() => {
+    console.log(`Posts state updated: ${posts.length} posts available`);
+  }, [posts]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -95,7 +103,7 @@ const ViralContentPage = () => {
             </p>
           </div>
 
-          {posts.length > 0 ? (
+          {posts && posts.length > 0 ? (
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-6">
                 <div className="mb-4 flex justify-between items-center">

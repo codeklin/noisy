@@ -3,11 +3,12 @@ import { useState } from "react";
 import { Post } from "@/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Facebook, Linkedin, Pencil, Twitter } from "lucide-react";
+import { Facebook, Linkedin, Twitter } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { ShareContent } from "./ShareContent";
+import { PostActions } from "./PostActions";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 interface PostListProps {
   posts: Post[];
@@ -52,7 +53,7 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
         <Card key={post.id} className="overflow-hidden">
           <CardHeader className="bg-gray-50 py-3 px-4 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge 
+              <Badge
                 className={`flex items-center gap-1 ${platformColors[post.platform]}`}
                 variant="outline"
               >
@@ -63,25 +64,21 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
                 {post.date}
               </Badge>
             </div>
-            
-            <div className="flex items-center gap-2">
-              {user && <ShareContent post={post} />}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => handleEditClick(post)}
-                className="flex items-center gap-1"
-              >
-                <Pencil className="h-4 w-4" />
-                Edit
-              </Button>
-            </div>
+
+            <PostActions
+              post={post}
+              onEdit={() => handleEditClick(post)}
+              onSave={(name) => {
+                toast.success(`Content saved as "${name}"`);
+                // In a real app, this would save to a database
+              }}
+            />
           </CardHeader>
-          
+
           <CardContent className="p-4">
             {editingPostId === post.id ? (
               <div className="space-y-4">
-                <Textarea 
+                <Textarea
                   value={editedContent}
                   onChange={(e) => setEditedContent(e.target.value)}
                   rows={5}

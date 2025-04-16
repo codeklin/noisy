@@ -70,6 +70,7 @@ export interface ViralContentFormData {
   ageRanges: string[];
   targetDescription: string;
   useNigerianStyle: boolean;
+  brandName: string;
 }
 
 interface ViralContentFormProps {
@@ -89,6 +90,7 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
     ageRanges: [],
     targetDescription: "",
     useNigerianStyle: false,
+    brandName: "Your Brand",
   });
 
   const handleAudienceChange = (audienceId: string, checked: boolean) => {
@@ -121,7 +123,7 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -132,6 +134,7 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
 
     // Validation
     if (formData.audience.length === 0) {
@@ -145,16 +148,20 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
     }
 
     try {
+      console.log("Submitting form data:", formData);
       // Call the onSubmit function with the form data
       onSubmit(formData);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("An error occurred while submitting the form. Please try again.");
     }
+
+    // Return false to prevent any default form behavior
+    return false;
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} action="#" method="post">
       <Card className="w-full">
         <CardHeader className="bg-[#6E5DC6]/10 rounded-t-xl">
           <CardTitle className="text-[#6E5DC6]">Viral Content Generator</CardTitle>
@@ -280,6 +287,18 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brandName">Brand Name</Label>
+              <Input
+                id="brandName"
+                name="brandName"
+                placeholder="Enter your brand name"
+                value={formData.brandName}
+                onChange={handleTextChange}
+                className="mb-4"
+              />
             </div>
 
             <div className="space-y-2">
