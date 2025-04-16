@@ -26,33 +26,54 @@ export const useContentPlan = () => {
     try {
       // If viral data is provided, update the state
       if (viralData) {
+        console.log('Viral content data provided:', viralData);
         setViralContentData(viralData);
         setUseViralContent(true);
       }
 
       // Track analytics event if user is logged in
       if (user) {
-        await supabase.from("analytics").insert({
-          user_id: user.id,
-          event_type: "generate_content_plan",
-          event_data: {
-            brandInfo: JSON.stringify(brandInfo),
-            useAI,
-            useViralContent: !!viralData,
-            viralContentType: viralData?.useNigerianStyle ? 'nigerian' : 'standard'
-          }
-        });
+        try {
+          await supabase.from("analytics").insert({
+            user_id: user.id,
+            event_type: "generate_content_plan",
+            event_data: {
+              brandInfo: JSON.stringify(brandInfo),
+              useAI,
+              useViralContent: !!viralData,
+              viralContentType: viralData?.useNigerianStyle ? 'nigerian' : 'standard'
+            }
+          });
+          console.log('Analytics event tracked successfully');
+        } catch (analyticsError) {
+          console.error('Failed to track analytics event:', analyticsError);
+          // Continue with content generation even if analytics fails
+        }
       }
+
+      console.log('Generating content plan with:', {
+        useAI,
+        useViralContent: !!viralData,
+        nigerianStyle: viralData?.useNigerianStyle
+      });
 
       // Generate the content plan using either AI or template-based approach
       let contentPlan: PostPlan;
       if (useAI) {
+        console.log('Using AI-powered content generation');
         // Pass viral content data if available
         contentPlan = await generateAIContentPlan(brandInfo, viralData || viralContentData);
       } else {
+        console.log('Using template-based content generation');
         contentPlan = await generateContentPlan(brandInfo);
       }
 
+      if (!contentPlan || contentPlan.length === 0) {
+        console.error('Content plan generation returned empty results');
+        throw new Error('Failed to generate content plan');
+      }
+
+      console.log(`Successfully generated ${contentPlan.length} posts`);
       return contentPlan;
     } catch (error) {
       console.error("Error generating content plan:", error);

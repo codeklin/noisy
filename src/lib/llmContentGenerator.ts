@@ -67,9 +67,13 @@ const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', 
 
 // Try to generate content using Google Gemini API (free tier available)
 const generateWithGemini = async (prompt: string): Promise<string | null> => {
-  if (!GEMINI_API_KEY) return null;
+  if (!GEMINI_API_KEY) {
+    console.warn('Gemini API key is not set');
+    return null;
+  }
 
   try {
+    console.log('Attempting to generate content with Gemini API...');
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -90,15 +94,20 @@ const generateWithGemini = async (prompt: string): Promise<string | null> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Gemini API error: ${response.status}`, errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Gemini API response received');
+
     // Extract the text from the response
     if (data.candidates && data.candidates[0] && data.candidates[0].content &&
         data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
       return data.candidates[0].content.parts[0].text.trim();
     }
+    console.warn('Unexpected Gemini API response format', data);
     return null;
   } catch (error) {
     console.error('Gemini generation error:', error);
@@ -108,9 +117,13 @@ const generateWithGemini = async (prompt: string): Promise<string | null> => {
 
 // Try to generate content using Hugging Face API
 const generateWithHuggingFace = async (prompt: string): Promise<string | null> => {
-  if (!HUGGINGFACE_API_KEY) return null;
+  if (!HUGGINGFACE_API_KEY) {
+    console.warn('HuggingFace API key is not set');
+    return null;
+  }
 
   try {
+    console.log('Attempting to generate content with HuggingFace API...');
     const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
       method: 'POST',
       headers: {
@@ -129,22 +142,29 @@ const generateWithHuggingFace = async (prompt: string): Promise<string | null> =
     });
 
     if (!response.ok) {
-      throw new Error(`Hugging Face API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HuggingFace API error: ${response.status}`, errorText);
+      throw new Error(`HuggingFace API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('HuggingFace API response received');
     return data.generated_text?.trim() || null;
   } catch (error) {
-    console.error('Hugging Face generation error:', error);
+    console.error('HuggingFace generation error:', error);
     return null;
   }
 };
 
 // Try to generate content using Together.ai API (free tier available)
 const generateWithTogether = async (prompt: string): Promise<string | null> => {
-  if (!TOGETHER_API_KEY) return null;
+  if (!TOGETHER_API_KEY) {
+    console.warn('Together API key is not set');
+    return null;
+  }
 
   try {
+    console.log('Attempting to generate content with Together API...');
     const response = await fetch('https://api.together.xyz/v1/completions', {
       method: 'POST',
       headers: {
@@ -162,10 +182,13 @@ const generateWithTogether = async (prompt: string): Promise<string | null> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Together.ai API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Together API error: ${response.status}`, errorText);
+      throw new Error(`Together API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Together API response received');
     return data.choices?.[0]?.text?.trim() || null;
   } catch (error) {
     console.error('Together.ai generation error:', error);
@@ -254,25 +277,31 @@ const generateContentWithLLM = async (
 ): Promise<string> => {
   // Create the appropriate prompt based on whether viral content data is provided
   const prompt = createPromptForPlatform(platform, theme, brandInfo, viralContentData);
+  console.log(`Generating content for ${platform} with theme: ${theme}`);
 
   try {
     // Try Gemini first (best free option)
+    console.log('Attempting to generate content with Gemini...');
     let content = await generateWithGemini(prompt);
 
     // If Gemini fails, try Together.ai
     if (!content) {
+      console.log('Gemini failed, trying Together.ai...');
       content = await generateWithTogether(prompt);
     }
 
     // If Together.ai fails, try Hugging Face
     if (!content) {
+      console.log('Together.ai failed, trying HuggingFace...');
       content = await generateWithHuggingFace(prompt);
     }
 
     // If all APIs fail, use mock content
     if (!content) {
-      console.log('Using mock content generator as fallback');
+      console.log('All API attempts failed. Using mock content generator as fallback');
       content = generateMockContent(platform, theme, brandInfo);
+    } else {
+      console.log('Successfully generated content with AI');
     }
 
     // Clean up the response
@@ -285,6 +314,7 @@ const generateContentWithLLM = async (
   } catch (error) {
     console.error("Error generating content with LLM:", error);
     // Fallback to mock content if everything fails
+    console.log('Error caught, using mock content as fallback');
     return generateMockContent(platform, theme, brandInfo);
   }
 };

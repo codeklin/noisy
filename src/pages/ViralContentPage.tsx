@@ -31,23 +31,34 @@ const ViralContentPage = () => {
         ctaExamples: ""
       };
 
+      // Show loading toast
+      toast.loading("Generating your viral content plan...");
+
       // Generate content plan using the viral content data
       const contentPlan = await generatePlan(brandInfo, formData);
-      setPosts(contentPlan);
-      
-      toast.success("Viral content plan generated successfully!");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Dismiss loading toast
+      toast.dismiss();
+
+      if (contentPlan && contentPlan.length > 0) {
+        setPosts(contentPlan);
+        toast.success("Viral content plan generated successfully!");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        throw new Error("No content was generated");
+      }
     } catch (error) {
       console.error("Error generating viral content plan:", error);
+      toast.dismiss(); // Dismiss any loading toast
       toast.error("Failed to generate content plan. Please try again.");
     }
   };
 
   const handleEditPost = (postId: string, newContent: string) => {
-    const updatedPosts = posts.map(post => 
+    const updatedPosts = posts.map(post =>
       post.id === postId ? { ...post, content: newContent } : post
     );
-    
+
     setPosts(updatedPosts);
     toast.success("Post updated successfully!");
   };
@@ -56,10 +67,10 @@ const ViralContentPage = () => {
     try {
       // Export to PDF
       await exportToPDF(posts, platform);
-      
+
       // Export to DOCX
       await exportToDOCX(posts, platform);
-      
+
       toast.success(`Content plan exported successfully!`);
     } catch (error) {
       console.error("Export error:", error);
@@ -74,7 +85,7 @@ const ViralContentPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
+
       <main className="flex-1 bg-[#F5F4FF]/30 py-10">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="text-center mb-8">
@@ -83,7 +94,7 @@ const ViralContentPage = () => {
               Create high-converting, viral content for social media using proven strategies from top creators
             </p>
           </div>
-          
+
           {posts.length > 0 ? (
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="p-6">
@@ -111,11 +122,11 @@ const ViralContentPage = () => {
                     </Button>
                   </div>
                 </div>
-                
-                <PlatformTabs 
-                  posts={posts} 
-                  onEditPost={handleEditPost} 
-                  onExport={handleExport} 
+
+                <PlatformTabs
+                  posts={posts}
+                  onEditPost={handleEditPost}
+                  onExport={handleExport}
                 />
               </div>
             </div>
@@ -124,15 +135,15 @@ const ViralContentPage = () => {
               <div className="lg:col-span-8 lg:col-start-3">
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
                   <div className="p-6">
-                    <ViralContentForm 
-                      onSubmit={handleFormSubmit} 
+                    <ViralContentForm
+                      onSubmit={handleFormSubmit}
                       isGenerating={isGenerating}
                       useAI={useAI}
                       setUseAI={setUseAI}
                     />
                   </div>
                 </div>
-                
+
                 <div className="mt-8 text-center">
                   <div className="inline-flex items-center text-[#6E5DC6] font-medium">
                     <Sparkles className="h-5 w-5 mr-2" />
@@ -145,9 +156,9 @@ const ViralContentPage = () => {
           )}
         </div>
       </main>
-      
+
       <Footer />
-      
+
       {/* Save Dialog */}
       {posts.length > 0 && (
         <SaveContentDialog

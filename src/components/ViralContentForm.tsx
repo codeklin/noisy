@@ -132,19 +132,25 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (formData.audience.length === 0) {
       toast.error("Please select at least one target audience");
       return;
     }
-    
+
     if (formData.ageRanges.length === 0) {
       toast.error("Please select at least one age range");
       return;
     }
-    
-    onSubmit(formData);
+
+    try {
+      // Call the onSubmit function with the form data
+      onSubmit(formData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("An error occurred while submitting the form. Please try again.");
+    }
   };
 
   return (
