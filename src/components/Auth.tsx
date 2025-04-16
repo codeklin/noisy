@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -23,10 +24,10 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
-      
+
       const { error, data } = await supabase.auth.signUp({
         email,
         password,
@@ -38,7 +39,7 @@ export default function Auth() {
       });
 
       if (error) throw error;
-      
+
       toast.success("Account created! Please check your email for confirmation.");
     } catch (error: any) {
       toast.error(error.message || "An error occurred during sign up");
@@ -50,17 +51,17 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
-      
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-      
+
       toast.success("Signed in successfully!");
     } catch (error: any) {
       toast.error(error.message || "Invalid login credentials");
@@ -71,10 +72,10 @@ export default function Auth() {
   };
 
   const toggleSocialConnection = (platform: 'facebook' | 'twitter' | 'linkedin') => {
-    setSocialConnections(prev => 
-      prev.map(conn => 
-        conn.platform === platform 
-          ? { ...conn, isConnected: !conn.isConnected } 
+    setSocialConnections(prev =>
+      prev.map(conn =>
+        conn.platform === platform
+          ? { ...conn, isConnected: !conn.isConnected }
           : conn
       )
     );
@@ -94,7 +95,7 @@ export default function Auth() {
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <form onSubmit={handleSignIn} className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -110,9 +111,8 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-login">Password</Label>
-                  <Input
+                  <PasswordInput
                     id="password-login"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -123,7 +123,7 @@ export default function Auth() {
                 </Button>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="register">
               <form onSubmit={handleSignUp} className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -139,23 +139,22 @@ export default function Auth() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-register">Password</Label>
-                  <Input
+                  <PasswordInput
                     id="password-register"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Connect Social Media Accounts</Label>
                   <p className="text-sm text-gray-500 mb-3">Choose platforms to share your content</p>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="facebook" 
+                      <Checkbox
+                        id="facebook"
                         checked={socialConnections.find(c => c.platform === 'facebook')?.isConnected}
                         onCheckedChange={() => toggleSocialConnection('facebook')}
                       />
@@ -164,10 +163,10 @@ export default function Auth() {
                         Facebook
                       </Label>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="twitter" 
+                      <Checkbox
+                        id="twitter"
                         checked={socialConnections.find(c => c.platform === 'twitter')?.isConnected}
                         onCheckedChange={() => toggleSocialConnection('twitter')}
                       />
@@ -176,10 +175,10 @@ export default function Auth() {
                         Twitter
                       </Label>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="linkedin" 
+                      <Checkbox
+                        id="linkedin"
                         checked={socialConnections.find(c => c.platform === 'linkedin')?.isConnected}
                         onCheckedChange={() => toggleSocialConnection('linkedin')}
                       />
@@ -190,7 +189,7 @@ export default function Auth() {
                     </div>
                   </div>
                 </div>
-                
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>

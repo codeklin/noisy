@@ -1,73 +1,92 @@
-# Welcome to your Lovable project
+# Postit - Social Media Content Generator
 
-## Project info
+![Postit Logo](public/logo.svg)
 
-**URL**: https://lovable.dev/projects/4e011fa3-3b9e-49a8-a315-bf9d00a4151b
+Postit is a powerful AI-powered social media content generator that helps you create engaging, viral content for multiple platforms. With Postit, you can save hours of work by generating a month's worth of content in minutes.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **AI-Powered Content**: Generate engaging posts with advanced AI technology
+- **Viral Strategies**: Implement proven tactics that boost engagement
+- **Save Hours Weekly**: Create a month of content in minutes, not days
+- **Premium Results**: Get professional-quality content every time
 
-**Use Lovable**
+## Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4e011fa3-3b9e-49a8-a315-bf9d00a4151b) and start prompting.
+This project is built with modern web technologies:
 
-Changes made via Lovable will be committed automatically to this repo.
+- **React**: Frontend library for building user interfaces
+- **TypeScript**: Type-safe JavaScript for better development experience
+- **Vite**: Next-generation frontend tooling for faster development
+- **Tailwind CSS**: Utility-first CSS framework for rapid UI development
+- **shadcn/ui**: High-quality UI components built with Radix UI and Tailwind
+- **Framer Motion**: Animation library for React
+- **React Router**: Routing library for React applications
+- **Supabase**: Backend-as-a-Service for authentication and database
+- **React Query**: Data fetching and state management library
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js (v18 or higher)
+- npm or yarn
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+# Clone the repository
+git clone https://github.com/codeklin/content-crafter-calendar.git
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd content-crafter-calendar
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Environment Variables
 
-**Use GitHub Codespaces**
+To use the AI features, you'll need to set up the following environment variables in a `.env` file:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+HUGGINGFACE_API_KEY=your_huggingface_api_key
+GEMINI_API_KEY=your_gemini_api_key
+TOGETHER_API_KEY=your_together_api_key
+```
 
-## What technologies are used for this project?
+## Building for Production
 
-This project is built with:
+```bash
+# Build the application
+npm run build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Preview the production build locally
+npm run preview
+```
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/4e011fa3-3b9e-49a8-a315-bf9d00a4151b) and click on Share -> Publish.
+```text
+/public          # Static assets
+/src
+  /components    # Reusable UI components
+  /context       # React context providers
+  /hooks         # Custom React hooks
+  /lib           # Utility functions and helpers
+  /pages         # Page components
+  /types         # TypeScript type definitions
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Contributing
 
-Yes, you can!
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## License
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License - see the LICENSE file for details.
