@@ -8,6 +8,7 @@ const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
 import { createBrandContentPrompt, createViralNigerianContentPrompt, createViralSalesCopyPrompt } from './promptTemplates';
 
@@ -170,6 +171,65 @@ const generateWithHuggingFace = async (prompt: string): Promise<string | null> =
       console.error('HuggingFace request timed out');
     } else {
       console.error('HuggingFace generation error:', error);
+    }
+    return null;
+  }
+};
+
+// Try to generate content using Mistral API (free tier available)
+const generateWithMistral = async (prompt: string): Promise<string | null> => {
+  if (!MISTRAL_API_KEY) {
+    console.warn('Mistral API key is not set');
+    return null;
+  }
+
+  try {
+    console.log('Attempting to generate content with Mistral API...');
+    // Set a timeout for the fetch request to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MISTRAL_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'mistral-small-latest',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional content creator specializing in social media content. Create engaging, concise content that drives engagement and sales.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 800
+      }),
+      signal: controller.signal
+    });
+
+    // Clear the timeout
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Mistral API error: ${response.status}`, errorText);
+      throw new Error(`Mistral API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('Mistral API response received');
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('Mistral request timed out');
+    } else {
+      console.error('Mistral generation error:', error);
     }
     return null;
   }
@@ -437,10 +497,17 @@ const generateContentWithLLM = async (
 
     // Always use APIs, never fall back to mock content
     try {
-      // Try DeepSeek API first
-      console.log('Attempting to generate content with DeepSeek...');
-      apiUsed = 'deepseek';
-      content = await generateWithDeepSeek(prompt);
+      // Try Mistral API first
+      console.log('Attempting to generate content with Mistral...');
+      apiUsed = 'mistral';
+      content = await generateWithMistral(prompt);
+
+      // If Mistral fails, try DeepSeek API
+      if (!content) {
+        console.log('Mistral failed, trying DeepSeek...');
+        apiUsed = 'deepseek';
+        content = await generateWithDeepSeek(prompt);
+      }
 
       // If DeepSeek fails, try Groq API
       if (!content) {

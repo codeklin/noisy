@@ -345,7 +345,7 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
 
             <div className="flex items-center space-x-2 pt-4 border-t bg-blue-50 p-3 rounded-md my-4">
               <div className="text-sm text-gray-700">
-                <span className="font-medium">Using DeepSeek & Groq APIs</span> - Generating high-quality viral content with advanced AI models
+                <span className="font-medium">Using Mistral, DeepSeek & Groq APIs</span> - Generating high-quality viral content with advanced AI models
               </div>
             </div>
           </div>

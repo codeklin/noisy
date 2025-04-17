@@ -41,6 +41,7 @@ This project is built with modern web technologies:
 - **React Router**: Routing library for React applications
 - **Supabase**: Backend-as-a-Service for authentication and database
 - **Paystack**: Nigerian payment gateway for secure transactions
+- **Mistral AI**: State-of-the-art language model for exceptional content generation
 - **DeepSeek**: Advanced AI model for superior content generation
 - **Groq**: Ultra-fast AI model for high-quality content generation
 - **HuggingFace**: AI models for natural language processing
@@ -75,6 +76,7 @@ The application will be available at `http://localhost:8080`.
 To use the AI features and payment processing, you'll need to set up the following environment variables in a `.env` file:
 
 ```env
+MISTRAL_API_KEY=your_mistral_api_key_here
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
 GROQ_API_KEY=your_groq_api_key
 HUGGINGFACE_API_KEY=your_huggingface_api_key
@@ -108,11 +110,13 @@ npm run preview
 
 ### June 2024
 
-- **DeepSeek API Integration**: Using DeepSeek's advanced AI model for superior content generation
-- **Groq API Integration**: Added Groq's ultra-fast AI model as a reliable backup
-- **HuggingFace API Backup**: Added HuggingFace as a secondary backup API for reliable content generation
+- **Mistral AI Integration**: Using Mistral's state-of-the-art language model for exceptional content generation
+- **DeepSeek API Integration**: Added DeepSeek's advanced AI model as a reliable backup
+- **Groq API Integration**: Added Groq's ultra-fast AI model as a secondary backup
+- **HuggingFace API Backup**: Added HuggingFace as a tertiary backup API for reliable content generation
 - **Improved State Persistence**: Enhanced state management to maintain content when switching windows
 - **Cancel Generation**: Added ability to cancel content generation in progress
+- **Progressive Web App**: Added full PWA support for offline access and app installation
 
 ### May 2024
 

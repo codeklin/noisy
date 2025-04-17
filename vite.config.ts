@@ -57,6 +57,17 @@ export default defineConfig(({ mode }) => {
                 },
               },
             },
+            {
+              urlPattern: /^https:\/\/api\.mistral\.ai\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24, // 1 day
+                },
+              },
+            },
           ],
         },
       }),
@@ -72,6 +83,7 @@ export default defineConfig(({ mode }) => {
       'process.env.TOGETHER_API_KEY': JSON.stringify(env.TOGETHER_API_KEY),
       'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY),
       'process.env.DEEPSEEK_API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
+      'process.env.MISTRAL_API_KEY': JSON.stringify(env.MISTRAL_API_KEY),
       'process.env.VITE_PAYSTACK_PUBLIC_KEY': JSON.stringify(env.VITE_PAYSTACK_PUBLIC_KEY),
     }
   };
