@@ -93,6 +93,52 @@ npm run build
 npm run preview
 ```
 
+## Testing
+
+### Unit Testing
+
+Noisy uses Vitest for unit testing. The test suite includes tests for components, utilities, and hooks.
+
+```bash
+# Run all unit tests
+npm test
+
+# Run tests in watch mode (for development)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+To add new unit tests:
+
+1. Create a test file with the naming pattern `*.test.tsx` or `*.spec.tsx` next to the file you want to test
+2. Use the testing utilities in `src/test/utils.tsx` for rendering components with all required providers
+3. Run the tests to ensure they pass
+
+### End-to-End Testing
+
+Noisy uses Playwright for end-to-end testing. The E2E tests simulate real user interactions in multiple browsers.
+
+```bash
+# Run all E2E tests
+npm run e2e
+
+# Run E2E tests with UI mode
+npm run e2e:ui
+
+# Run E2E tests in debug mode
+npm run e2e:debug
+```
+
+To add new E2E tests:
+
+1. Create a test file in the `e2e-tests` directory with the naming pattern `*.spec.ts`
+2. Use Playwright's page object model to interact with the application
+3. Run the tests to ensure they pass
+
+E2E tests are also run automatically on GitHub Actions for every push and pull request.
+
 ## Project Structure
 
 ```text
@@ -117,6 +163,10 @@ npm run preview
 - **Improved State Persistence**: Enhanced state management to maintain content when switching windows
 - **Cancel Generation**: Added ability to cancel content generation in progress
 - **Progressive Web App**: Added full PWA support for offline access and app installation
+- **Code Splitting**: Implemented React.lazy and Suspense for improved performance
+- **Error Handling**: Added global error boundaries and improved API error handling
+- **Accessibility Checker**: Added development-mode accessibility checker
+- **End-to-End Testing**: Added Playwright for comprehensive E2E testing
 
 ### May 2024
 

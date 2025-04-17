@@ -2,6 +2,7 @@ import { BrandInfo, Post, PostPlan } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { format, addDays } from "date-fns";
 import { getCharacterLimit } from "./contentLengthLimits";
+import { fetchWithRetry, handleApiError, parseJsonResponse } from './apiUtils';
 
 // We'll use a mock generator when no API keys are available
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -194,7 +195,7 @@ const generateWithMistral = async (prompt: string): Promise<string | null> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetchWithRetry('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -216,7 +217,7 @@ const generateWithMistral = async (prompt: string): Promise<string | null> => {
         max_tokens: 800
       }),
       signal: controller.signal
-    });
+    }, 3, 1000);
 
     // Clear the timeout
     clearTimeout(timeoutId);
@@ -227,14 +228,14 @@ const generateWithMistral = async (prompt: string): Promise<string | null> => {
       throw new Error(`Mistral API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const data = await parseJsonResponse(response);
     console.log('Mistral API response received');
     return data.choices?.[0]?.message?.content?.trim() || null;
   } catch (error: any) {
     if (error.name === 'AbortError') {
       console.error('Mistral request timed out');
     } else {
-      console.error('Mistral generation error:', error);
+      handleApiError(error, 'Failed to generate content with Mistral API.');
     }
     return null;
   }
@@ -413,7 +414,7 @@ const generateWithTogether = async (prompt: string): Promise<string | null> => {
 
 // Generate mock content for testing without API keys
 const generateMockContent = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo): string => {
-  const { brandName, targetAudience, tone } = brandInfo;
+  const { brandName, targetAudience } = brandInfo;
 
   // Platform-specific templates
   const templates = {
