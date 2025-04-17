@@ -6,6 +6,8 @@ import { format, addDays } from "date-fns";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 import { createBrandContentPrompt, createViralNigerianContentPrompt, createViralSalesCopyPrompt } from './promptTemplates';
 
@@ -74,7 +76,8 @@ const generateWithGemini = async (prompt: string): Promise<string | null> => {
 
   try {
     console.log('Attempting to generate content with Gemini API...');
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
+    // Use the correct API endpoint for Gemini 1.0 Pro
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -106,6 +109,9 @@ const generateWithGemini = async (prompt: string): Promise<string | null> => {
     if (data.candidates && data.candidates[0] && data.candidates[0].content &&
         data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
       return data.candidates[0].content.parts[0].text.trim();
+    } else if (data.candidates && data.candidates[0] && data.candidates[0].text) {
+      // Handle alternative response format
+      return data.candidates[0].text.trim();
     }
     console.warn('Unexpected Gemini API response format', data);
     return null;
@@ -124,7 +130,12 @@ const generateWithHuggingFace = async (prompt: string): Promise<string | null> =
 
   try {
     console.log('Attempting to generate content with HuggingFace API...');
-    const response = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
+    // Set a timeout for the fetch request to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    // Use a smaller model that's available for free
+    const response = await fetch('https://api-inference.huggingface.co/models/facebook/opt-350m', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -138,8 +149,12 @@ const generateWithHuggingFace = async (prompt: string): Promise<string | null> =
           top_p: 0.95,
           repetition_penalty: 1.2,
         }
-      })
+      }),
+      signal: controller.signal
     });
+
+    // Clear the timeout
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -150,8 +165,130 @@ const generateWithHuggingFace = async (prompt: string): Promise<string | null> =
     const data = await response.json();
     console.log('HuggingFace API response received');
     return data.generated_text?.trim() || null;
-  } catch (error) {
-    console.error('HuggingFace generation error:', error);
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('HuggingFace request timed out');
+    } else {
+      console.error('HuggingFace generation error:', error);
+    }
+    return null;
+  }
+};
+
+// Try to generate content using DeepSeek API (free tier available)
+const generateWithDeepSeek = async (prompt: string): Promise<string | null> => {
+  if (!DEEPSEEK_API_KEY) {
+    console.warn('DeepSeek API key is not set');
+    return null;
+  }
+
+  try {
+    console.log('Attempting to generate content with DeepSeek API...');
+    // Set a timeout for the fetch request to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional content creator specializing in social media content. Create engaging, concise content that drives engagement and sales.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 800
+      }),
+      signal: controller.signal
+    });
+
+    // Clear the timeout
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`DeepSeek API error: ${response.status}`, errorText);
+      throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('DeepSeek API response received');
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('DeepSeek request timed out');
+    } else {
+      console.error('DeepSeek generation error:', error);
+    }
+    return null;
+  }
+};
+
+// Try to generate content using Groq API (free tier available)
+const generateWithGroq = async (prompt: string): Promise<string | null> => {
+  if (!GROQ_API_KEY) {
+    console.warn('Groq API key is not set');
+    return null;
+  }
+
+  try {
+    console.log('Attempting to generate content with Groq API...');
+    // Set a timeout for the fetch request to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama2-70b-4096',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional content creator specializing in social media content. Create engaging, concise content that drives engagement.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 800
+      }),
+      signal: controller.signal
+    });
+
+    // Clear the timeout
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Groq API error: ${response.status}`, errorText);
+      throw new Error(`Groq API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('Groq API response received');
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('Groq request timed out');
+    } else {
+      console.error('Groq generation error:', error);
+    }
     return null;
   }
 };
@@ -165,6 +302,10 @@ const generateWithTogether = async (prompt: string): Promise<string | null> => {
 
   try {
     console.log('Attempting to generate content with Together API...');
+    // Set a timeout for the fetch request to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch('https://api.together.xyz/v1/completions', {
       method: 'POST',
       headers: {
@@ -172,14 +313,19 @@ const generateWithTogether = async (prompt: string): Promise<string | null> => {
         'Authorization': `Bearer ${TOGETHER_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'mistralai/Mistral-7B-Instruct-v0.2',
+        // Use a smaller model that's available for free
+        model: 'togethercomputer/RedPajama-INCITE-Chat-3B-v1',
         prompt: prompt,
         max_tokens: 500,
         temperature: 0.7,
         top_p: 0.95,
         repetition_penalty: 1.2,
-      })
+      }),
+      signal: controller.signal
     });
+
+    // Clear the timeout
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -190,8 +336,12 @@ const generateWithTogether = async (prompt: string): Promise<string | null> => {
     const data = await response.json();
     console.log('Together API response received');
     return data.choices?.[0]?.text?.trim() || null;
-  } catch (error) {
-    console.error('Together.ai generation error:', error);
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('Together.ai request timed out');
+    } else {
+      console.error('Together.ai generation error:', error);
+    }
     return null;
   }
 };
@@ -279,29 +429,51 @@ const generateContentWithLLM = async (
   const prompt = createPromptForPlatform(platform, theme, brandInfo, viralContentData);
   console.log(`Generating content for ${platform} with theme: ${theme}`);
 
+  // Track which API we're using for better error handling
+  let apiUsed = '';
+
   try {
-    // Try Gemini first (best free option)
-    console.log('Attempting to generate content with Gemini...');
-    let content = await generateWithGemini(prompt);
+    let content = null;
 
-    // If Gemini fails, try Together.ai
-    if (!content) {
-      console.log('Gemini failed, trying Together.ai...');
-      content = await generateWithTogether(prompt);
+    // Always use APIs, never fall back to mock content
+    try {
+      // Try DeepSeek API first
+      console.log('Attempting to generate content with DeepSeek...');
+      apiUsed = 'deepseek';
+      content = await generateWithDeepSeek(prompt);
+
+      // If DeepSeek fails, try Groq API
+      if (!content) {
+        console.log('DeepSeek failed, trying Groq...');
+        apiUsed = 'groq';
+        content = await generateWithGroq(prompt);
+      }
+
+      // If Groq fails for any reason, try HuggingFace as backup
+      if (!content) {
+        console.log('Groq failed, trying HuggingFace...');
+        apiUsed = 'huggingface';
+        content = await generateWithHuggingFace(prompt);
+      }
+    } catch (apiError) {
+      console.error('API error caught:', apiError);
+
+      // Show a toast notification about the error
+      try {
+        import('sonner').then(({ toast }) => {
+          toast.error("API error. Please try again later.");
+        }).catch(() => {});
+      } catch (e) {}
+
+      // Rethrow the error to be handled by the caller
+      throw new Error('Failed to generate content with APIs');
     }
 
-    // If Together.ai fails, try Hugging Face
-    if (!content) {
-      console.log('Together.ai failed, trying HuggingFace...');
-      content = await generateWithHuggingFace(prompt);
-    }
-
-    // If all APIs fail, use mock content
-    if (!content) {
-      console.log('All API attempts failed. Using mock content generator as fallback');
-      content = generateMockContent(platform, theme, brandInfo);
+    if (content) {
+      console.log(`Successfully generated content with ${apiUsed}`);
     } else {
-      console.log('Successfully generated content with AI');
+      // If we still don't have content, throw an error
+      throw new Error('Failed to generate content with all available APIs');
     }
 
     // Clean up the response

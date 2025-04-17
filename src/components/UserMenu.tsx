@@ -11,14 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { User, LogOut, FileText, Settings } from "lucide-react";
+import { User, LogOut, FileText, Settings, Crown } from "lucide-react";
 
 interface UserMenuProps {
   isMobile?: boolean;
 }
 
 export default function UserMenu({ isMobile = false }: UserMenuProps) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isSuperUser } = useAuth();
   const navigate = useNavigate();
 
   // Helper function to get user initials
@@ -57,12 +57,18 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
       <div className="space-y-3">
         <div className="flex items-center gap-2 mb-2">
           <Avatar className="h-8 w-8 border-2 border-white">
-            <AvatarFallback className="bg-[#FF6B6B] text-white text-xs font-medium">
+            <AvatarFallback className={`${isSuperUser ? 'bg-[#FFD700]' : 'bg-[#FF6B6B]'} text-white text-xs font-medium`}>
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
           <div className="text-sm font-medium text-gray-500">
             Signed in as <span className="font-bold text-[#FF6B6B]">{user.email?.split("@")[0]}</span>
+            {isSuperUser && (
+              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <Crown className="h-3 w-3 mr-1 text-yellow-600" />
+                Admin
+              </span>
+            )}
           </div>
         </div>
 
@@ -104,15 +110,26 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="relative border-[#FF6B6B] bg-[#FF6B6B] text-white hover:bg-[#FF5252] hover:border-[#FF5252] p-0 overflow-hidden">
           <Avatar className="h-9 w-9 border-2 border-white">
-            <AvatarFallback className="bg-[#FF6B6B] text-white font-medium">
+            <AvatarFallback className={`${isSuperUser ? 'bg-[#FFD700]' : 'bg-[#FF6B6B]'} text-white font-medium`}>
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden md:inline ml-2 mr-2">{user.email?.split("@")[0]}</span>
+          <span className="hidden md:inline ml-2 mr-2">
+            {user.email?.split("@")[0]}
+            {isSuperUser && <Crown className="inline-block h-3 w-3 ml-1 text-yellow-300" />}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel className="text-[#FF6B6B] font-medium">My Account</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-[#FF6B6B] font-medium">
+          My Account
+          {isSuperUser && (
+            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              <Crown className="h-3 w-3 mr-1 text-yellow-600" />
+              Admin
+            </span>
+          )}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate("/saved-plans")} className="text-[#1a1e3a] hover:text-[#FF6B6B] focus:text-[#FF6B6B] focus:bg-[#FF6B6B]/10">
           <FileText className="h-4 w-4 mr-2 text-[#FF6B6B]" />

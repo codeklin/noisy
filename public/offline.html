@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noisy - Offline</title>
+  <link rel="icon" href="/plogo.png" type="image/png">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(to bottom right, #f8e1eb, #f0f4ff, #e6f7ff);
+      color: #1a1e3a;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #FF3B45;
+    }
+    
+    p {
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    
+    .button {
+      display: inline-block;
+      background-color: #6E5DC6;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .button:hover {
+      background-color: #5D4DB3;
+    }
+    
+    .offline-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/plogo.png" alt="Noisy Logo" class="logo">
+    <div class="offline-icon">📶</div>
+    <h1>You're Offline</h1>
+    <p>It looks like you're currently offline. Noisy requires an internet connection to generate content using our AI models.</p>
+    <p>Please check your internet connection and try again.</p>
+    <a href="/" class="button">Try Again</a>
+  </div>
+</body>
+</html>

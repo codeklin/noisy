@@ -15,13 +15,14 @@ import { toast } from "sonner";
 import { Facebook, Linkedin, Loader2, Twitter } from "lucide-react";
 import { parseJsonObject } from "@/types/supabase";
 import { SocialMediaConnection } from "@/types/socialMedia";
+import PWAStatus from "@/components/PWAStatus";
 
 export default function PreferencesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { preferences, updatePreferences, isLoading, isSaving } = useUserPreferences();
   const [socialConnections, setSocialConnections] = useState<SocialMediaConnection[]>(
-    user?.user_metadata?.social_media 
+    user?.user_metadata?.social_media
       ? parseJsonObject<SocialMediaConnection[]>(user?.user_metadata?.social_media)
       : []
   );
@@ -29,17 +30,17 @@ export default function PreferencesPage() {
   const updateSocialAccount = async (platform: 'facebook' | 'twitter' | 'linkedin', isConnected: boolean) => {
     try {
       // Update the social media connections state
-      const updatedConnections = socialConnections.map(conn => 
+      const updatedConnections = socialConnections.map(conn =>
         conn.platform === platform ? { ...conn, isConnected } : conn
       );
-      
+
       setSocialConnections(updatedConnections);
-      
+
       // In a real app, this would connect to the actual social media platform
       // Here we're just updating the user metadata
-      
+
       toast.success(`${isConnected ? 'Connected to' : 'Disconnected from'} ${platform}`);
-      
+
       // Update preferences to store this connection info
       await updatePreferences({
         socialMediaAccounts: {
@@ -47,7 +48,7 @@ export default function PreferencesPage() {
           [platform]: { connected: isConnected }
         }
       });
-      
+
     } catch (error) {
       console.error(`Error ${isConnected ? 'connecting to' : 'disconnecting from'} ${platform}:`, error);
       toast.error(`Failed to ${isConnected ? 'connect to' : 'disconnect from'} ${platform}`);
@@ -72,14 +73,15 @@ export default function PreferencesPage() {
       <main className="flex-1 bg-[#F5F4FF]/30 py-10">
         <div className="container max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-[#6E5DC6] mb-6">Your Preferences</h1>
-          
+
           <Tabs defaultValue="general" className="space-y-6">
             <TabsList>
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="social">Social Media</TabsTrigger>
               <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="app">App Settings</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="general" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -118,7 +120,7 @@ export default function PreferencesPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="social" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -135,13 +137,13 @@ export default function PreferencesPage() {
                         <div>
                           <p className="font-medium">Facebook</p>
                           <p className="text-sm text-gray-500">
-                            {socialConnections.find(c => c.platform === "facebook")?.isConnected 
-                              ? "Connected" 
+                            {socialConnections.find(c => c.platform === "facebook")?.isConnected
+                              ? "Connected"
                               : "Not connected"}
                           </p>
                         </div>
                       </div>
-                      <Button 
+                      <Button
                         variant={socialConnections.find(c => c.platform === "facebook")?.isConnected ? "destructive" : "default"}
                         size="sm"
                         onClick={() => {
@@ -152,22 +154,22 @@ export default function PreferencesPage() {
                         {socialConnections.find(c => c.platform === "facebook")?.isConnected ? "Disconnect" : "Connect"}
                       </Button>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <Twitter className="h-6 w-6 text-blue-400" />
                         <div>
                           <p className="font-medium">Twitter</p>
                           <p className="text-sm text-gray-500">
-                            {socialConnections.find(c => c.platform === "twitter")?.isConnected 
-                              ? "Connected" 
+                            {socialConnections.find(c => c.platform === "twitter")?.isConnected
+                              ? "Connected"
                               : "Not connected"}
                           </p>
                         </div>
                       </div>
-                      <Button 
+                      <Button
                         variant={socialConnections.find(c => c.platform === "twitter")?.isConnected ? "destructive" : "default"}
                         size="sm"
                         onClick={() => {
@@ -178,22 +180,22 @@ export default function PreferencesPage() {
                         {socialConnections.find(c => c.platform === "twitter")?.isConnected ? "Disconnect" : "Connect"}
                       </Button>
                     </div>
-                    
+
                     <Separator />
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <Linkedin className="h-6 w-6 text-blue-700" />
                         <div>
                           <p className="font-medium">LinkedIn</p>
                           <p className="text-sm text-gray-500">
-                            {socialConnections.find(c => c.platform === "linkedin")?.isConnected 
-                              ? "Connected" 
+                            {socialConnections.find(c => c.platform === "linkedin")?.isConnected
+                              ? "Connected"
                               : "Not connected"}
                           </p>
                         </div>
                       </div>
-                      <Button 
+                      <Button
                         variant={socialConnections.find(c => c.platform === "linkedin")?.isConnected ? "destructive" : "default"}
                         size="sm"
                         onClick={() => {
@@ -208,7 +210,7 @@ export default function PreferencesPage() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="notifications" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -231,6 +233,45 @@ export default function PreferencesPage() {
                         updatePreferences({ emailNotifications: checked });
                       }}
                     />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="app" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>App Settings</CardTitle>
+                  <CardDescription>
+                    Manage app installation and offline capabilities
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Offline Mode</Label>
+                      <p className="text-sm text-gray-500">
+                        Enable offline access to your content
+                      </p>
+                    </div>
+                    <Switch
+                      checked={!!preferences.offlineMode}
+                      onCheckedChange={(checked) => {
+                        updatePreferences({ offlineMode: checked });
+                        if (checked) {
+                          toast.success("Offline mode enabled. Your content will be available offline.");
+                        } else {
+                          toast.info("Offline mode disabled.");
+                        }
+                      }}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-4">
+                    <Label>App Status</Label>
+                    <PWAStatus />
                   </div>
                 </CardContent>
               </Card>

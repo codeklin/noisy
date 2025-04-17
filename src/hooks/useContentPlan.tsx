@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { BrandInfo, Post, PostPlan } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { generateContentPlan } from "@/lib/postGenerator";
@@ -127,14 +127,35 @@ export const useContentPlan = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
 
+  // Reference to track if generation should be cancelled
+  const cancelGenerationRef = useRef(false);
+
   const [useAI, setUseAI] = useState<boolean>(true);
 
   // Track whether we're using viral content generation
   const [useViralContent, setUseViralContent] = useState<boolean>(false);
   const [viralContentData, setViralContentData] = useState<any>(null);
 
+  // Store form data for regeneration after window switching
+  const [lastBrandInfo, setLastBrandInfo] = useState<BrandInfo | null>(null);
+  const [lastViralData, setLastViralData] = useState<any>(null);
+
+  // Function to cancel ongoing generation
+  const cancelGeneration = () => {
+    if (isGenerating) {
+      cancelGenerationRef.current = true;
+      toast.info("Cancelling content generation...");
+    }
+  };
+
   const generatePlan = async (brandInfo: BrandInfo, viralData?: any): Promise<PostPlan> => {
+    // Reset cancellation flag
+    cancelGenerationRef.current = false;
     setIsGenerating(true);
+
+    // Save the form data for potential regeneration
+    setLastBrandInfo(brandInfo);
+    if (viralData) setLastViralData(viralData);
 
     try {
       // If viral data is provided, update the state
@@ -176,6 +197,12 @@ export const useContentPlan = () => {
       // Force useAI to true for viral content generation
       const shouldUseAI = viralData ? true : useAI;
 
+      // Check if generation was cancelled
+      if (cancelGenerationRef.current) {
+        console.log('Content generation cancelled by user');
+        throw new Error('Content generation cancelled');
+      }
+
       if (shouldUseAI) {
         console.log('Using AI-powered content generation');
         // Pass viral content data if available
@@ -185,23 +212,36 @@ export const useContentPlan = () => {
         contentPlan = await generateContentPlan(brandInfo);
       }
 
+      // Check again if generation was cancelled
+      if (cancelGenerationRef.current) {
+        console.log('Content generation cancelled by user after API call');
+        throw new Error('Content generation cancelled');
+      }
+
       if (!contentPlan || contentPlan.length === 0) {
         console.error('Content plan generation returned empty results');
-        // Fallback to mock content if AI generation fails
-        console.log('Falling back to mock content generation');
-        contentPlan = generateMockContentPlan(brandInfo, viralData);
+        throw new Error('Failed to generate content plan with APIs');
       }
 
       console.log(`Successfully generated ${contentPlan.length} posts`);
       return contentPlan;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating content plan:", error);
-      // Fallback to mock content if there's an error
-      console.log('Error caught, falling back to mock content generation');
-      const mockPlan = generateMockContentPlan(brandInfo, viralData);
-      return mockPlan;
+
+      // If generation was cancelled, return empty array
+      if (cancelGenerationRef.current || error.message === 'Content generation cancelled') {
+        cancelGenerationRef.current = false;
+        return [];
+      }
+
+      // Show error toast
+      toast.error("Failed to generate content. Please try again later.");
+
+      // Return empty array instead of mock content
+      return [];
     } finally {
       setIsGenerating(false);
+      cancelGenerationRef.current = false;
     }
   };
 
@@ -296,6 +336,14 @@ export const useContentPlan = () => {
     }
   };
 
+  // Function to regenerate content using saved form data
+  const regenerateFromSavedData = async (): Promise<PostPlan | null> => {
+    if (lastBrandInfo) {
+      return await generatePlan(lastBrandInfo, lastViralData);
+    }
+    return null;
+  };
+
   return {
     generatePlan,
     saveContentPlan,
@@ -307,6 +355,10 @@ export const useContentPlan = () => {
     useViralContent,
     setUseViralContent,
     viralContentData,
-    setViralContentData
+    setViralContentData,
+    cancelGeneration,
+    regenerateFromSavedData,
+    lastBrandInfo,
+    lastViralData
   };
 };

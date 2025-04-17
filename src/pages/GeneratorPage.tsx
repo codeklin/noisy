@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { BrandInfo, PostPlan } from "@/types";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
+import { Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Trash2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useContentPlan } from "@/hooks/useContentPlan";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
@@ -27,7 +27,7 @@ const GeneratorPage = () => {
     return saved ? JSON.parse(saved) : [];
   });
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
-  const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
+  const { generatePlan, useAI, setUseAI, isGenerating, cancelGeneration, regenerateFromSavedData } = useContentPlan();
   const { user, isPaidUser, hasUsedGeneratorDemo, markGeneratorDemoAsUsed } = useAuth();
 
   // Save state to localStorage whenever it changes
@@ -57,10 +57,21 @@ const GeneratorPage = () => {
     };
 
     // Restore state when window regains focus
-    const handleFocus = () => {
+    const handleFocus = async () => {
       console.log('Window regained focus, checking for state...');
       const savedBrandInfo = localStorage.getItem('generatorBrandInfo');
       const savedPosts = localStorage.getItem('generatorPosts');
+
+      // If we're in the middle of generating content, try to recover
+      if (isGenerating) {
+        console.log('Content generation was interrupted, attempting to recover...');
+        const newPosts = await regenerateFromSavedData();
+        if (newPosts && newPosts.length > 0) {
+          setPosts(newPosts);
+          toast.success("Content generation recovered successfully!");
+        }
+        return;
+      }
 
       if (savedBrandInfo && (!brandInfo || Object.keys(brandInfo).length === 0)) {
         setBrandInfo(JSON.parse(savedBrandInfo));
@@ -80,7 +91,7 @@ const GeneratorPage = () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [brandInfo, posts]);
+  }, [brandInfo, posts, isGenerating, regenerateFromSavedData]);
 
   const handleFormSubmit = async (formData: BrandInfo) => {
     if (!user) {
@@ -281,6 +292,19 @@ const GeneratorPage = () => {
                         useAI={useAI}
                         setUseAI={setUseAI}
                       />
+
+                      {isGenerating && (
+                        <div className="mt-4 flex justify-center">
+                          <Button
+                            onClick={cancelGeneration}
+                            variant="destructive"
+                            className="gap-2"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            Cancel Generation
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -93,6 +93,8 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
     brandName: "Your Brand",
   });
 
+  // No mock content toggle anymore
+
   const handleAudienceChange = (audienceId: string, checked: boolean) => {
     setFormData((prev) => {
       if (checked) {
@@ -338,6 +340,12 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
               </Label>
               <div className="text-sm text-gray-500 ml-2">
                 {useAI ? "(Recommended for unique, tailored content)" : "(Using template-based generation)"}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-4 border-t bg-blue-50 p-3 rounded-md my-4">
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Using DeepSeek & Groq APIs</span> - Generating high-quality viral content with advanced AI models
               </div>
             </div>
           </div>

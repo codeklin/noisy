@@ -48,6 +48,8 @@ const BrandInfoForm = ({ onSubmit, isGenerating, useAI, setUseAI }: BrandInfoFor
     ctaExamples: "",
   });
 
+  // No mock content toggle anymore
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -231,6 +233,14 @@ const BrandInfoForm = ({ onSubmit, isGenerating, useAI, setUseAI }: BrandInfoFor
               </div>
               <div className="text-xs sm:text-sm text-gray-500 sm:ml-2">
                 {useAI ? "(Recommended for unique, tailored content)" : "(Using template-based generation)"}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center pt-4 border-t space-y-2 sm:space-y-0 sm:space-x-2 bg-blue-50 p-3 rounded-md">
+              <div className="flex items-center space-x-2">
+                <div className="text-xs sm:text-sm text-gray-700">
+                  <span className="font-medium">Using DeepSeek & Groq APIs</span> - Generating high-quality content with advanced AI models
+                </div>
               </div>
             </div>
           </div>

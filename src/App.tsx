@@ -4,6 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
+import { PWAProvider } from "@/context/PWAContext";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import OfflineNotification from "@/components/OfflineNotification";
 import MobileNav from "./components/MobileNav";
 import Index from "./pages/Index";
 import AboutPage from "./pages/AboutPage";
@@ -24,7 +27,10 @@ const App = () => (
     <Sonner />
     <BrowserRouter>
       <AuthProvider>
-        <div className="pb-16 md:pb-0"> {/* Add padding at the bottom for mobile nav */}
+        <PWAProvider>
+          <PWAInstallPrompt />
+          <OfflineNotification />
+          <div className="pb-16 md:pb-0"> {/* Add padding at the bottom for mobile nav */}
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<AboutPage />} />
@@ -38,7 +44,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <MobileNav /> {/* Mobile navigation bar */}
-        </div>
+          </div>
+        </PWAProvider>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>

@@ -9,6 +9,7 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   isPaidUser: boolean;
+  isSuperUser: boolean;
   hasUsedGeneratorDemo: boolean;
   hasUsedViralGeneratorDemo: boolean;
   updateUserPaymentStatus?: (status: boolean) => void;
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPaidUser, setIsPaidUser] = useState(false);
+  const [isSuperUser, setIsSuperUser] = useState(false);
   const [hasUsedGeneratorDemo, setHasUsedGeneratorDemo] = useState(false);
   const [hasUsedViralGeneratorDemo, setHasUsedViralGeneratorDemo] = useState(false);
   const navigate = useNavigate();
@@ -62,8 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkUserStatus = async () => {
       if (user) {
         try {
-          // In a real app, you would check the database for these statuses
-          // For now, we'll check localStorage as a simple demonstration
+          // Check if the user is a super user (007postit@gmail.com)
+          const isSuperUserEmail = user.email === '007postit@gmail.com';
+          setIsSuperUser(isSuperUserEmail);
+
+          // If super user, they're automatically considered paid and haven't used demos
+          if (isSuperUserEmail) {
+            setIsPaidUser(true);
+            setHasUsedGeneratorDemo(false);
+            setHasUsedViralGeneratorDemo(false);
+            return;
+          }
+
+          // For regular users, check localStorage as before
           const paymentStatus = localStorage.getItem(`payment_status_${user.id}`);
           const generatorDemoStatus = localStorage.getItem(`generator_demo_${user.id}`);
           const viralGeneratorDemoStatus = localStorage.getItem(`viral_generator_demo_${user.id}`);
@@ -90,14 +103,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const markGeneratorDemoAsUsed = () => {
-    if (user) {
+    if (user && !isSuperUser) {
       localStorage.setItem(`generator_demo_${user.id}`, 'true');
       setHasUsedGeneratorDemo(true);
     }
   };
 
   const markViralGeneratorDemoAsUsed = () => {
-    if (user) {
+    if (user && !isSuperUser) {
       localStorage.setItem(`viral_generator_demo_${user.id}`, 'true');
       setHasUsedViralGeneratorDemo(true);
     }
@@ -113,6 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       isLoading,
       isPaidUser,
+      isSuperUser,
       hasUsedGeneratorDemo,
       hasUsedViralGeneratorDemo,
       updateUserPaymentStatus,

@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ViralContentForm, { ViralContentFormData } from "@/components/ViralContentForm";
 import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
-import { ArrowDown, Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Zap, Flame, TrendingUp, Share2, Trash2 } from "lucide-react";
+import { ArrowDown, Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Zap, Flame, TrendingUp, Share2, Trash2, XCircle } from "lucide-react";
 import { useContentPlan } from "@/hooks/useContentPlan";
 import { useAuth } from "@/context/AuthContext";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
@@ -29,7 +29,7 @@ const ViralContentPage = () => {
     return saved ? JSON.parse(saved) : null;
   });
   const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
-  const { generatePlan, useAI, setUseAI, isGenerating } = useContentPlan();
+  const { generatePlan, useAI, setUseAI, isGenerating, cancelGeneration, regenerateFromSavedData } = useContentPlan();
   const { user, isPaidUser, hasUsedViralGeneratorDemo, markViralGeneratorDemoAsUsed } = useAuth();
 
   const handleFormSubmit = async (formData: ViralContentFormData) => {
@@ -149,10 +149,21 @@ const ViralContentPage = () => {
     };
 
     // Restore state when window regains focus
-    const handleFocus = () => {
+    const handleFocus = async () => {
       console.log('Window regained focus, checking for viral generator state...');
       const savedPosts = localStorage.getItem('viralGeneratorPosts');
       const savedFormData = localStorage.getItem('viralGeneratorFormData');
+
+      // If we're in the middle of generating content, try to recover
+      if (isGenerating) {
+        console.log('Viral content generation was interrupted, attempting to recover...');
+        const newPosts = await regenerateFromSavedData();
+        if (newPosts && newPosts.length > 0) {
+          setPosts(newPosts);
+          toast.success("Content generation recovered successfully!");
+        }
+        return;
+      }
 
       if (savedPosts && posts.length === 0) {
         setPosts(JSON.parse(savedPosts));
@@ -172,7 +183,7 @@ const ViralContentPage = () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [posts, lastFormData]);
+  }, [posts, lastFormData, isGenerating, regenerateFromSavedData]);
 
   // Use useEffect to log when posts state changes
   useEffect(() => {
@@ -322,6 +333,19 @@ const ViralContentPage = () => {
                         useAI={useAI}
                         setUseAI={setUseAI}
                       />
+
+                      {isGenerating && (
+                        <div className="mt-4 flex justify-center">
+                          <Button
+                            onClick={cancelGeneration}
+                            variant="destructive"
+                            className="gap-2"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            Cancel Generation
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
