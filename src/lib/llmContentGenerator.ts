@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { format, addDays } from "date-fns";
 import { getCharacterLimit } from "./contentLengthLimits";
 import { fetchWithRetry, handleApiError, parseJsonResponse } from './apiUtils';
+import analytics from './analytics';
 
 // We'll use a mock generator when no API keys are available
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -491,6 +492,9 @@ const generateContentWithLLM = async (
   brandInfo: BrandInfo,
   viralContentData?: any
 ): Promise<string> => {
+  // Start tracking generation time
+  const startTime = Date.now();
+
   // Get the character limit based on platform and content length preference
   const characterLimit = getCharacterLimit(
     platform,
@@ -555,6 +559,22 @@ const generateContentWithLLM = async (
 
     if (content) {
       console.log(`Successfully generated content with ${apiUsed}`);
+
+      // Track successful API usage
+      analytics.trackContentGeneration(
+        platform,
+        'ai_post',
+        true,
+        Date.now() - startTime,
+        {
+          apiUsed,
+          theme,
+          brandName: brandInfo.brandName,
+          contentLength: brandInfo.contentLength,
+          characterCount: content.length,
+          isViral: !!viralContentData
+        }
+      );
     } else {
       // If we still don't have content, throw an error
       throw new Error('Failed to generate content with all available APIs');
@@ -595,6 +615,17 @@ const generateContentWithLLM = async (
     return content;
   } catch (error) {
     console.error("Error generating content with LLM:", error);
+
+    // Track error
+    analytics.trackError('content_generation', 'Error generating content with LLM', {
+      platform,
+      theme,
+      brandName: brandInfo.brandName,
+      error: error instanceof Error ? error.message : String(error),
+      duration: Date.now() - startTime,
+      apiUsed
+    });
+
     // Fallback to mock content if everything fails
     console.log('Error caught, using mock content as fallback');
     return generateMockContent(platform, theme, brandInfo);

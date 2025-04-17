@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { PWAProvider } from "@/context/PWAContext";
 import AnalyticsProvider from "@/context/AnalyticsContext";
-import AnalyticsProvider from "@/context/AnalyticsContext";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import OfflineNotification from "@/components/OfflineNotification";
 import MobileNav from "./components/MobileNav";
@@ -122,8 +121,9 @@ const App = () => (
           </Routes>
           <MobileNav /> {/* Mobile navigation bar */}
           </div>
-        </PWAProvider>
-      </AuthProvider>
+          </PWAProvider>
+        </AuthProvider>
+      </AnalyticsProvider>
     </BrowserRouter>
   </QueryClientProvider>
 );

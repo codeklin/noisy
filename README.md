@@ -139,6 +139,41 @@ To add new E2E tests:
 
 E2E tests are also run automatically on GitHub Actions for every push and pull request.
 
+## Analytics
+
+Noisy includes a comprehensive analytics system to track user behavior and application performance. The analytics system is designed to help understand how users interact with the application and identify areas for improvement.
+
+### Analytics Features
+
+- **Page Views**: Track which pages users visit and how long they spend on each page
+- **Content Generation**: Track content generation events, including success rates, duration, and API usage
+- **User Actions**: Track specific user actions like clicking buttons, submitting forms, and downloading content
+- **Errors**: Track errors that occur during content generation, API calls, and other operations
+- **Performance**: Track performance metrics like page load time and API response time
+
+### Analytics Implementation
+
+The analytics system is implemented using a custom analytics service that can be found in `src/lib/analytics.ts`. This service provides methods for tracking different types of events and can be easily extended to integrate with third-party analytics services.
+
+To use analytics in a component:
+
+```tsx
+import { useAnalytics } from '@/context/AnalyticsContext';
+
+const MyComponent = () => {
+  const analytics = useAnalytics();
+
+  const handleButtonClick = () => {
+    // Track a user action
+    analytics.trackUserAction('click', 'Button Clicked');
+  };
+
+  return (
+    <button onClick={handleButtonClick}>Click Me</button>
+  );
+};
+```
+
 ## Project Structure
 
 ```text
@@ -167,6 +202,7 @@ E2E tests are also run automatically on GitHub Actions for every push and pull r
 - **Error Handling**: Added global error boundaries and improved API error handling
 - **Accessibility Checker**: Added development-mode accessibility checker
 - **End-to-End Testing**: Added Playwright for comprehensive E2E testing
+- **Analytics**: Added comprehensive analytics tracking for user behavior and content generation
 
 ### May 2024
 

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowDown, Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Zap, Flame, TrendingUp, Share2, Trash2, XCircle } from "lucide-react";
 import { useContentPlan } from "@/hooks/useContentPlan";
 import { useAuth } from "@/context/AuthContext";
+import { useAnalytics } from "@/context/AnalyticsContext";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
 import { PostPlan } from "@/types";
 import { exportToPDF, exportToDOCX } from "@/lib/exportHelpers";
@@ -17,6 +18,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ViralContentPage = () => {
+  const analytics = useAnalytics();
+
   // Load saved state from localStorage if available
   const [posts, setPosts] = useState<PostPlan>(() => {
     const saved = localStorage.getItem('viralGeneratorPosts');
@@ -33,15 +36,20 @@ const ViralContentPage = () => {
   const { user, isPaidUser, hasUsedViralGeneratorDemo, markViralGeneratorDemoAsUsed } = useAuth();
 
   const handleFormSubmit = async (formData: ViralContentFormData) => {
+    // Track form submission start
+    const startTime = Date.now();
+
     // Save the form data for potential regeneration
     setLastFormData(formData);
     if (!user) {
       toast.error("Please login to use the viral content generator.");
+      analytics.trackError('auth_required', 'User not logged in for viral content generation');
       return;
     }
 
     if (!isPaidUser && hasUsedViralGeneratorDemo) {
       toast.error("You've already used your free demo. Please subscribe to continue.");
+      analytics.trackError('subscription_required', 'Free demo already used');
       return;
     }
 
@@ -78,18 +86,54 @@ const ViralContentPage = () => {
         // Mark demo as used if user is not paid
         if (!isPaidUser && !hasUsedViralGeneratorDemo) {
           markViralGeneratorDemoAsUsed();
+
+          // Track free demo usage
+          analytics.trackUserAction('click', 'Used Free Viral Content Demo');
         }
+
+        // Track successful content generation
+        analytics.trackContentGeneration(
+          'viral_plan',
+          formData.postType,
+          true,
+          Date.now() - startTime,
+          {
+            audience: formData.audience,
+            contentGoal: formData.contentGoal,
+            copyStyle: formData.copyStyle,
+            tonePreference: formData.tonePreference,
+            useNigerianStyle: formData.useNigerianStyle,
+            useAI: useAI,
+            contentLength: formData.contentLength,
+            postCount: contentPlan.length
+          }
+        );
 
         toast.success("Viral content plan generated successfully!");
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         console.error("Content plan is empty or invalid", contentPlan);
+
+        // Track empty content plan error
+        analytics.trackError('content_generation', 'Empty or invalid content plan', {
+          useAI: useAI,
+          brandName: formData.brandName
+        });
+
         throw new Error("No content was generated");
       }
     } catch (error) {
       console.error("Error generating viral content plan:", error);
       toast.dismiss(); // Dismiss any loading toast
       toast.error("Failed to generate content plan. Please try again.");
+
+      // Track error
+      analytics.trackError('content_generation', 'Failed to generate viral content plan', {
+        error: error instanceof Error ? error.message : String(error),
+        useAI: useAI,
+        brandName: formData.brandName,
+        duration: Date.now() - startTime
+      });
     }
   };
 
@@ -108,9 +152,23 @@ const ViralContentPage = () => {
       await exportToDOCX(posts, platform);
 
       toast.success(`Content plan exported as document successfully!`);
+
+      // Track export action
+      analytics.trackUserAction('download', `Exported ${platform} content plan`, {
+        platform,
+        format: 'docx',
+        postCount: posts.filter(p => platform === 'all' || p.platform === platform).length
+      });
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Failed to export content plan. Please try again.");
+
+      // Track export error
+      analytics.trackError('export', 'Failed to export content plan', {
+        platform,
+        format: 'docx',
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   };
 

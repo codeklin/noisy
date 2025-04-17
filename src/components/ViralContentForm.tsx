@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useAnalytics } from "@/context/AnalyticsContext";
 
 // Define the audience types
 const audienceTypes = [
@@ -89,6 +90,7 @@ interface ViralContentFormProps {
 }
 
 const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralContentFormProps) => {
+  const analytics = useAnalytics();
   const [formData, setFormData] = useState<ViralContentFormData>({
     audience: [],
     contentGoal: "generate-leads",
@@ -141,11 +143,17 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
 
   const handleToggleChange = (checked: boolean) => {
     setFormData((prev) => ({ ...prev, useNigerianStyle: checked }));
+
+    // Track the toggle change
+    analytics.trackUserAction('click', `Nigerian Style Toggle: ${checked ? 'On' : 'Off'}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent event bubbling
+
+    // Start tracking form submission time
+    const startTime = Date.now();
 
     // Validation
     if (formData.audience.length === 0) {
@@ -153,6 +161,9 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
         closeButton: true,
         duration: 5000
       });
+
+      // Track validation error
+      analytics.trackError('form_validation', 'No target audience selected');
       return;
     }
 
@@ -161,6 +172,9 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
         closeButton: true,
         duration: 5000
       });
+
+      // Track validation error
+      analytics.trackError('form_validation', 'No age range selected');
       return;
     }
 
@@ -169,16 +183,42 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
         closeButton: true,
         duration: 5000
       });
+
+      // Track validation error
+      analytics.trackError('form_validation', 'No brand name entered');
       return;
     }
 
     try {
       console.log("Submitting form data:", formData);
+
+      // Track successful form submission
+      analytics.trackContentGeneration(
+        'viral',
+        formData.postType,
+        true,
+        Date.now() - startTime,
+        {
+          audience: formData.audience,
+          contentGoal: formData.contentGoal,
+          copyStyle: formData.copyStyle,
+          tonePreference: formData.tonePreference,
+          useNigerianStyle: formData.useNigerianStyle,
+          useAI: useAI,
+          contentLength: formData.contentLength
+        }
+      );
+
       // Call the onSubmit function with the form data
       onSubmit(formData);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("An error occurred while submitting the form. Please try again.");
+
+      // Track error
+      analytics.trackError('form_submission', 'Error submitting viral content form', {
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
 
     // Return false to prevent any default form behavior
