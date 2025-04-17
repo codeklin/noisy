@@ -1,6 +1,7 @@
 import { BrandInfo, Post, PostPlan } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { format, addDays } from "date-fns";
+import { getCharacterLimit } from "./contentLengthLimits";
 
 // We'll use a mock generator when no API keys are available
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -13,10 +14,10 @@ const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 import { createBrandContentPrompt, createViralNigerianContentPrompt, createViralSalesCopyPrompt } from './promptTemplates';
 
 // Create platform-specific prompts based on input parameters
-const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo, viralContentData?: any): string => {
+const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo, viralContentData?: any, characterLimit: number = 0): string => {
   // If viral content data is provided, use the appropriate viral content prompt
   if (viralContentData) {
-    const { audience, contentGoal, copyStyle, postType, tonePreference, ageRanges, targetDescription, useNigerianStyle } = viralContentData;
+    const { audience, contentGoal, copyStyle, postType, tonePreference, ageRanges, targetDescription, useNigerianStyle, brandName } = viralContentData;
 
     // Map form values to expected prompt parameters
     const mappedGoal = contentGoal === 'get-followers' ? 'Get followers' :
@@ -48,7 +49,9 @@ const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', 
         mappedPostType as any,
         mappedTone as any,
         ageRangeStr,
-        targetDescription
+        targetDescription,
+        characterLimit,
+        brandName
       );
     } else {
       return createViralSalesCopyPrompt(
@@ -59,13 +62,15 @@ const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', 
         mappedPostType as any,
         mappedTone as any,
         ageRangeStr,
-        targetDescription
+        targetDescription,
+        characterLimit,
+        brandName
       );
     }
   }
 
   // If no viral content data, use the standard brand content prompt
-  return createBrandContentPrompt(platform, theme, brandInfo);
+  return createBrandContentPrompt(platform, theme, brandInfo, characterLimit);
 };
 
 // Try to generate content using Google Gemini API (free tier available)
@@ -485,8 +490,16 @@ const generateContentWithLLM = async (
   brandInfo: BrandInfo,
   viralContentData?: any
 ): Promise<string> => {
+  // Get the character limit based on platform and content length preference
+  const characterLimit = getCharacterLimit(
+    platform,
+    brandInfo.contentLength || 'full'
+  );
+
+  console.log(`Generating content for ${platform} with length limit: ${characterLimit} characters`);
+
   // Create the appropriate prompt based on whether viral content data is provided
-  const prompt = createPromptForPlatform(platform, theme, brandInfo, viralContentData);
+  const prompt = createPromptForPlatform(platform, theme, brandInfo, viralContentData, characterLimit);
   console.log(`Generating content for ${platform} with theme: ${theme}`);
 
   // Track which API we're using for better error handling
@@ -528,7 +541,10 @@ const generateContentWithLLM = async (
       // Show a toast notification about the error
       try {
         import('sonner').then(({ toast }) => {
-          toast.error("API error. Please try again later.");
+          toast.error("API error. Please try again later.", {
+            duration: 5000,
+            closeButton: true
+          });
         }).catch(() => {});
       } catch (e) {}
 
@@ -555,6 +571,25 @@ const generateContentWithLLM = async (
     // Remove explanatory headings like HOOK, BODY, etc.
     content = content.replace(/^(HOOK|BODY|SOCIAL PROOF|CTA|CALL TO ACTION|INTRODUCTION|CONCLUSION):\s*/gim, '');
     content = content.replace(/\n(HOOK|BODY|SOCIAL PROOF|CTA|CALL TO ACTION|INTRODUCTION|CONCLUSION):\s*/gim, '\n');
+
+    // Enforce character limit if needed
+    if (characterLimit > 0 && content.length > characterLimit) {
+      console.log(`Truncating content from ${content.length} to ${characterLimit} characters`);
+      content = content.substring(0, characterLimit);
+
+      // Make sure we don't cut in the middle of a word or sentence
+      const lastPeriod = content.lastIndexOf('.');
+      const lastSpace = content.lastIndexOf(' ');
+
+      // If we have a period in the last 20% of the content, cut there
+      if (lastPeriod > characterLimit * 0.8) {
+        content = content.substring(0, lastPeriod + 1);
+      }
+      // Otherwise cut at the last space
+      else if (lastSpace > 0) {
+        content = content.substring(0, lastSpace);
+      }
+    }
 
     return content;
   } catch (error) {

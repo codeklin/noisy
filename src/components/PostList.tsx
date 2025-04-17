@@ -69,7 +69,10 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
               post={post}
               onEdit={() => handleEditClick(post)}
               onSave={(name) => {
-                toast.success(`Content saved as "${name}"`);
+                toast.success(`Content saved as "${name}"`, {
+                  closeButton: true,
+                  duration: 5000
+                });
                 // In a real app, this would save to a database
               }}
             />

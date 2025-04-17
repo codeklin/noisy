@@ -7,6 +7,7 @@ export interface BrandInfo {
   tone: string;
   specialDays: string;
   ctaExamples: string;
+  contentLength?: 'short' | 'mid' | 'full';
 }
 
 export interface Post {

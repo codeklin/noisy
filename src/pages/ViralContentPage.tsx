@@ -48,13 +48,14 @@ const ViralContentPage = () => {
     try {
       // Create a minimal brand info object for the generator
       const brandInfo = {
-        brandName: formData.brandName || "Your Brand",
+        brandName: formData.brandName, // No fallback - we validate this in the form
         businessDescription: formData.targetDescription || "A business targeting " + formData.audience.join(", "),
         targetAudience: formData.audience.join(", "),
         contentThemes: [formData.postType],
         tone: formData.tonePreference,
         specialDays: "",
-        ctaExamples: ""
+        ctaExamples: "",
+        contentLength: formData.contentLength
       };
 
       // Show loading toast with ID for tracking
@@ -381,7 +382,24 @@ const ViralContentPage = () => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-[#FF3B45]">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-gray-500 hover:text-[#FF3B45]"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        "Unpopular opinion: [controversial statement about your industry]\n\n" +
+                                        "Most people think [common belief], but here's the truth...\n\n" +
+                                        "[3 bullet points of contrarian wisdom]\n\n" +
+                                        "I've helped [number] clients achieve [result] by ignoring conventional wisdom.\n\n" +
+                                        "Agree or disagree? Drop your thoughts below 👇"
+                                      );
+                                      toast.success("Facebook template copied to clipboard", {
+                                        closeButton: true,
+                                        duration: 3000
+                                      });
+                                    }}
+                                  >
                                     <Copy className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
@@ -412,7 +430,22 @@ const ViralContentPage = () => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-[#0B2D93]">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-gray-500 hover:text-[#0B2D93]"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        "I analyzed [large number] of [content type] to find what actually works in [year].\n\n" +
+                                        "Here are the [number] patterns that drive engagement:\n\n" +
+                                        "(A thread 🧵)"
+                                      );
+                                      toast.success("Twitter template copied to clipboard", {
+                                        closeButton: true,
+                                        duration: 3000
+                                      });
+                                    }}
+                                  >
                                     <Copy className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
@@ -441,7 +474,24 @@ const ViralContentPage = () => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-[#FF3B45]">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-gray-500 hover:text-[#FF3B45]"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        "I've reviewed [number]+ [type of content/businesses] in the past [timeframe].\n\n" +
+                                        "These are the [number] biggest mistakes I see people make:\n\n" +
+                                        "[Hint at most surprising mistake]\n\n" +
+                                        "Swipe to see all [number] mistakes (and how to fix them) 👉\n\n" +
+                                        "[Include relevant hashtags]"
+                                      );
+                                      toast.success("LinkedIn template copied to clipboard", {
+                                        closeButton: true,
+                                        duration: 3000
+                                      });
+                                    }}
+                                  >
                                     <Copy className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
@@ -472,7 +522,26 @@ const ViralContentPage = () => {
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-500 hover:text-[#0B2D93]">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-gray-500 hover:text-[#0B2D93]"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        "HOOK: POV: You've been doing [common activity] wrong your entire life\n\n" +
+                                        "SCRIPT:\n\n" +
+                                        "Did you know that [surprising fact]?\n\n" +
+                                        "Most people make these 3 mistakes:\n\n" +
+                                        "[List 3 quick mistakes with visual demonstrations]\n\n" +
+                                        "Here's what to do instead: [quick solution]\n\n" +
+                                        "CAPTION: Tag someone who needs to see this! 👀 #[relevant hashtags]"
+                                      );
+                                      toast.success("Instagram template copied to clipboard", {
+                                        closeButton: true,
+                                        duration: 3000
+                                      });
+                                    }}
+                                  >
                                     <Copy className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
@@ -638,7 +707,10 @@ const ViralContentPage = () => {
           posts={posts}
           onSaveComplete={(id) => {
             if (id) {
-              toast.success("Content plan saved successfully!");
+              toast.success("Content plan saved successfully!", {
+                closeButton: true,
+                duration: 5000
+              });
             }
           }}
         />

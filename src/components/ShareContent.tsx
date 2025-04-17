@@ -35,7 +35,10 @@ export function ShareContent({ post }: ShareContentProps) {
 
   const handleShare = async () => {
     if (selectedPlatforms.length === 0) {
-      toast.error("Please select at least one platform to share to");
+      toast.error("Please select at least one platform to share to", {
+        closeButton: true,
+        duration: 5000
+      });
       return;
     }
 
@@ -49,12 +52,18 @@ export function ShareContent({ post }: ShareContentProps) {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Show success message
-      toast.success(`Content shared to ${selectedPlatforms.join(", ")}!`);
+      toast.success(`Content shared to ${selectedPlatforms.join(", ")}!`, {
+        closeButton: true,
+        duration: 5000
+      });
       setIsOpen(false);
       setSelectedPlatforms([]);
     } catch (error) {
       console.error("Error sharing content:", error);
-      toast.error("Failed to share content. Please try again.");
+      toast.error("Failed to share content. Please try again.", {
+        closeButton: true,
+        duration: 5000
+      });
     } finally {
       setIsSharing(false);
     }

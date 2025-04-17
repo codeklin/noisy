@@ -15,12 +15,12 @@ const PWAInstallPrompt = () => {
   useEffect(() => {
     // Check if the app is already installed
     const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches;
-    
+
     // Don't show the prompt if already installed
     if (isAppInstalled) {
       return;
     }
-    
+
     // Check if the user has dismissed the prompt before
     const hasPromptBeenDismissed = localStorage.getItem('pwaPromptDismissed');
     if (hasPromptBeenDismissed) {
@@ -54,7 +54,7 @@ const PWAInstallPrompt = () => {
 
     // Wait for the user to respond to the prompt
     const choiceResult = await installPrompt.userChoice;
-    
+
     if (choiceResult.outcome === 'accepted') {
       console.log('User accepted the install prompt');
     } else {
@@ -77,7 +77,7 @@ const PWAInstallPrompt = () => {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:w-80">
+    <div className="fixed bottom-20 left-4 right-4 z-50 md:bottom-4 md:left-auto md:right-4 md:w-80">
       <Card className="border-2 border-[#FF3B45]/20 shadow-lg">
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-2">
@@ -85,29 +85,29 @@ const PWAInstallPrompt = () => {
               <img src="/plogo.png" alt="Noisy Logo" className="w-8 h-8 mr-2" />
               <h3 className="font-semibold text-lg">Install Noisy</h3>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleDismiss}
               className="h-8 w-8"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <p className="text-sm text-gray-600 mb-3">
             Install Noisy on your device for quick access even when offline.
           </p>
-          
+
           <div className="flex justify-end space-x-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleDismiss}
             >
               Not now
             </Button>
-            <Button 
+            <Button
               onClick={handleInstallClick}
               size="sm"
               className="bg-[#6E5DC6] hover:bg-[#5D4DB3]"

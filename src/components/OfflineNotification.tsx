@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertCircle, WifiOff, RefreshCw } from 'lucide-react';
+import { AlertCircle, WifiOff, RefreshCw, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import useOnlineStatus from '@/hooks/useOnlineStatus';
@@ -17,12 +17,12 @@ const OfflineNotification = () => {
       // When reconnected, show the reconnected message
       setShowNotification(false);
       setShowReconnected(true);
-      
-      // Hide the reconnected message after 5 seconds
+
+      // Hide the reconnected message after 3 seconds
       const timer = setTimeout(() => {
         setShowReconnected(false);
-      }, 5000);
-      
+      }, 3000);
+
       return () => clearTimeout(timer);
     } else {
       setShowNotification(false);
@@ -50,9 +50,9 @@ const OfflineNotification = () => {
             <AlertDescription className="flex-1">
               You're offline. Some features may be unavailable.
             </AlertDescription>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleRefresh}
               className="ml-2 bg-white border-red-200 text-red-800 hover:bg-red-100"
             >
@@ -62,14 +62,22 @@ const OfflineNotification = () => {
           </div>
         </Alert>
       )}
-      
+
       {showReconnected && (
         <Alert className="bg-green-50 border-green-200 text-green-800 shadow-lg max-w-md w-full">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className="flex-1">
               {reconnecting ? 'Reconnecting...' : 'You\'re back online!'}
             </AlertDescription>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowReconnected(false)}
+              className="p-0 h-6 w-6 rounded-full hover:bg-green-100"
+            >
+              <X className="h-3 w-3" />
+            </Button>
           </div>
         </Alert>
       )}

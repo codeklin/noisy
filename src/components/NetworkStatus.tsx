@@ -10,16 +10,18 @@ const NetworkStatus = () => {
     const handleStatusChange = () => {
       const online = navigator.onLine;
       setIsOnline(online);
-      
+
       if (online) {
         toast.success('You are back online!', {
           description: 'All features are now available.',
           duration: 3000,
+          closeButton: true,
         });
       } else {
         toast.error('You are offline', {
           description: 'Some features may be unavailable.',
           duration: 5000,
+          closeButton: true,
         });
       }
     };

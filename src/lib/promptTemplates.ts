@@ -11,10 +11,13 @@ export const createViralNigerianContentPrompt = (
   postType: 'Storytelling' | 'How-To' | 'Mistake Post' | 'Listicle' | 'CTA Promo',
   tone: 'Authoritative' | 'Empathetic' | 'Witty',
   ageRange: string,
-  extraDescription: string = ''
+  extraDescription: string = '',
+  characterLimit: number = 0,
+  brandName: string = ''
 ): string => {
   return `
 You are a viral social media strategist specializing in Nigerian content. Given the following inputs:
+- Brand Name: ${brandName || 'Your Brand'}
 - Audience: Nigerian ${audience}
 - Goal: ${goal}
 - Style: ${style}
@@ -57,7 +60,11 @@ ${platform === 'facebook' ? '- Use paragraph breaks for readability\n- Conversat
 
 Write like top Nigerian creators such as Fisayo Fosudo or Matt Lakajev. Focus on creating content that would make someone stop scrolling.
 
-IMPORTANT: DO NOT include any emojis. DO NOT include section labels like "HOOK:", "BODY:", "CTA:", etc. Write the content as a cohesive piece without these labels.
+IMPORTANT:
+- DO NOT include any emojis
+- DO NOT include section labels like "HOOK:", "BODY:", "CTA:", etc.
+- Write the content as a cohesive piece without these labels
+- STRICTLY LIMIT your response to a maximum of ${characterLimit} characters
 `;
 };
 
@@ -72,11 +79,14 @@ export const createViralSalesCopyPrompt = (
   postType: 'Storytelling' | 'How-To' | 'Mistake Post' | 'Listicle' | 'CTA Promo',
   tone: 'Authoritative' | 'Empathetic' | 'Witty',
   ageRange: string,
-  extraDescription: string = ''
+  extraDescription: string = '',
+  characterLimit: number = 0,
+  brandName: string = ''
 ): string => {
   // Template inspired by top creators like Tim Keen, Matt Gray, Charlie Hills, etc.
   return `
 You are a viral sales copy expert who studies strategies of top creators like Tim Keen, Matt Gray, Charlie Hills, and Audrey Chia. Given the following inputs:
+- Brand Name: ${brandName || 'Your Brand'}
 - Audience: ${audience}
 - Goal: ${goal}
 - Style: ${style}
@@ -120,7 +130,11 @@ POST STRUCTURE GUIDE (do not include these labels in your output):
 
 Write in a ${tone} tone that matches the ${style} style. Make it feel authentic and valuable, not salesy.
 
-IMPORTANT: DO NOT include any emojis. DO NOT include section labels like "HOOK:", "BODY:", "CTA:", etc. Write the content as a cohesive piece without these labels.
+IMPORTANT:
+- DO NOT include any emojis
+- DO NOT include section labels like "HOOK:", "BODY:", "CTA:", etc.
+- Write the content as a cohesive piece without these labels
+- STRICTLY LIMIT your response to a maximum of ${characterLimit} characters
 `;
 };
 
@@ -130,7 +144,8 @@ IMPORTANT: DO NOT include any emojis. DO NOT include section labels like "HOOK:"
 export const createBrandContentPrompt = (
   platform: 'facebook' | 'twitter' | 'linkedin',
   theme: string,
-  brandInfo: any
+  brandInfo: any,
+  characterLimit: number = 0
 ): string => {
   return `
 Create a social media post for ${platform.toUpperCase()} with the theme "${theme}" for a brand called "${brandInfo.brandName}".
@@ -157,6 +172,7 @@ IMPORTANT:
 - Make sure the content is unique and specifically tailored to this brand
 - Ensure the content reflects the specified theme: "${theme}"
 - Match the brand's tone: "${brandInfo.tone}"
+- STRICTLY LIMIT your response to a maximum of ${characterLimit} characters
 
 POST CONTENT:
 `;

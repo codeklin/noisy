@@ -21,7 +21,8 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
   return (
     <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
-        <TabsList className="h-auto p-1 w-full sm:w-auto overflow-x-auto">
+        <div className="overflow-x-auto pb-2 -mx-2 px-2">
+          <TabsList className="h-auto p-1 w-max sm:w-auto">
           <TabsTrigger value="all" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
             All
           </TabsTrigger>
@@ -39,6 +40,7 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
             <span className="hidden xs:inline">LinkedIn</span>
           </TabsTrigger>
         </TabsList>
+        </div>
 
         <div className="flex space-x-2">
           <button

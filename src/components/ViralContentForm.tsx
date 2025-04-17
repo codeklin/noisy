@@ -51,6 +51,13 @@ const tonePreferences = [
   { id: "witty", label: "Witty" },
 ];
 
+// Define the content length options
+const contentLengthOptions = [
+  { id: "short", label: "Short Form", description: "Brief, concise content (70-312 chars)" },
+  { id: "mid", label: "Mid Form", description: "Medium-length content (140-624 chars)" },
+  { id: "full", label: "Full Form", description: "Full-length content (280-1248 chars)" },
+];
+
 // Define the age ranges
 const ageRanges = [
   { id: "10-12", label: "10-12 Graders" },
@@ -71,6 +78,7 @@ export interface ViralContentFormData {
   targetDescription: string;
   useNigerianStyle: boolean;
   brandName: string;
+  contentLength: 'short' | 'mid' | 'full';
 }
 
 interface ViralContentFormProps {
@@ -90,7 +98,8 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
     ageRanges: [],
     targetDescription: "",
     useNigerianStyle: false,
-    brandName: "Your Brand",
+    brandName: "",
+    contentLength: "full",
   });
 
   // No mock content toggle anymore
@@ -140,12 +149,26 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
 
     // Validation
     if (formData.audience.length === 0) {
-      toast.error("Please select at least one target audience");
+      toast.error("Please select at least one target audience", {
+        closeButton: true,
+        duration: 5000
+      });
       return;
     }
 
     if (formData.ageRanges.length === 0) {
-      toast.error("Please select at least one age range");
+      toast.error("Please select at least one age range", {
+        closeButton: true,
+        duration: 5000
+      });
+      return;
+    }
+
+    if (!formData.brandName.trim()) {
+      toast.error("Please enter your brand name", {
+        closeButton: true,
+        duration: 5000
+      });
       return;
     }
 
@@ -269,6 +292,27 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
             </div>
 
             <div className="space-y-2">
+              <Label>Content Length</Label>
+              <RadioGroup
+                value={formData.contentLength}
+                onValueChange={(value) => handleRadioChange("contentLength", value as 'short' | 'mid' | 'full')}
+                className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+              >
+                {contentLengthOptions.map((option) => (
+                  <div key={option.id} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.id} id={`length-${option.id}`} />
+                    <div>
+                      <Label htmlFor={`length-${option.id}`} className="text-sm font-normal">
+                        {option.label}
+                      </Label>
+                      <p className="text-xs text-gray-500">{option.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
               <Label>Target Age Range</Label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {ageRanges.map((ageRange) => (
@@ -300,6 +344,7 @@ const ViralContentForm = ({ onSubmit, isGenerating, useAI, setUseAI }: ViralCont
                 value={formData.brandName}
                 onChange={handleTextChange}
                 className="mb-4"
+                required
               />
             </div>
 

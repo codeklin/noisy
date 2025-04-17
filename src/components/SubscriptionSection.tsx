@@ -47,6 +47,8 @@ const SubscriptionSection = () => {
     toast({
       title: "Payment Successful!",
       description: "Thank you for your purchase. You now have full access to Noisy!",
+      closeButton: true,
+      duration: 5000,
     });
   };
 
@@ -57,6 +59,8 @@ const SubscriptionSection = () => {
       title: "Payment Cancelled",
       description: "Your payment was cancelled. Please try again when you're ready.",
       variant: "destructive",
+      closeButton: true,
+      duration: 5000,
     });
   };
 
@@ -66,6 +70,8 @@ const SubscriptionSection = () => {
         title: "Login Required",
         description: "Please login or create an account to subscribe.",
         variant: "destructive",
+        closeButton: true,
+        duration: 5000,
       });
       return;
     }
