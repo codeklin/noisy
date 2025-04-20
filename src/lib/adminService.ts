@@ -223,7 +223,7 @@ export const getSubscriptionStats = async (timeframe: string = "all"): Promise<S
     // Apply timeframe filter
     if (timeframe !== "all") {
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       if (timeframe === "day") {
         startDate.setDate(now.getDate() - 1);
@@ -295,7 +295,7 @@ export const getActivityLogs = async (
     // Apply timeframe filter
     if (timeframe !== "all") {
       const now = new Date();
-      let startDate = new Date();
+      const startDate = new Date();
 
       if (timeframe === "day") {
         startDate.setDate(now.getDate() - 1);
@@ -341,7 +341,7 @@ export const getAnalyticsData = async (timeframe: string = "month"): Promise<Ana
   try {
     // Define the time range based on the selected timeframe
     const now = new Date();
-    let startDate = new Date();
+    const startDate = new Date();
 
     if (timeframe === "day") {
       startDate.setDate(now.getDate() - 1);

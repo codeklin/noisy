@@ -33,28 +33,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener first
+    // First check for existing session
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      try {
+        // Get current session
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('Initial session check:', currentSession ? 'Session found' : 'No session');
+
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+        }
+      } catch (error) {
+        console.error('Error checking initial session:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
+        console.log('Auth state changed:', event, currentSession ? 'Session exists' : 'No session');
+
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        setIsLoading(false);
 
         if (event === "SIGNED_IN") {
+          console.log('User signed in, navigating to home');
           navigate("/");
         }
         if (event === "SIGNED_OUT") {
+          console.log('User signed out, navigating to auth');
           navigate("/auth");
+        }
+        if (event === "TOKEN_REFRESHED") {
+          console.log('Token refreshed');
+        }
+        if (event === "USER_UPDATED") {
+          console.log('User updated');
         }
       }
     );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      setIsLoading(false);
-    });
 
     return () => {
       subscription.unsubscribe();

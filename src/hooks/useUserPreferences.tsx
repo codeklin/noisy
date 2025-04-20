@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -32,18 +32,47 @@ export const useUserPreferences = () => {
     }
   }, [user]);
 
-  const loadPreferences = async () => {
+  // Define createDefaultPreferences before it's used in loadPreferences
+  const createDefaultPreferences = async () => {
     if (!user) return;
-    
+
+    const defaultPreferences = {
+      theme: "light",
+      defaultPlatforms: ["facebook", "twitter", "linkedin"],
+      emailNotifications: true,
+      socialMediaAccounts: {
+        facebook: { connected: false },
+        twitter: { connected: false },
+        linkedin: { connected: false }
+      }
+    };
+
+    try {
+      const { error } = await supabase.from("user_preferences").insert({
+        user_id: user.id,
+        preferences: JSON.stringify(defaultPreferences)
+      });
+
+      if (error) throw error;
+
+      setPreferences(defaultPreferences);
+    } catch (error) {
+      console.error("Error creating default preferences:", error);
+    }
+  };
+
+  const loadPreferences = useCallback(async () => {
+    if (!user) return;
+
     setIsLoading(true);
-    
+
     try {
       const { data, error } = await supabase
         .from("user_preferences")
         .select("preferences")
         .eq("user_id", user.id)
         .single();
-      
+
       if (error) {
         if (error.code === "PGRST116") {
           // Record not found, create default preferences
@@ -60,62 +89,34 @@ export const useUserPreferences = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const createDefaultPreferences = async () => {
-    if (!user) return;
-    
-    const defaultPreferences = {
-      theme: "light",
-      defaultPlatforms: ["facebook", "twitter", "linkedin"],
-      emailNotifications: true,
-      socialMediaAccounts: {
-        facebook: { connected: false },
-        twitter: { connected: false },
-        linkedin: { connected: false }
-      }
-    };
-    
-    try {
-      const { error } = await supabase.from("user_preferences").insert({
-        user_id: user.id,
-        preferences: JSON.stringify(defaultPreferences)
-      });
-      
-      if (error) throw error;
-      
-      setPreferences(defaultPreferences);
-    } catch (error) {
-      console.error("Error creating default preferences:", error);
-    }
-  };
+  }, [user, setIsLoading, setPreferences, createDefaultPreferences]);
 
   const updatePreferences = async (newPreferences: Partial<Preferences>) => {
     if (!user) {
       toast.error("You must be logged in to update preferences");
       return false;
     }
-    
+
     setIsSaving(true);
-    
+
     try {
       // Merge new preferences with existing ones
       const updatedPreferences = { ...preferences, ...newPreferences };
-      
+
       // Check if preferences record exists
       const { data, error: checkError } = await supabase
         .from("user_preferences")
         .select("id")
         .eq("user_id", user.id)
         .single();
-      
+
       if (checkError && checkError.code === "PGRST116") {
         // Record doesn't exist, create it
         const { error } = await supabase.from("user_preferences").insert({
           user_id: user.id,
           preferences: JSON.stringify(updatedPreferences)
         });
-        
+
         if (error) throw error;
       } else {
         // Record exists, update it
@@ -123,20 +124,20 @@ export const useUserPreferences = () => {
           .from("user_preferences")
           .update({ preferences: JSON.stringify(updatedPreferences) })
           .eq("user_id", user.id);
-        
+
         if (error) throw error;
       }
-      
+
       setPreferences(updatedPreferences);
       toast.success("Preferences updated successfully");
-      
+
       // Track analytics event
       await supabase.from("analytics").insert({
         user_id: user.id,
         event_type: "update_preferences",
         event_data: JSON.stringify({ preferences: newPreferences })
       });
-      
+
       return true;
     } catch (error) {
       console.error("Error updating preferences:", error);

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -26,9 +26,9 @@ export default function SavedContentPlans() {
     if (user) {
       loadContentPlans();
     }
-  }, [user]);
+  }, [user, loadContentPlans]);
 
-  const loadContentPlans = async () => {
+  const loadContentPlans = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -47,7 +47,7 @@ export default function SavedContentPlans() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, setContentPlans, setIsLoading]);
 
   const handleDeletePlan = async (id: string) => {
     if (!user) return;
@@ -119,7 +119,7 @@ export default function SavedContentPlans() {
             </p>
           </CardContent>
           <CardFooter className="flex justify-between gap-2 bg-gray-50/50 border-t py-3">
-            <Button 
+            <Button
               variant="outline"
               size="sm"
               className="flex-1"
@@ -127,7 +127,7 @@ export default function SavedContentPlans() {
             >
               View
             </Button>
-            <Button 
+            <Button
               variant="destructive"
               size="sm"
               className="flex items-center gap-1"

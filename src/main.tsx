@@ -8,7 +8,7 @@ if ('serviceWorker' in navigator && window.location.protocol === 'https:' || win
     try {
       // Unregister any existing service workers first to avoid conflicts
       const registrations = await navigator.serviceWorker.getRegistrations();
-      for (let registration of registrations) {
+      for (const registration of registrations) {
         await registration.unregister();
         console.log('Service Worker unregistered to avoid conflicts');
       }

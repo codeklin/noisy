@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -47,13 +47,13 @@ const AnalyticsOverview = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<"all" | "month" | "week" | "day">("month");
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setIsLoading(true);
     try {
       // Define the time range based on the selected timeframe
       const now = new Date();
-      let startDate = new Date();
-      
+      const startDate = new Date();
+
       if (timeframe === "day") {
         startDate.setDate(now.getDate() - 1);
       } else if (timeframe === "week") {
@@ -64,7 +64,7 @@ const AnalyticsOverview = () => {
         // For "all", go back 6 months by default for charts
         startDate.setMonth(now.getMonth() - 6);
       }
-      
+
       const startDateStr = startDate.toISOString();
 
       // Fetch page views
@@ -160,11 +160,11 @@ const AnalyticsOverview = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setIsLoading, setAnalytics, timeframe]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [timeframe]);
+  }, [timeframe, fetchAnalytics]);
 
   return (
     <div className="space-y-4">
@@ -295,11 +295,11 @@ const AnalyticsOverview = () => {
                 {analytics.userGrowth.map((item, index) => {
                   const maxCount = Math.max(...analytics.userGrowth.map(g => g.count));
                   const height = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
-                  
+
                   return (
                     <div key={index} className="flex flex-col items-center flex-1">
-                      <div 
-                        className="w-full bg-primary/80 rounded-t-sm" 
+                      <div
+                        className="w-full bg-primary/80 rounded-t-sm"
                         style={{ height: `${height}%` }}
                       ></div>
                       <div className="text-xs text-muted-foreground mt-1 truncate w-full text-center">

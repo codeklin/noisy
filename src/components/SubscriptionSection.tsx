@@ -77,7 +77,7 @@ const SubscriptionSection = () => {
     }
 
     setIsProcessing(true);
-    // @ts-ignore - The type definitions for usePaystackPayment are not perfect
+    // @ts-expect-error - The type definitions for usePaystackPayment are not perfect
     initializePayment(onSuccess, onClose);
   };
 

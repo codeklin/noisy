@@ -78,8 +78,26 @@ export default function Auth() {
   useEffect(() => {
     const checkUser = async () => {
       if (email && email.includes('@')) {
+        console.log('Checking if user exists:', email.trim());
         const exists = await checkUserExists(email.trim());
+        console.log('User exists check result:', exists);
         setUserExists(exists);
+
+        // If the user exists but hasn't been verified, check verification status
+        if (exists) {
+          try {
+            // Try to get user verification status
+            const { data: userData, error: userError } = await supabase.rpc('get_user_by_email', {
+              user_email: email.trim()
+            });
+
+            if (!userError && userData && !userData.email_confirmed_at) {
+              console.log('User exists but email not confirmed, will offer to resend verification');
+            }
+          } catch (error) {
+            console.error('Error checking user verification status:', error);
+          }
+        }
       } else {
         setUserExists(null);
       }

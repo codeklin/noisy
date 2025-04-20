@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -36,7 +36,7 @@ const SubscriptionStats = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<"all" | "month" | "week" | "day">("all");
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch total users count
@@ -63,7 +63,7 @@ const SubscriptionStats = () => {
       // Apply timeframe filter
       if (timeframe !== "all") {
         const now = new Date();
-        let startDate = new Date();
+        const startDate = new Date();
 
         if (timeframe === "day") {
           startDate.setDate(now.getDate() - 1);
@@ -128,18 +128,18 @@ const SubscriptionStats = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setIsLoading, setStats, timeframe]);
 
   useEffect(() => {
     fetchStats();
-  }, [timeframe]);
+  }, [timeframe, fetchStats]);
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Subscription Statistics</h2>
         <div className="flex items-center gap-2">
-          <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as any)}>
+          <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as "all" | "month" | "week" | "day")}>
             <TabsList>
               <TabsTrigger value="all">All Time</TabsTrigger>
               <TabsTrigger value="month">Month</TabsTrigger>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -39,7 +39,7 @@ const ActivityLog = () => {
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
   const [timeframe, setTimeframe] = useState<"all" | "month" | "week" | "day">("all");
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     setIsLoading(true);
     try {
       // Build the query
@@ -51,7 +51,7 @@ const ActivityLog = () => {
       // Apply timeframe filter
       if (timeframe !== "all") {
         const now = new Date();
-        let startDate = new Date();
+        const startDate = new Date();
 
         if (timeframe === "day") {
           startDate.setDate(now.getDate() - 1);
@@ -76,7 +76,7 @@ const ActivityLog = () => {
       // Get user emails
       const userIds = data.map(activity => activity.user_id).filter(Boolean);
 
-      let userEmailMap = {};
+      const userEmailMap = {};
       if (userIds.length > 0) {
         const { data: users, error: usersError } = await supabase
           .from('profiles')
@@ -110,11 +110,11 @@ const ActivityLog = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [setIsLoading, setActivities, setFilteredActivities, timeframe, eventTypeFilter]);
 
   useEffect(() => {
     fetchActivities();
-  }, [timeframe, eventTypeFilter]);
+  }, [timeframe, eventTypeFilter, fetchActivities]);
 
   useEffect(() => {
     if (searchQuery) {

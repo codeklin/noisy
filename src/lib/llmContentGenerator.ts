@@ -551,7 +551,9 @@ const generateContentWithLLM = async (
             closeButton: true
           });
         }).catch(() => {});
-      } catch (e) {}
+      } catch (e) {
+        console.log('Error in DeepSeek API call:', e);
+      }
 
       // Rethrow the error to be handled by the caller
       throw new Error('Failed to generate content with APIs');

@@ -39,7 +39,7 @@ describe('contentLengthLimits', () => {
     });
 
     it('should return a default value for unknown platforms', () => {
-      // @ts-ignore - Testing invalid input
+      // @ts-expect-error - Testing invalid input
       expect(getCharacterLimit('unknown', 'full')).toBe(1000);
     });
   });

@@ -30,11 +30,13 @@ export default function AuthPage() {
         try {
           // Process the verification
           if (accessToken) {
-            // Set the access token in the session
-            const { error: sessionError } = await supabase.auth.setSession({
+            // Set the access token in the session - this should automatically log the user in
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken || ''
             });
+
+            console.log('Session set with token, session data:', sessionData);
 
             if (sessionError) {
               console.error('Error setting session:', sessionError);
@@ -91,10 +93,22 @@ export default function AuthPage() {
                   toast.success('Email verified successfully! You are now signed in.');
                 }
 
+                // Force a session refresh to ensure the user is logged in
+                try {
+                  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+                  if (refreshError) {
+                    console.error('Error refreshing session:', refreshError);
+                  } else {
+                    console.log('Session refreshed successfully:', refreshData.session ? 'Session exists' : 'No session');
+                  }
+                } catch (refreshErr) {
+                  console.error('Exception refreshing session:', refreshErr);
+                }
+
                 // Redirect after a short delay
                 setTimeout(() => {
                   navigate('/');
-                }, 2000);
+                }, 1500);
               }
             }
           }
@@ -113,10 +127,12 @@ export default function AuthPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && !isLoading && !verifying) {
+    // Only redirect if user is logged in, not loading, not verifying, and no verification message is showing
+    if (user && !isLoading && !verifying && !verificationMessage) {
+      console.log('User already logged in, redirecting to home');
       navigate("/");
     }
-  }, [user, isLoading, navigate, verifying]);
+  }, [user, isLoading, navigate, verifying, verificationMessage]);
 
   // Show verification UI if verifying
   if (verifying) {

@@ -23,7 +23,7 @@ export function useBackgroundSync() {
           const permission = await navigator.permissions.query({
             name: 'periodic-background-sync' as any,
           });
-          
+
           if (permission.state === 'granted') {
             setPeriodicSyncSupported(true);
           }
@@ -67,19 +67,19 @@ export function useBackgroundSync() {
     try {
       const registration = await navigator.serviceWorker.ready;
       const periodicSync = registration.periodicSync;
-      
+
       // Check if we already have a registration for this tag
       const tags = await periodicSync.getTags();
-      
+
       if (tags.includes(tag)) {
         console.log('Periodic sync already registered for:', tag);
         return true;
       }
-      
+
       await periodicSync.register(tag, {
         minInterval,
       });
-      
+
       console.log('Periodic background sync registered:', tag);
       return true;
     } catch (error) {
@@ -93,7 +93,7 @@ export function useBackgroundSync() {
     if (isOnline && syncSupported) {
       registerSync();
     }
-  }, [isOnline, syncSupported]);
+  }, [isOnline, syncSupported, registerSync]);
 
   return {
     syncSupported,
