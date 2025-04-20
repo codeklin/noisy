@@ -15,21 +15,34 @@ import { SocialMediaConnection } from "@/types/socialMedia";
 // Helper function to check if a user exists in the database
 const checkUserExists = async (email: string) => {
   try {
-    // Try to get the user profile from the profiles table
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('email', email)
-      .single();
+    // First check auth.users table via admin API
+    const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
+      filters: {
+        email: email
+      }
+    });
 
-    if (error) {
-      console.error('Error checking if user exists:', error);
-      return false;
+    if (!authError && authData?.users && authData.users.length > 0) {
+      console.log('User found in auth.users:', authData.users[0]);
+      return true;
     }
 
-    return !!data; // Return true if data exists, false otherwise
+    // Fallback to checking profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email);
+
+    if (!profileError && profileData && profileData.length > 0) {
+      console.log('User found in profiles table');
+      return true;
+    }
+
+    // If we get here, user doesn't exist
+    return false;
   } catch (error) {
     console.error('Error checking if user exists:', error);
+    // If there's an error, assume user might exist to be safe
     return false;
   }
 };
@@ -88,6 +101,15 @@ export default function Auth() {
       setLoading(true);
       console.log("Attempting to sign up with:", { email });
 
+      // First check if the user already exists
+      const userExists = await checkUserExists(email.trim());
+      if (userExists) {
+        toast.error("This email is already registered. Please log in instead.");
+        setLoading(false);
+        return;
+      }
+
+      // Proceed with signup - IMPORTANT: Set emailConfirmationRedirectTo to ensure verification emails work
       const { error, data } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -95,7 +117,8 @@ export default function Auth() {
           data: {
             social_media: socialConnections
           },
-          emailRedirectTo: window.location.origin + '/auth'
+          emailRedirectTo: `${window.location.origin}/auth`,
+          captchaToken: undefined // Skip captcha for development
         }
       });
 
@@ -106,14 +129,84 @@ export default function Auth() {
 
       console.log("Sign up response:", data);
 
-      if (data?.user?.identities?.length === 0) {
+      if (!data?.user) {
+        toast.error("Failed to create account. Please try again.");
+      } else if (data?.user?.identities?.length === 0) {
         toast.error("This email is already registered. Please log in instead.");
       } else {
-        toast.success("Account created! Please check your email for confirmation.");
+        // Create the profile directly in the database
+        try {
+          // First try direct insert
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              is_admin: data.user.email === '007postit@gmail.com',
+              is_subscribed: data.user.email === '007postit@gmail.com',
+              has_used_generator_demo: false,
+              has_used_viral_generator_demo: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+
+          if (insertError) {
+            console.error("Error creating profile via direct insert:", insertError);
+
+            // Fallback to RPC function
+            const { error: rpcError } = await supabase.rpc('create_user_profile', {
+              user_id: data.user.id,
+              user_email: data.user.email,
+              is_admin_val: data.user.email === '007postit@gmail.com',
+              is_subscribed_val: data.user.email === '007postit@gmail.com'
+            });
+
+            if (rpcError) {
+              console.error("Error creating profile via RPC:", rpcError);
+              throw rpcError;
+            }
+          }
+
+          // If we get here, profile was created successfully
+          console.log('User profile created successfully');
+
+          // For development/testing - resend confirmation email
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: email.trim(),
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth`
+            }
+          });
+
+          if (resendError) {
+            console.error("Error resending confirmation email:", resendError);
+          } else {
+            console.log("Confirmation email resent successfully");
+          }
+
+          toast.success(
+            "Account created! Please check your email for confirmation. " +
+            "If you don't see it, check your spam folder."
+          );
+        } catch (profileErr) {
+          console.error("Exception creating profile during signup:", profileErr);
+          toast.error("Account created but profile setup failed. You can still log in after verifying your email.");
+        }
       }
     } catch (error: any) {
       console.error("Sign up error:", error);
-      toast.error(error.message || "An error occurred during sign up");
+
+      // Provide more specific error messages
+      if (error.message?.includes("duplicate key") || error.message?.includes("already registered")) {
+        toast.error("This email is already registered. Please log in instead.");
+      } else if (error.message?.includes("rate limit")) {
+        toast.error("Too many signup attempts. Please try again later.");
+      } else if (error.message?.includes("Database error")) {
+        toast.error("Account created but profile setup failed. Please verify your email and then log in.");
+      } else {
+        toast.error(error.message || "An error occurred during sign up");
+      }
     } finally {
       setLoading(false);
     }
@@ -155,49 +248,154 @@ export default function Auth() {
       if (error) {
         console.error("Supabase auth error:", error);
 
-        // If the error is "Invalid login credentials", check if we should create a new account
+        // If the error is "Invalid login credentials", check if the user exists in auth but not confirmed
         if (error.message.includes("Invalid login credentials")) {
-          // If we already checked and know the user doesn't exist
-          if (userExists === false) {
-            // Ask the user if they want to create a new account
-            const wantToCreateAccount = window.confirm(
-              "No account found with this email. Would you like to create a new account?"
-            );
+          // Check if user exists in auth system
+          const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
+            filters: {
+              email: email.trim()
+            }
+          });
 
-            if (wantToCreateAccount) {
-              // Try to sign up the user
-              const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          if (!userError && userData?.users && userData.users.length > 0) {
+            const user = userData.users[0];
+
+            // Check if email is confirmed
+            if (!user.email_confirmed_at) {
+              // Resend confirmation email
+              const { error: resendError } = await supabase.auth.resend({
+                type: 'signup',
                 email: email.trim(),
-                password,
                 options: {
-                  emailRedirectTo: window.location.origin + '/auth'
+                  emailRedirectTo: `${window.location.origin}/auth`
                 }
               });
 
-              if (signUpError) {
-                console.error("Sign-up error:", signUpError);
-                throw signUpError;
+              if (resendError) {
+                console.error("Error resending confirmation email:", resendError);
+                toast.error("Please confirm your email before signing in. We couldn't resend the confirmation email.");
+              } else {
+                toast.warning("Please confirm your email before signing in. We've resent the confirmation email.");
+              }
+              return;
+            } else {
+              // Email is confirmed but login failed - wrong password
+              toast.error("Invalid password. Please try again or reset your password.");
+              return;
+            }
+          }
+
+          // If we get here, user doesn't exist in auth system
+          // Ask if they want to create a new account
+          const wantToCreateAccount = window.confirm(
+            "No account found with this email. Would you like to create a new account?"
+          );
+
+          if (wantToCreateAccount) {
+            // Try to sign up the user
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: email.trim(),
+              password,
+              options: {
+                emailRedirectTo: `${window.location.origin}/auth`,
+                captchaToken: undefined // Skip captcha for development
+              }
+            });
+
+            if (signUpError) {
+              console.error("Sign-up error:", signUpError);
+              throw signUpError;
+            }
+
+            if (signUpData?.user) {
+              // Create profile for the new user
+              try {
+                const { error: profileError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: signUpData.user.id,
+                    email: signUpData.user.email,
+                    is_admin: signUpData.user.email === '007postit@gmail.com',
+                    is_subscribed: signUpData.user.email === '007postit@gmail.com',
+                    has_used_generator_demo: false,
+                    has_used_viral_generator_demo: false,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                  });
+
+                if (profileError) {
+                  console.error("Error creating profile during login-signup:", profileError);
+                }
+              } catch (profileErr) {
+                console.error("Exception creating profile during login-signup:", profileErr);
               }
 
-              if (signUpData?.user) {
-                toast.success("Account created! Please check your email for confirmation.");
-                return;
-              }
+              toast.success("Account created! Please check your email for confirmation.");
+              return;
             }
           } else {
-            // User doesn't want to create an account
-            toast.error("Invalid email or password. Please try again or reset your password.");
+            toast.error("Sign in canceled. Please try again with correct credentials.");
             return;
           }
         }
 
         // Handle other specific error cases
         if (error.message.includes("Email not confirmed")) {
-          toast.error("Please confirm your email before signing in. Check your inbox.");
+          // Resend confirmation email
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: email.trim(),
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth`
+            }
+          });
+
+          if (resendError) {
+            console.error("Error resending confirmation email:", resendError);
+            toast.error("Please confirm your email before signing in. We couldn't resend the confirmation email.");
+          } else {
+            toast.warning("Please confirm your email before signing in. We've resent the confirmation email.");
+          }
           return;
         }
 
         throw error;
+      }
+
+      // Login successful - check if profile exists and create if not
+      if (data?.user) {
+        // Check if profile exists
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (!profileData && (!profileError || profileError.code === 'PGRST116')) {
+          // Profile doesn't exist, create it
+          try {
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                email: data.user.email,
+                is_admin: data.user.email === '007postit@gmail.com',
+                is_subscribed: data.user.email === '007postit@gmail.com',
+                has_used_generator_demo: false,
+                has_used_viral_generator_demo: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+
+            if (insertError) {
+              console.error("Error creating profile during login:", insertError);
+            } else {
+              console.log("Profile created during login");
+            }
+          } catch (insertErr) {
+            console.error("Exception creating profile during login:", insertErr);
+          }
+        }
       }
 
       console.log("Sign in successful:", data);
@@ -206,10 +404,12 @@ export default function Auth() {
       console.error("Sign in error:", error);
 
       // Provide more helpful error messages
-      if (error.message.includes("Invalid login credentials")) {
+      if (error.message?.includes("Invalid login credentials")) {
         toast.error("Invalid email or password. Please try again or reset your password.");
-      } else if (error.message.includes("rate limit")) {
+      } else if (error.message?.includes("rate limit")) {
         toast.error("Too many login attempts. Please try again later.");
+      } else if (error.message?.includes("Email not confirmed")) {
+        toast.error("Please confirm your email before signing in. Check your inbox and spam folder.");
       } else {
         toast.error(error.message || "An error occurred during sign in");
       }

@@ -64,79 +64,124 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check if user has paid and demo usage status
   useEffect(() => {
     const checkUserStatus = async () => {
-      if (user) {
-        try {
-          // Check if the user is a super user (007postit@gmail.com)
-          const isSuperUserEmail = user.email === '007postit@gmail.com';
-          setIsSuperUser(isSuperUserEmail);
+      if (!user) return; // Exit early if no user
 
-          // Check if user profile exists and create if it doesn't
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
+      try {
+        // Check if the user is a super user (007postit@gmail.com)
+        const isSuperUserEmail = user.email === '007postit@gmail.com';
+        setIsSuperUser(isSuperUserEmail);
 
-          if (profileError) {
-            if (profileError.code === 'PGRST116') { // Record not found error
-              console.log('Creating new user profile for:', user.email);
+        // If super user, they're automatically considered paid and admin
+        if (isSuperUserEmail) {
+          setIsPaidUser(true);
+          setIsAdmin(true);
+          setHasUsedGeneratorDemo(false);
+          setHasUsedViralGeneratorDemo(false);
+        }
 
-              // Create a new profile for the user
-              const { error: insertError } = await supabase
-                .from('profiles')
-                .insert({
-                  id: user.id,
-                  email: user.email,
-                  is_admin: isSuperUserEmail, // Super user is automatically admin
-                  is_subscribed: isSuperUserEmail, // Super user is automatically subscribed
-                  has_used_generator_demo: false,
-                  has_used_viral_generator_demo: false,
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString()
-                });
+        // Check if user profile exists
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
 
-              if (insertError) {
-                console.error('Error creating user profile:', insertError);
-              } else {
-                console.log('User profile created successfully');
+        // Handle profile not found - create a new profile
+        if (!profileData && (profileError?.code === 'PGRST116' || !profileError)) {
+          console.log('Creating new user profile for:', user.email);
+
+          try {
+            // Use RPC function to bypass RLS policies
+            const { error: insertError } = await supabase.rpc('create_user_profile', {
+              user_id: user.id,
+              user_email: user.email,
+              is_admin_val: isSuperUserEmail,
+              is_subscribed_val: isSuperUserEmail
+            });
+
+            if (insertError) {
+              console.error('Error creating user profile via RPC:', insertError);
+
+              // Fallback to direct insert with service role if available
+              try {
+                // Create a new profile for the user
+                const { error: directInsertError } = await supabase
+                  .from('profiles')
+                  .insert({
+                    id: user.id,
+                    email: user.email,
+                    is_admin: isSuperUserEmail, // Super user is automatically admin
+                    is_subscribed: isSuperUserEmail, // Super user is automatically subscribed
+                    has_used_generator_demo: false,
+                    has_used_viral_generator_demo: false,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                  });
+
+                if (directInsertError) {
+                  console.error('Error creating user profile via direct insert:', directInsertError);
+                  // Use localStorage as fallback
+                  const paymentStatus = localStorage.getItem(`payment_status_${user.id}`);
+                  const generatorDemoStatus = localStorage.getItem(`generator_demo_${user.id}`);
+                  const viralGeneratorDemoStatus = localStorage.getItem(`viral_generator_demo_${user.id}`);
+
+                  setIsPaidUser(paymentStatus === 'true' || isSuperUserEmail);
+                  setHasUsedGeneratorDemo(generatorDemoStatus === 'true' && !isSuperUserEmail);
+                  setHasUsedViralGeneratorDemo(viralGeneratorDemoStatus === 'true' && !isSuperUserEmail);
+                } else {
+                  console.log('User profile created successfully via direct insert');
+                  // For a new profile, set default values
+                  if (!isSuperUserEmail) {
+                    setIsPaidUser(false);
+                    setIsAdmin(false);
+                    setHasUsedGeneratorDemo(false);
+                    setHasUsedViralGeneratorDemo(false);
+                  }
+                }
+              } catch (directInsertErr) {
+                console.error('Exception creating profile via direct insert:', directInsertErr);
               }
             } else {
-              console.error('Error fetching user profile:', profileError);
+              console.log('User profile created successfully via RPC');
+              // For a new profile, set default values
+              if (!isSuperUserEmail) {
+                setIsPaidUser(false);
+                setIsAdmin(false);
+                setHasUsedGeneratorDemo(false);
+                setHasUsedViralGeneratorDemo(false);
+              }
             }
-          } else {
-            // Profile exists, update admin status
-            setIsAdmin(profileData?.is_admin || isSuperUserEmail);
-
-            // Update profile data from database if available
-            if (profileData) {
-              setHasUsedGeneratorDemo(profileData.has_used_generator_demo || false);
-              setHasUsedViralGeneratorDemo(profileData.has_used_viral_generator_demo || false);
-              setIsPaidUser(profileData.is_subscribed || false);
-            }
+          } catch (insertErr) {
+            console.error('Exception creating profile:', insertErr);
           }
-
-          // If super user, they're automatically considered paid and haven't used demos
-          if (isSuperUserEmail) {
-            setIsPaidUser(true);
-            setHasUsedGeneratorDemo(false);
-            setHasUsedViralGeneratorDemo(false);
-            return;
-          }
-
-          // For regular users, check localStorage as fallback
+        }
+        // Handle existing profile
+        else if (profileData) {
+          // Profile exists, update states
+          setIsAdmin(profileData.is_admin || isSuperUserEmail);
+          setIsPaidUser(profileData.is_subscribed || isSuperUserEmail);
+          setHasUsedGeneratorDemo(profileData.has_used_generator_demo && !isSuperUserEmail);
+          setHasUsedViralGeneratorDemo(profileData.has_used_viral_generator_demo && !isSuperUserEmail);
+        }
+        // Handle other errors
+        else if (profileError) {
+          console.error('Error fetching user profile:', profileError);
+          // Use localStorage as fallback
           const paymentStatus = localStorage.getItem(`payment_status_${user.id}`);
           const generatorDemoStatus = localStorage.getItem(`generator_demo_${user.id}`);
           const viralGeneratorDemoStatus = localStorage.getItem(`viral_generator_demo_${user.id}`);
 
-          // Only use localStorage if we don't have profile data
-          if (!profileData) {
-            setIsPaidUser(paymentStatus === 'true');
-            setHasUsedGeneratorDemo(generatorDemoStatus === 'true');
-            setHasUsedViralGeneratorDemo(viralGeneratorDemoStatus === 'true');
-          }
-        } catch (error) {
-          console.error('Error checking user status:', error);
+          setIsPaidUser(paymentStatus === 'true' || isSuperUserEmail);
+          setHasUsedGeneratorDemo(generatorDemoStatus === 'true' && !isSuperUserEmail);
+          setHasUsedViralGeneratorDemo(viralGeneratorDemoStatus === 'true' && !isSuperUserEmail);
         }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+        // Set safe defaults
+        const isSuperUserEmail = user.email === '007postit@gmail.com';
+        setIsSuperUser(isSuperUserEmail);
+        setIsAdmin(isSuperUserEmail);
+        setIsPaidUser(isSuperUserEmail);
       }
     };
 

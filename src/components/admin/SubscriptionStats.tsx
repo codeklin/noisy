@@ -91,12 +91,12 @@ const SubscriptionStats = () => {
 
       // Get user emails from auth.users table
       const userIds = payments.map(payment => payment.user_id);
-      const { data: users, error: usersError } = await supabase
+      const { data: users, error: profilesError } = await supabase
         .from('profiles')
         .select('id, email:users(email)')
         .in('id', userIds);
 
-      if (usersError) throw usersError;
+      if (profilesError) throw profilesError;
 
       // Create a map of user IDs to emails
       const userEmailMap = {};
