@@ -41,31 +41,26 @@ const UsersList = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Fetch users from Supabase
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) {
-        throw authError;
-      }
-
-      // Fetch user profiles from the profiles table
+      // Fetch user profiles from the profiles table with their auth data
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("*");
+        .select("*, users:auth.users(id, email, created_at, last_sign_in_at)");
 
       if (profilesError) {
         throw profilesError;
       }
 
-      // Combine auth users with their profiles
-      const combinedUsers = authUsers.users.map((authUser) => {
-        const profile = profiles.find((p) => p.id === authUser.id) || {};
+      // Format the user data
+      const combinedUsers = profiles.map((profile) => {
+        const authUser = profile.users || {};
         return {
-          id: authUser.id,
+          id: profile.id,
           email: authUser.email || "No email",
-          created_at: new Date(authUser.created_at).toLocaleString(),
-          last_sign_in_at: authUser.last_sign_in_at 
-            ? new Date(authUser.last_sign_in_at).toLocaleString() 
+          created_at: authUser.created_at
+            ? new Date(authUser.created_at).toLocaleString()
+            : new Date().toLocaleString(),
+          last_sign_in_at: authUser.last_sign_in_at
+            ? new Date(authUser.last_sign_in_at).toLocaleString()
             : null,
           is_subscribed: profile.is_subscribed || false,
           has_used_generator_demo: profile.has_used_generator_demo || false,

@@ -8,4 +8,27 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Create the Supabase client with additional options
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storageKey: 'noisy-auth-token',
+    flowType: 'pkce' // More secure authentication flow
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    fetch: fetch.bind(globalThis) // Ensure fetch is properly bound
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  },
+  db: {
+    schema: 'public'
+  }
+});

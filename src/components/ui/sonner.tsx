@@ -11,6 +11,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       closeButton={true}
+      closeButtonAriaLabel="Close notification"
       duration={5000}
       toastOptions={{
         classNames: {

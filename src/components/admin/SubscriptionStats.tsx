@@ -57,14 +57,14 @@ const SubscriptionStats = () => {
       // Fetch payments data
       let query = supabase
         .from("payments")
-        .select("id, user_id, amount, created_at, profiles(email)")
+        .select("id, user_id, amount, created_at")
         .order("created_at", { ascending: false });
 
       // Apply timeframe filter
       if (timeframe !== "all") {
         const now = new Date();
         let startDate = new Date();
-        
+
         if (timeframe === "day") {
           startDate.setDate(now.getDate() - 1);
         } else if (timeframe === "week") {
@@ -72,7 +72,7 @@ const SubscriptionStats = () => {
         } else if (timeframe === "month") {
           startDate.setMonth(now.getMonth() - 1);
         }
-        
+
         query = query.gte("created_at", startDate.toISOString());
       }
 
@@ -89,10 +89,25 @@ const SubscriptionStats = () => {
 
       const totalRevenue = allPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
 
+      // Get user emails from auth.users table
+      const userIds = payments.map(payment => payment.user_id);
+      const { data: users, error: usersError } = await supabase
+        .from('profiles')
+        .select('id, email:users(email)')
+        .in('id', userIds);
+
+      if (usersError) throw usersError;
+
+      // Create a map of user IDs to emails
+      const userEmailMap = {};
+      users.forEach(user => {
+        userEmailMap[user.id] = user.email?.email || 'Unknown';
+      });
+
       // Format recent subscriptions
       const recentSubscriptions = payments.map((payment) => ({
         id: payment.id,
-        email: payment.profiles?.email || "Unknown",
+        email: userEmailMap[payment.user_id] || "Unknown",
         subscribed_at: new Date(payment.created_at).toLocaleString(),
         amount: payment.amount || 0,
       }));

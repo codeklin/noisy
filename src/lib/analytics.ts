@@ -83,15 +83,19 @@ const processQueue = async (): Promise<void> => {
     }
 
     // Process each event and log it to the database
-    for (const event of eventsToProcess) {
+    const processPromises = eventsToProcess.map(async (event) => {
       try {
         // Log to analytics_events table for aggregated data
-        await logAnalyticsEvent(
+        const analyticsResult = await logAnalyticsEvent(
           event.category,
           event.label || event.action,
           event.properties,
           event.properties?.success
-        );
+        ).catch(err => {
+          // Catch and log any promise rejection
+          console.warn('Analytics event logging failed:', err);
+          return false;
+        });
 
         // If we have a user ID, also log to activity_logs for user-specific tracking
         if (event.userId) {
@@ -100,16 +104,25 @@ const processQueue = async (): Promise<void> => {
             event.category,
             event.label || event.action,
             event.properties
-          );
+          ).catch(err => {
+            // Catch and log any promise rejection
+            console.warn('Activity logging failed:', err);
+            return false;
+          });
         }
+
+        return analyticsResult;
       } catch (eventError) {
         console.error('Error logging individual event:', eventError);
+        return false;
       }
-    }
+    });
+
+    // Wait for all promises to settle (not throwing if some fail)
+    await Promise.allSettled(processPromises);
   } catch (error) {
     console.error('Error processing analytics queue:', error);
-    // Add the events back to the queue
-    eventQueue = [...eventQueue, ...eventQueue];
+    // Don't add events back to the queue to avoid infinite loops
   } finally {
     isProcessingQueue = false;
   }
@@ -118,7 +131,23 @@ const processQueue = async (): Promise<void> => {
 // Track an event
 export const trackEvent = (event: Omit<AnalyticsEvent, 'timestamp' | 'sessionId'>): void => {
   // Get user ID from localStorage or from auth context if available
-  const userId = localStorage.getItem('userId') || localStorage.getItem('supabase.auth.token')?.userId || undefined;
+  let userId;
+
+  try {
+    // Try to get userId from various sources
+    userId = localStorage.getItem('userId');
+
+    if (!userId) {
+      // Try to get from supabase auth token
+      const authToken = localStorage.getItem('supabase.auth.token');
+      if (authToken) {
+        const parsedToken = JSON.parse(authToken);
+        userId = parsedToken?.currentSession?.user?.id;
+      }
+    }
+  } catch (e) {
+    console.warn('Error extracting user ID for analytics:', e);
+  }
 
   const fullEvent: AnalyticsEvent = {
     ...event,

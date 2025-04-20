@@ -70,17 +70,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const isSuperUserEmail = user.email === '007postit@gmail.com';
           setIsSuperUser(isSuperUserEmail);
 
-          // Check if user is an admin by querying the profiles table
+          // Check if user profile exists and create if it doesn't
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
-            .select('is_admin')
+            .select('*')
             .eq('id', user.id)
             .single();
 
           if (profileError) {
-            console.error('Error fetching admin status:', profileError);
+            if (profileError.code === 'PGRST116') { // Record not found error
+              console.log('Creating new user profile for:', user.email);
+
+              // Create a new profile for the user
+              const { error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                  id: user.id,
+                  email: user.email,
+                  is_admin: isSuperUserEmail, // Super user is automatically admin
+                  is_subscribed: isSuperUserEmail, // Super user is automatically subscribed
+                  has_used_generator_demo: false,
+                  has_used_viral_generator_demo: false,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString()
+                });
+
+              if (insertError) {
+                console.error('Error creating user profile:', insertError);
+              } else {
+                console.log('User profile created successfully');
+              }
+            } else {
+              console.error('Error fetching user profile:', profileError);
+            }
           } else {
+            // Profile exists, update admin status
             setIsAdmin(profileData?.is_admin || isSuperUserEmail);
+
+            // Update profile data from database if available
+            if (profileData) {
+              setHasUsedGeneratorDemo(profileData.has_used_generator_demo || false);
+              setHasUsedViralGeneratorDemo(profileData.has_used_viral_generator_demo || false);
+              setIsPaidUser(profileData.is_subscribed || false);
+            }
           }
 
           // If super user, they're automatically considered paid and haven't used demos
@@ -91,14 +123,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
 
-          // For regular users, check localStorage as before
+          // For regular users, check localStorage as fallback
           const paymentStatus = localStorage.getItem(`payment_status_${user.id}`);
           const generatorDemoStatus = localStorage.getItem(`generator_demo_${user.id}`);
           const viralGeneratorDemoStatus = localStorage.getItem(`viral_generator_demo_${user.id}`);
 
-          setIsPaidUser(paymentStatus === 'true');
-          setHasUsedGeneratorDemo(generatorDemoStatus === 'true');
-          setHasUsedViralGeneratorDemo(viralGeneratorDemoStatus === 'true');
+          // Only use localStorage if we don't have profile data
+          if (!profileData) {
+            setIsPaidUser(paymentStatus === 'true');
+            setHasUsedGeneratorDemo(generatorDemoStatus === 'true');
+            setHasUsedViralGeneratorDemo(viralGeneratorDemoStatus === 'true');
+          }
         } catch (error) {
           console.error('Error checking user status:', error);
         }
@@ -108,26 +143,81 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkUserStatus();
   }, [user]);
 
-  const updateUserPaymentStatus = (status: boolean) => {
+  const updateUserPaymentStatus = async (status: boolean) => {
     if (user) {
-      // In a real app, you would update the database
-      // For now, we'll use localStorage as a simple demonstration
-      localStorage.setItem(`payment_status_${user.id}`, status.toString());
-      setIsPaidUser(status);
+      try {
+        // Update the database
+        const { error } = await supabase
+          .from('profiles')
+          .update({ is_subscribed: status })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error updating payment status:', error);
+          // Fallback to localStorage if database update fails
+          localStorage.setItem(`payment_status_${user.id}`, status.toString());
+        }
+
+        // Update local state
+        setIsPaidUser(status);
+      } catch (error) {
+        console.error('Error updating payment status:', error);
+        // Fallback to localStorage
+        localStorage.setItem(`payment_status_${user.id}`, status.toString());
+        setIsPaidUser(status);
+      }
     }
   };
 
-  const markGeneratorDemoAsUsed = () => {
+  const markGeneratorDemoAsUsed = async () => {
     if (user && !isSuperUser) {
-      localStorage.setItem(`generator_demo_${user.id}`, 'true');
-      setHasUsedGeneratorDemo(true);
+      try {
+        // Update the database
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_used_generator_demo: true })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error updating generator demo status:', error);
+          // Fallback to localStorage if database update fails
+          localStorage.setItem(`generator_demo_${user.id}`, 'true');
+        }
+
+        // Update local state
+        setHasUsedGeneratorDemo(true);
+      } catch (error) {
+        console.error('Error updating generator demo status:', error);
+        // Fallback to localStorage
+        localStorage.setItem(`generator_demo_${user.id}`, 'true');
+        setHasUsedGeneratorDemo(true);
+      }
     }
   };
 
-  const markViralGeneratorDemoAsUsed = () => {
+  const markViralGeneratorDemoAsUsed = async () => {
     if (user && !isSuperUser) {
-      localStorage.setItem(`viral_generator_demo_${user.id}`, 'true');
-      setHasUsedViralGeneratorDemo(true);
+      try {
+        // Update the database
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_used_viral_generator_demo: true })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error updating viral generator demo status:', error);
+          // Fallback to localStorage if database update fails
+          localStorage.setItem(`viral_generator_demo_${user.id}`, 'true');
+        }
+
+        // Update local state
+        setHasUsedViralGeneratorDemo(true);
+      } catch (error) {
+        console.error('Error updating viral generator demo status:', error);
+        // Fallback to localStorage
+        localStorage.setItem(`viral_generator_demo_${user.id}`, 'true');
+        setHasUsedViralGeneratorDemo(true);
+      }
     }
   };
 

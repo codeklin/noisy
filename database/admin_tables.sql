@@ -1,5 +1,5 @@
--- Create profiles table extension for admin status
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
+-- Make sure profiles table exists (should be created by profiles_table.sql first)
+-- If not, this will be a no-op
 
 -- Create activity logs table
 CREATE TABLE IF NOT EXISTS activity_logs (
@@ -52,7 +52,7 @@ CREATE INDEX IF NOT EXISTS idx_analytics_events_created_at ON analytics_events(c
 CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
 CREATE INDEX IF NOT EXISTS idx_payments_created_at ON payments(created_at);
 
--- Create function to update user_growth table on new user signup
+-- Create trigger to update user_growth table on new user signup
 CREATE OR REPLACE FUNCTION update_user_growth()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -62,13 +62,13 @@ BEGIN
   UPDATE user_growth
   SET count = count + 1
   WHERE date = today;
-  
+
   -- If no record exists for today, insert a new one
   IF NOT FOUND THEN
     INSERT INTO user_growth (date, count)
     VALUES (today, 1);
   END IF;
-  
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -79,83 +79,3 @@ CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW
 EXECUTE FUNCTION update_user_growth();
-
--- Create function to log analytics events from the analytics service
-CREATE OR REPLACE FUNCTION log_analytics_event(
-  p_event_type VARCHAR,
-  p_event_name VARCHAR,
-  p_details JSONB DEFAULT NULL,
-  p_success BOOLEAN DEFAULT NULL
-)
-RETURNS UUID AS $$
-DECLARE
-  event_id UUID;
-BEGIN
-  -- Check if event already exists for today
-  SELECT id INTO event_id
-  FROM analytics_events
-  WHERE event_type = p_event_type
-    AND event_name = p_event_name
-    AND DATE(created_at) = CURRENT_DATE;
-    
-  IF FOUND THEN
-    -- Update existing event
-    UPDATE analytics_events
-    SET count = count + 1,
-        success_count = CASE WHEN p_success = true THEN success_count + 1 ELSE success_count END,
-        total_count = CASE WHEN p_success IS NOT NULL THEN total_count + 1 ELSE total_count END,
-        details = COALESCE(details, '{}'::JSONB) || COALESCE(p_details, '{}'::JSONB)
-    WHERE id = event_id;
-  ELSE
-    -- Insert new event
-    INSERT INTO analytics_events (
-      event_type,
-      event_name,
-      count,
-      success_count,
-      total_count,
-      details
-    )
-    VALUES (
-      p_event_type,
-      p_event_name,
-      1,
-      CASE WHEN p_success = true THEN 1 ELSE 0 END,
-      CASE WHEN p_success IS NOT NULL THEN 1 ELSE 0 END,
-      p_details
-    )
-    RETURNING id INTO event_id;
-  END IF;
-  
-  RETURN event_id;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create function to log user activity
-CREATE OR REPLACE FUNCTION log_user_activity(
-  p_user_id UUID,
-  p_event_type VARCHAR,
-  p_event_name VARCHAR,
-  p_details JSONB DEFAULT NULL
-)
-RETURNS UUID AS $$
-DECLARE
-  activity_id UUID;
-BEGIN
-  INSERT INTO activity_logs (
-    user_id,
-    event_type,
-    event_name,
-    details
-  )
-  VALUES (
-    p_user_id,
-    p_event_type,
-    p_event_name,
-    p_details
-  )
-  RETURNING id INTO activity_id;
-  
-  RETURN activity_id;
-END;
-$$ LANGUAGE plpgsql;

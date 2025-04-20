@@ -6,6 +6,44 @@ import { toast } from "sonner";
  * This service should only be used by admin users
  */
 
+// Helper function to safely serialize details for storage
+const safeSerializeDetails = (details: any): any => {
+  if (!details) return null;
+
+  try {
+    // Try to create a safe copy of the details by removing circular references
+    const safeDetails = {};
+
+    // Only include primitive values and simple objects
+    Object.keys(details).forEach(key => {
+      const value = details[key];
+      const type = typeof value;
+
+      if (value === null || value === undefined) {
+        safeDetails[key] = value;
+      } else if (type === 'string' || type === 'number' || type === 'boolean') {
+        safeDetails[key] = value;
+      } else if (type === 'object') {
+        // For objects, try to stringify and parse to remove functions and circular refs
+        try {
+          safeDetails[key] = JSON.parse(JSON.stringify(value));
+        } catch (e) {
+          // If that fails, store a simple representation
+          safeDetails[key] = `[Object: ${Array.isArray(value) ? 'Array' : value.constructor.name}]`;
+        }
+      } else {
+        // For functions or other types, store the type name
+        safeDetails[key] = `[${type}]`;
+      }
+    });
+
+    return safeDetails;
+  } catch (e) {
+    console.warn('Failed to serialize details for analytics:', e);
+    return { error: 'Failed to serialize details' };
+  }
+};
+
 // Types
 export interface AdminUser {
   id: string;
@@ -86,31 +124,26 @@ export const checkAdminStatus = async (userId: string): Promise<boolean> => {
 // Get all users
 export const getUsers = async (): Promise<AdminUser[]> => {
   try {
-    // Fetch users from Supabase
-    const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-    
-    if (authError) {
-      throw authError;
-    }
-
-    // Fetch user profiles from the profiles table
+    // Fetch user profiles from the profiles table with their auth data
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("*");
+      .select("*, users:auth.users(id, email, created_at, last_sign_in_at)");
 
     if (profilesError) {
       throw profilesError;
     }
 
-    // Combine auth users with their profiles
-    const combinedUsers = authUsers.users.map((authUser) => {
-      const profile = profiles.find((p) => p.id === authUser.id) || {};
+    // Format the user data
+    const combinedUsers = profiles.map((profile) => {
+      const authUser = profile.users || {};
       return {
-        id: authUser.id,
+        id: profile.id,
         email: authUser.email || "No email",
-        created_at: new Date(authUser.created_at).toLocaleString(),
-        last_sign_in_at: authUser.last_sign_in_at 
-          ? new Date(authUser.last_sign_in_at).toLocaleString() 
+        created_at: authUser.created_at
+          ? new Date(authUser.created_at).toLocaleString()
+          : new Date().toLocaleString(),
+        last_sign_in_at: authUser.last_sign_in_at
+          ? new Date(authUser.last_sign_in_at).toLocaleString()
           : null,
         is_subscribed: profile.is_subscribed || false,
         has_used_generator_demo: profile.has_used_generator_demo || false,
@@ -191,7 +224,7 @@ export const getSubscriptionStats = async (timeframe: string = "all"): Promise<S
     if (timeframe !== "all") {
       const now = new Date();
       let startDate = new Date();
-      
+
       if (timeframe === "day") {
         startDate.setDate(now.getDate() - 1);
       } else if (timeframe === "week") {
@@ -199,7 +232,7 @@ export const getSubscriptionStats = async (timeframe: string = "all"): Promise<S
       } else if (timeframe === "month") {
         startDate.setMonth(now.getMonth() - 1);
       }
-      
+
       query = query.gte("created_at", startDate.toISOString());
     }
 
@@ -263,7 +296,7 @@ export const getActivityLogs = async (
     if (timeframe !== "all") {
       const now = new Date();
       let startDate = new Date();
-      
+
       if (timeframe === "day") {
         startDate.setDate(now.getDate() - 1);
       } else if (timeframe === "week") {
@@ -271,7 +304,7 @@ export const getActivityLogs = async (
       } else if (timeframe === "month") {
         startDate.setMonth(now.getMonth() - 1);
       }
-      
+
       query = query.gte("created_at", startDate.toISOString());
     }
 
@@ -309,7 +342,7 @@ export const getAnalyticsData = async (timeframe: string = "month"): Promise<Ana
     // Define the time range based on the selected timeframe
     const now = new Date();
     let startDate = new Date();
-    
+
     if (timeframe === "day") {
       startDate.setDate(now.getDate() - 1);
     } else if (timeframe === "week") {
@@ -320,7 +353,7 @@ export const getAnalyticsData = async (timeframe: string = "month"): Promise<Ana
       // For "all", go back 6 months by default for charts
       startDate.setMonth(now.getMonth() - 6);
     }
-    
+
     const startDateStr = startDate.toISOString();
 
     // Fetch page views
@@ -431,14 +464,38 @@ export const logActivity = async (
   details: any = null
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase.rpc("log_user_activity", {
-      p_user_id: userId,
-      p_event_type: eventType,
-      p_event_name: eventName,
-      p_details: details,
-    });
+    // Safely serialize the details
+    const safeDetails = safeSerializeDetails(details);
 
-    if (error) throw error;
+    // Check if the activity_logs table exists before trying to use it
+    const { error: tableCheckError } = await supabase
+      .from('activity_logs')
+      .select('id')
+      .limit(1);
+
+    // If the table doesn't exist, log to console in development and return
+    if (tableCheckError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Activity logs table not available:', tableCheckError.message);
+        console.log('Would log activity:', { userId, eventType, eventName });
+      }
+      return true; // Return true to avoid disrupting the app flow
+    }
+
+    // Insert directly into activity_logs table
+    const { error } = await supabase
+      .from("activity_logs")
+      .insert({
+        user_id: userId,
+        event_type: eventType,
+        event_name: eventName,
+        details: safeDetails,
+      });
+
+    if (error) {
+      console.warn('Error inserting activity log:', error.message);
+      return false;
+    }
 
     return true;
   } catch (error) {
@@ -446,6 +503,8 @@ export const logActivity = async (
     return false;
   }
 };
+
+
 
 // Log an analytics event
 export const logAnalyticsEvent = async (
@@ -455,14 +514,74 @@ export const logAnalyticsEvent = async (
   success: boolean | null = null
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase.rpc("log_analytics_event", {
-      p_event_type: eventType,
-      p_event_name: eventName,
-      p_details: details,
-      p_success: success,
-    });
+    // Safely serialize the details
+    const safeDetails = safeSerializeDetails(details);
 
-    if (error) throw error;
+    // Check if the analytics_events table exists before trying to use it
+    const { error: tableCheckError } = await supabase
+      .from('analytics_events')
+      .select('id')
+      .limit(1);
+
+    // If the table doesn't exist, log to console in development and return
+    if (tableCheckError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Analytics events table not available:', tableCheckError.message);
+        console.log('Would log event:', { eventType, eventName, success });
+      }
+      return true; // Return true to avoid disrupting the app flow
+    }
+
+    // Check if event already exists for today
+    const today = new Date().toISOString().split('T')[0];
+    const { data: existingEvent, error: queryError } = await supabase
+      .from("analytics_events")
+      .select("id, count, success_count, total_count, details")
+      .eq("event_type", eventType)
+      .eq("event_name", eventName)
+      .gte("created_at", `${today}T00:00:00`)
+      .lte("created_at", `${today}T23:59:59`)
+      .maybeSingle();
+
+    if (queryError) {
+      console.warn('Error querying analytics events:', queryError.message);
+      return false;
+    }
+
+    if (existingEvent) {
+      // Update existing event
+      const { error } = await supabase
+        .from("analytics_events")
+        .update({
+          count: (existingEvent.count || 0) + 1,
+          success_count: success === true ? (existingEvent.success_count || 0) + 1 : existingEvent.success_count,
+          total_count: success !== null ? (existingEvent.total_count || 0) + 1 : existingEvent.total_count,
+          details: { ...existingEvent.details, ...safeDetails },
+        })
+        .eq("id", existingEvent.id);
+
+      if (error) {
+        console.warn('Error updating analytics event:', error.message);
+        return false;
+      }
+    } else {
+      // Insert new event
+      const { error } = await supabase
+        .from("analytics_events")
+        .insert({
+          event_type: eventType,
+          event_name: eventName,
+          count: 1,
+          success_count: success === true ? 1 : 0,
+          total_count: success !== null ? 1 : 0,
+          details: safeDetails,
+        });
+
+      if (error) {
+        console.warn('Error inserting analytics event:', error.message);
+        return false;
+      }
+    }
 
     return true;
   } catch (error) {

@@ -45,14 +45,14 @@ const ActivityLog = () => {
       // Build the query
       let query = supabase
         .from("activity_logs")
-        .select("*, profiles(email)")
+        .select("*")
         .order("created_at", { ascending: false });
 
       // Apply timeframe filter
       if (timeframe !== "all") {
         const now = new Date();
         let startDate = new Date();
-        
+
         if (timeframe === "day") {
           startDate.setDate(now.getDate() - 1);
         } else if (timeframe === "week") {
@@ -60,7 +60,7 @@ const ActivityLog = () => {
         } else if (timeframe === "month") {
           startDate.setMonth(now.getMonth() - 1);
         }
-        
+
         query = query.gte("created_at", startDate.toISOString());
       }
 
@@ -73,11 +73,29 @@ const ActivityLog = () => {
 
       if (error) throw error;
 
+      // Get user emails
+      const userIds = data.map(activity => activity.user_id).filter(Boolean);
+
+      let userEmailMap = {};
+      if (userIds.length > 0) {
+        const { data: users, error: usersError } = await supabase
+          .from('profiles')
+          .select('id, email:users(email)')
+          .in('id', userIds);
+
+        if (usersError) throw usersError;
+
+        // Create a map of user IDs to emails
+        users.forEach(user => {
+          userEmailMap[user.id] = user.email?.email || 'Unknown';
+        });
+      }
+
       // Format the activities
       const formattedActivities = data.map((activity) => ({
         id: activity.id,
         user_id: activity.user_id,
-        user_email: activity.profiles?.email || "Unknown",
+        user_email: activity.user_id ? (userEmailMap[activity.user_id] || "Unknown") : "System",
         event_type: activity.event_type,
         event_name: activity.event_name,
         details: activity.details,
@@ -104,7 +122,7 @@ const ActivityLog = () => {
         (activity) =>
           activity.user_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
           activity.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (activity.details && 
+          (activity.details &&
             JSON.stringify(activity.details).toLowerCase().includes(searchQuery.toLowerCase()))
       );
       setFilteredActivities(filtered);

@@ -61,8 +61,12 @@ const Header = () => {
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <button className="p-2 rounded-md hover:bg-white/10 transition-colors">
+              <button
+                className="p-2 rounded-md hover:bg-white/10 transition-colors"
+                aria-label="Open menu"
+              >
                 <Menu className="h-6 w-6 text-white" />
+                <span className="sr-only">Open menu</span>
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px]">

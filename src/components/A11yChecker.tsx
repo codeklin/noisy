@@ -21,7 +21,7 @@ const A11yChecker = () => {
 
     const checkAccessibility = () => {
       const newIssues: A11yIssue[] = [];
-      
+
       // Check for images without alt text
       document.querySelectorAll('img').forEach((img, index) => {
         if (!img.hasAttribute('alt')) {
@@ -32,7 +32,7 @@ const A11yChecker = () => {
           });
         }
       });
-      
+
       // Check for buttons without accessible names
       document.querySelectorAll('button').forEach((button, index) => {
         if (!button.textContent?.trim() && !button.getAttribute('aria-label')) {
@@ -43,7 +43,7 @@ const A11yChecker = () => {
           });
         }
       });
-      
+
       // Check for proper heading hierarchy
       const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
       for (let i = 0; i < headings.length - 1; i++) {
@@ -57,7 +57,7 @@ const A11yChecker = () => {
           });
         }
       }
-      
+
       // Check for links with generic text
       document.querySelectorAll('a').forEach((link, index) => {
         const text = link.textContent?.trim().toLowerCase() || '';
@@ -69,18 +69,18 @@ const A11yChecker = () => {
           });
         }
       });
-      
+
       // Check for color contrast (simplified check)
       document.querySelectorAll('*').forEach((element, index) => {
         const style = window.getComputedStyle(element);
         const color = style.color;
         const bgColor = style.backgroundColor;
-        
+
         // Skip elements with transparent background
         if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
           return;
         }
-        
+
         // Very simplified contrast check - just looking for potential red flags
         if (color === bgColor) {
           newIssues.push({
@@ -90,44 +90,92 @@ const A11yChecker = () => {
           });
         }
       });
-      
+
       setIssues(newIssues);
     };
-    
+
     // Run the check after the component tree is rendered
     const timeoutId = setTimeout(checkAccessibility, 2000);
-    
+
     // Re-run on route changes
     const observer = new MutationObserver(() => {
       clearTimeout(timeoutId);
       setTimeout(checkAccessibility, 2000);
     });
-    
+
     observer.observe(document.body, { childList: true, subtree: true });
-    
+
     return () => {
       clearTimeout(timeoutId);
       observer.disconnect();
     };
   }, []);
-  
+
+  // Keep track of already reported issues to avoid duplicates
+  const [reportedIssueIds, setReportedIssueIds] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     if (issues.length > 0) {
-      toast({
-        title: 'Accessibility Issues Detected',
-        description: `${issues.length} issues found. Check the console for details.`,
-        duration: 10000,
-        icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+      // Filter out already reported issues
+      const newIssues = issues.filter(issue => {
+        // Create a unique ID for each issue based on its properties
+        const issueId = `${issue.type}-${issue.message}-${issue.context || ''}`;
+        if (reportedIssueIds.has(issueId)) {
+          return false;
+        }
+        return true;
       });
-      
-      console.group('Accessibility Issues');
-      issues.forEach(issue => {
-        console.warn(`[${issue.type}] ${issue.message}`);
-      });
-      console.groupEnd();
+
+      // Update the set of reported issues
+      if (newIssues.length > 0) {
+        const newIssueIds = new Set(reportedIssueIds);
+        newIssues.forEach(issue => {
+          const issueId = `${issue.type}-${issue.message}-${issue.context || ''}`;
+          newIssueIds.add(issueId);
+        });
+        setReportedIssueIds(newIssueIds);
+
+        // Only show toast for new issues
+        toast.warning(
+          `${newIssues.length} new accessibility issues found. Check the console for details.`,
+          {
+            duration: 10000,
+            closeButton: true,
+          }
+        );
+
+        console.group('Accessibility Issues');
+        newIssues.forEach(issue => {
+          // Extract HTML from context to help identify the element
+          let elementHtml = '';
+          if (issue.context) {
+            const contextMatch = issue.context.match(/<[^>]+>/g);
+            if (contextMatch) {
+              elementHtml = contextMatch[0];
+            }
+          }
+
+          console.warn(`[${issue.type}] ${issue.message}`);
+          console.warn(`Element HTML: ${elementHtml || 'Not available'}`);
+
+          // Log the component stack to help identify the component with the issue
+          if (issue.stack) {
+            console.warn('Component Stack:', issue.stack);
+          }
+          console.warn('---');
+        });
+        console.groupEnd();
+
+        // Log a helpful message about how to fix common issues
+        console.info('Common accessibility fixes:\n' +
+          '- button-name: Add text content, aria-label, or aria-labelledby to buttons\n' +
+          '- image-alt: Add alt text to images\n' +
+          '- link-name: Add text content, aria-label, or aria-labelledby to links\n' +
+          '- form-field-multiple-labels: Ensure form fields have only one label');
+      }
     }
-  }, [issues]);
-  
+  }, [issues, reportedIssueIds]);
+
   // This component doesn't render anything
   return null;
 };

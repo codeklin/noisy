@@ -11,7 +11,6 @@ const STATIC_ASSETS = [
   '/offline.html',
   '/manifest.json',
   '/plogo.png',
-  '/screenshots/screenshot1.png',
   '/favicon.ico'
 ];
 
@@ -38,24 +37,24 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing Service Worker...', event);
   event.waitUntil(
-    Promise.all([
-      // Cache static assets
-      caches.open(STATIC_CACHE_NAME).then(cache => {
+    caches.open(STATIC_CACHE_NAME)
+      .then(cache => {
         console.log('[Service Worker] Precaching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      }),
-      // Cache dynamic assets
-      caches.open(DYNAMIC_CACHE_NAME).then(cache => {
-        console.log('[Service Worker] Preparing dynamic cache');
-        // We don't pre-cache dynamic content, just initialize the cache
-        return Promise.resolve();
+        // Use individual cache.add calls to prevent failing if one file is missing
+        return Promise.all(
+          STATIC_ASSETS.map(url => {
+            return cache.add(url).catch(error => {
+              console.warn(`[Service Worker] Failed to cache: ${url}`, error);
+              return Promise.resolve(); // Continue despite the error
+            });
+          })
+        );
       })
-    ])
-    .then(() => {
-      console.log('[Service Worker] Successfully installed and cached assets');
-      // Activate immediately
-      return self.skipWaiting();
-    })
+      .then(() => {
+        console.log('[Service Worker] Successfully installed and cached assets');
+        // Activate immediately
+        return self.skipWaiting();
+      })
   );
 });
 
