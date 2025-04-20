@@ -23,6 +23,7 @@ const SavedPlansPage = lazy(() => import("./pages/SavedPlansPage"));
 const PreferencesPage = lazy(() => import("./pages/PreferencesPage"));
 const ContentPlanPage = lazy(() => import("./pages/ContentPlanPage"));
 const ViralContentPage = lazy(() => import("./pages/ViralContentPage"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,13 @@ const App = () => (
               <ErrorBoundary>
                 <Suspense fallback={<Loading message="Loading viral content generator..." />}>
                   <ViralContentPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin" element={
+              <ErrorBoundary>
+                <Suspense fallback={<Loading message="Loading admin dashboard..." />}>
+                  <AdminDashboard />
                 </Suspense>
               </ErrorBoundary>
             } />

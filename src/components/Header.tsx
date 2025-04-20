@@ -1,11 +1,12 @@
 
 import { Link } from "react-router-dom";
-import { Sparkles, Menu, Zap } from 'lucide-react';
-import { useState } from "react";
+import { Sparkles, Menu, Zap, ShieldCheck } from 'lucide-react';
+import { useAuth } from "@/context/AuthContext";
 import UserMenu from "./UserMenu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Header = () => {
+  const { isAdmin } = useAuth();
   return (
     <header className="sticky top-0 z-50 py-3 bg-[#1a1e3a] text-white transition-all duration-300 ease-in-out border-b border-[#2a2e4a]">
       <div className="flex justify-between items-center px-4 sm:px-6 max-w-7xl mx-auto">
@@ -43,6 +44,14 @@ const Header = () => {
             <Link to="/contact" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
               Contact
             </Link>
+            {isAdmin && (
+              <Link to="/admin" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+                <span className="flex items-center">
+                  <ShieldCheck className="h-3 w-3 mr-1 text-[#FF3B45]" />
+                  Admin
+                </span>
+              </Link>
+            )}
           </div>
 
           <UserMenu />
@@ -79,6 +88,14 @@ const Header = () => {
                 <Link to="/contact" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
                   Contact
                 </Link>
+                {isAdmin && (
+                  <Link to="/admin" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
+                    <span className="flex items-center">
+                      <ShieldCheck className="h-4 w-4 mr-2 text-[#FF3B45]" />
+                      Admin Dashboard
+                    </span>
+                  </Link>
+                )}
                 <div className="pt-4 mt-4 border-t">
                   <UserMenu isMobile={true} />
                 </div>

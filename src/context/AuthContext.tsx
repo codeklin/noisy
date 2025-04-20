@@ -10,6 +10,7 @@ type AuthContextType = {
   isLoading: boolean;
   isPaidUser: boolean;
   isSuperUser: boolean;
+  isAdmin: boolean;
   hasUsedGeneratorDemo: boolean;
   hasUsedViralGeneratorDemo: boolean;
   updateUserPaymentStatus?: (status: boolean) => void;
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isPaidUser, setIsPaidUser] = useState(false);
   const [isSuperUser, setIsSuperUser] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [hasUsedGeneratorDemo, setHasUsedGeneratorDemo] = useState(false);
   const [hasUsedViralGeneratorDemo, setHasUsedViralGeneratorDemo] = useState(false);
   const navigate = useNavigate();
@@ -67,6 +69,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Check if the user is a super user (007postit@gmail.com)
           const isSuperUserEmail = user.email === '007postit@gmail.com';
           setIsSuperUser(isSuperUserEmail);
+
+          // Check if user is an admin by querying the profiles table
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching admin status:', profileError);
+          } else {
+            setIsAdmin(profileData?.is_admin || isSuperUserEmail);
+          }
 
           // If super user, they're automatically considered paid and haven't used demos
           if (isSuperUserEmail) {
@@ -127,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       isPaidUser,
       isSuperUser,
+      isAdmin,
       hasUsedGeneratorDemo,
       hasUsedViralGeneratorDemo,
       updateUserPaymentStatus,
