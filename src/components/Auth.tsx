@@ -15,16 +15,31 @@ import { SocialMediaConnection } from "@/types/socialMedia";
 // Helper function to check if a user exists in the database
 const checkUserExists = async (email: string) => {
   try {
-    // First check auth.users table via admin API
-    const { data: authData, error: authError } = await supabase.auth.admin.listUsers({
-      filters: {
-        email: email
-      }
+    // First try to use the RPC function
+    const { data: exists, error: rpcError } = await supabase.rpc('check_user_exists', {
+      user_email: email
     });
 
-    if (!authError && authData?.users && authData.users.length > 0) {
-      console.log('User found in auth.users:', authData.users[0]);
+    if (!rpcError && exists === true) {
+      console.log('User found via RPC function');
       return true;
+    }
+
+    // If RPC fails or returns false, try admin API
+    if (rpcError) {
+      console.error('Error checking user via RPC:', rpcError);
+
+      // Try admin API
+      try {
+        const { data, error: adminError } = await supabase.auth.admin.getUserByEmail(email);
+
+        if (!adminError && data.user) {
+          console.log('User found via admin API:', data.user);
+          return true;
+        }
+      } catch (adminErr) {
+        console.error('Error checking user via admin API:', adminErr);
+      }
     }
 
     // Fallback to checking profiles table
@@ -234,6 +249,9 @@ export default function Auth() {
       return;
     }
 
+    // Clear any previous error messages
+    setUserExists(null);
+
     try {
       setLoading(true);
       console.log("Attempting to sign in with:", { email });
@@ -250,38 +268,48 @@ export default function Auth() {
 
         // If the error is "Invalid login credentials", check if the user exists in auth but not confirmed
         if (error.message.includes("Invalid login credentials")) {
-          // Check if user exists in auth system
-          const { data: userData, error: userError } = await supabase.auth.admin.listUsers({
-            filters: {
-              email: email.trim()
-            }
+          // First try to check if user exists via RPC function
+          const { data: userExists, error: rpcError } = await supabase.rpc('check_user_exists', {
+            user_email: email.trim()
           });
 
-          if (!userError && userData?.users && userData.users.length > 0) {
-            const user = userData.users[0];
+          if (rpcError) {
+            console.error('Error checking if user exists via RPC:', rpcError);
+          }
 
-            // Check if email is confirmed
-            if (!user.email_confirmed_at) {
-              // Resend confirmation email
-              const { error: resendError } = await supabase.auth.resend({
-                type: 'signup',
-                email: email.trim(),
-                options: {
-                  emailRedirectTo: `${window.location.origin}/auth`
+          // If RPC confirms user exists or we couldn't check
+          if (userExists === true || rpcError) {
+            // Try to get user directly
+            const { data: { user }, error: getUserError } = await supabase.auth.admin.getUserByEmail(email.trim());
+
+            if (getUserError) {
+              console.error('Error getting user by email:', getUserError);
+            }
+
+            if (user) {
+              // Check if email is confirmed
+              if (!user.email_confirmed_at) {
+                // Resend confirmation email
+                const { error: resendError } = await supabase.auth.resend({
+                  type: 'signup',
+                  email: email.trim(),
+                  options: {
+                    emailRedirectTo: `${window.location.origin}/auth`
+                  }
+                });
+
+                if (resendError) {
+                  console.error("Error resending confirmation email:", resendError);
+                  toast.error("Please confirm your email before signing in. We couldn't resend the confirmation email.");
+                } else {
+                  toast.warning("Please confirm your email before signing in. We've resent the confirmation email.");
                 }
-              });
-
-              if (resendError) {
-                console.error("Error resending confirmation email:", resendError);
-                toast.error("Please confirm your email before signing in. We couldn't resend the confirmation email.");
+                return;
               } else {
-                toast.warning("Please confirm your email before signing in. We've resent the confirmation email.");
+                // Email is confirmed but login failed - wrong password
+                toast.error("Invalid password. Please try again or reset your password.");
+                return;
               }
-              return;
-            } else {
-              // Email is confirmed but login failed - wrong password
-              toast.error("Invalid password. Please try again or reset your password.");
-              return;
             }
           }
 
