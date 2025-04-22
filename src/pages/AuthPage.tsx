@@ -18,58 +18,19 @@ type SocialMediaConnection = {
 // Helper function to check if a user exists in the database
 const checkUserExists = async (email: string) => {
   try {
-    // First try to use the RPC function
+    // Use the RPC function to check if the user exists in auth.users
     const { data: exists, error: rpcError } = await supabase.rpc('check_user_exists', {
       user_email: email
     });
-    
-    if (!rpcError && exists === true) {
-      console.log('User found via RPC function');
-      return true;
+    if (rpcError) {
+      console.error('Error from check_user_exists RPC:', rpcError);
+      return false;
     }
-    
-    // Try direct auth check
-    try {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: false
-        }
-      });
-      
-      // If no error, user exists
-      if (!error) {
-        console.log('User exists based on OTP check');
-        return true;
-      }
-      
-      // If error is not "User not found", then user likely exists
-      if (error && !error.message.includes('User not found')) {
-        console.log('User likely exists based on OTP error', error.message);
-        return true;
-      }
-    } catch (otpErr) {
-      console.error('Error checking user via OTP:', otpErr);
-    }
-    
-    // Fallback to checking profiles table
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('email', email);
-    
-    if (!profileError && profileData && profileData.length > 0) {
-      console.log('User found in profiles table');
-      return true;
-    }
-    
-    // If we get here, user doesn't exist
-    console.log('User does not exist after all checks');
-    return false;
+    // Only return true if the RPC returns true (strict boolean)
+    return exists === true;
   } catch (error) {
     console.error('Error checking if user exists:', error);
-    // If there's an error, we should not assume user doesn't exist
-    return null;
+    return false;
   }
 };
 

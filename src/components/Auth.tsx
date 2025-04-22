@@ -183,14 +183,18 @@ export default function Auth() {
         
         toast.success("Account created! Please check your email for confirmation.");
       }
-    } catch (error: any) {
-      console.error("Sign up error:", error);
-      
-      // Provide more specific error messages
-      if (error.message?.includes("duplicate key") || error.message?.includes("already registered")) {
-        toast.error("This email is already registered. Please log in instead.");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Sign up error:", error);
+        // Provide more specific error messages
+        if (error.message?.includes("duplicate key") || error.message?.includes("already registered")) {
+          toast.error("This email is already registered. Please log in instead.");
+        } else {
+          toast.error(error.message || "An error occurred during sign up");
+        }
       } else {
-        toast.error(error.message || "An error occurred during sign up");
+        console.error("Sign up error:", error);
+        toast.error("An error occurred during sign up");
       }
     } finally {
       setLoading(false);
@@ -244,14 +248,18 @@ export default function Auth() {
       
       console.log("Sign in successful:", data);
       toast.success("Signed in successfully!");
-    } catch (error: any) {
-      console.error("Sign in error:", error);
-      
-      // Provide more helpful error messages
-      if (error.message?.includes("Invalid login credentials")) {
-        toast.error("Invalid email or password. Please try again or register if you don't have an account.");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Sign in error:", error);
+        // Provide more helpful error messages
+        if (error.message?.includes("Invalid login credentials")) {
+          toast.error("Invalid email or password. Please try again or register if you don't have an account.");
+        } else {
+          toast.error(error.message || "An error occurred during sign in");
+        }
       } else {
-        toast.error(error.message || "An error occurred during sign in");
+        console.error("Sign in error:", error);
+        toast.error("An error occurred during sign in");
       }
     } finally {
       setLoading(false);
@@ -280,9 +288,14 @@ export default function Auth() {
       
       toast.success("Password reset link sent to your email");
       setResetPasswordMode(false);
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-      toast.error(error.message || "Failed to send password reset email");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Password reset error:", error);
+        toast.error(error.message || "Failed to send password reset email");
+      } else {
+        console.error("Password reset error:", error);
+        toast.error("Failed to send password reset email");
+      }
     } finally {
       setLoading(false);
     }
