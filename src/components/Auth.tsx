@@ -224,7 +224,7 @@ export default function Auth() {
           );
         } catch (profileErr) {
           console.error("Exception creating profile during signup:", profileErr);
-          toast.error("Account created but profile setup failed. You can still log in after verifying your email.");
+          toast.success("Account created! Please check your email for confirmation.");
         }
       }
     } catch (error: any) {
@@ -236,7 +236,7 @@ export default function Auth() {
       } else if (error.message?.includes("rate limit")) {
         toast.error("Too many signup attempts. Please try again later.");
       } else if (error.message?.includes("Database error")) {
-        toast.error("Account created but profile setup failed. Please verify your email and then log in.");
+        toast.success("Account created! Please check your email for confirmation.");
       } else {
         toast.error(error.message || "An error occurred during sign up");
       }
