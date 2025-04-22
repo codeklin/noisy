@@ -1,16 +1,19 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { toast } from "sonner";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import { Facebook, Twitter, Linkedin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SocialMediaConnection } from "@/types/socialMedia";
+import { Facebook, Twitter, Linkedin } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
+
+type SocialMediaConnection = {
+  platform: 'facebook' | 'twitter' | 'linkedin';
+  isConnected: boolean;
+};
 
 // Helper function to check if a user exists in the database
 const checkUserExists = async (email: string) => {
@@ -19,46 +22,54 @@ const checkUserExists = async (email: string) => {
     const { data: exists, error: rpcError } = await supabase.rpc('check_user_exists', {
       user_email: email
     });
-
+    
     if (!rpcError && exists === true) {
       console.log('User found via RPC function');
       return true;
     }
-
-    // If RPC fails or returns false, try admin API
-    if (rpcError) {
-      console.error('Error checking user via RPC:', rpcError);
-
-      // Try admin API
-      try {
-        const { data, error: adminError } = await supabase.auth.admin.getUserByEmail(email);
-
-        if (!adminError && data.user) {
-          console.log('User found via admin API:', data.user);
-          return true;
+    
+    // Try direct auth check
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: false
         }
-      } catch (adminErr) {
-        console.error('Error checking user via admin API:', adminErr);
+      });
+      
+      // If no error, user exists
+      if (!error) {
+        console.log('User exists based on OTP check');
+        return true;
       }
+      
+      // If error is not "User not found", then user likely exists
+      if (error && !error.message.includes('User not found')) {
+        console.log('User likely exists based on OTP error', error.message);
+        return true;
+      }
+    } catch (otpErr) {
+      console.error('Error checking user via OTP:', otpErr);
     }
-
+    
     // Fallback to checking profiles table
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('email')
       .eq('email', email);
-
+    
     if (!profileError && profileData && profileData.length > 0) {
       console.log('User found in profiles table');
       return true;
     }
-
+    
     // If we get here, user doesn't exist
+    console.log('User does not exist after all checks');
     return false;
   } catch (error) {
     console.error('Error checking if user exists:', error);
-    // If there's an error, assume user might exist to be safe
-    return false;
+    // If there's an error, we should not assume user doesn't exist
+    return null;
   }
 };
 
@@ -82,22 +93,6 @@ export default function Auth() {
         const exists = await checkUserExists(email.trim());
         console.log('User exists check result:', exists);
         setUserExists(exists);
-
-        // If the user exists but hasn't been verified, check verification status
-        if (exists) {
-          try {
-            // Try to get user verification status
-            const { data: userData, error: userError } = await supabase.rpc('get_user_by_email', {
-              user_email: email.trim()
-            });
-
-            if (!userError && userData && !userData.email_confirmed_at) {
-              console.log('User exists but email not confirmed, will offer to resend verification');
-            }
-          } catch (error) {
-            console.error('Error checking user verification status:', error);
-          }
-        }
       } else {
         setUserExists(null);
       }
@@ -110,30 +105,16 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Basic validation
     if (!email || !password) {
       toast.error("Please enter both email and password");
       return;
     }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    // Password length validation
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
-      return;
-    }
-
+    
     try {
       setLoading(true);
-      console.log("Attempting to sign up with:", { email });
-
+      
       // First check if the user already exists
       const userExists = await checkUserExists(email.trim());
       if (userExists) {
@@ -141,8 +122,8 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-
-      // Proceed with signup - IMPORTANT: Set emailConfirmationRedirectTo to ensure verification emails work
+      
+      // Proceed with signup
       const { error, data } = await supabase.auth.signUp({
         email: email.trim(),
         password,
@@ -150,18 +131,17 @@ export default function Auth() {
           data: {
             social_media: socialConnections
           },
-          emailRedirectTo: `${window.location.origin}/auth`,
-          captchaToken: undefined // Skip captcha for development
+          emailRedirectTo: `${window.location.origin}/auth`
         }
       });
-
+      
       if (error) {
         console.error("Supabase signup error:", error);
         throw error;
       }
-
+      
       console.log("Sign up response:", data);
-
+      
       if (!data?.user) {
         toast.error("Failed to create account. Please try again.");
       } else if (data?.user?.identities?.length === 0) {
@@ -169,7 +149,6 @@ export default function Auth() {
       } else {
         // Create the profile directly in the database
         try {
-          // First try direct insert
           const { error: insertError } = await supabase
             .from('profiles')
             .insert({
@@ -182,61 +161,34 @@ export default function Auth() {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             });
-
+            
           if (insertError) {
-            console.error("Error creating profile via direct insert:", insertError);
-
-            // Fallback to RPC function
+            console.error("Error creating profile during signup:", insertError);
+            
+            // Try RPC function as fallback
             const { error: rpcError } = await supabase.rpc('create_user_profile', {
               user_id: data.user.id,
               user_email: data.user.email,
               is_admin_val: data.user.email === '007postit@gmail.com',
               is_subscribed_val: data.user.email === '007postit@gmail.com'
             });
-
+            
             if (rpcError) {
               console.error("Error creating profile via RPC:", rpcError);
-              throw rpcError;
             }
           }
-
-          // If we get here, profile was created successfully
-          console.log('User profile created successfully');
-
-          // For development/testing - resend confirmation email
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email: email.trim(),
-            options: {
-              emailRedirectTo: `${window.location.origin}/auth`
-            }
-          });
-
-          if (resendError) {
-            console.error("Error resending confirmation email:", resendError);
-          } else {
-            console.log("Confirmation email resent successfully");
-          }
-
-          toast.success(
-            "Account created! Please check your email for confirmation. " +
-            "If you don't see it, check your spam folder."
-          );
         } catch (profileErr) {
           console.error("Exception creating profile during signup:", profileErr);
-          toast.success("Account created! Please check your email for confirmation.");
         }
+        
+        toast.success("Account created! Please check your email for confirmation.");
       }
     } catch (error: any) {
       console.error("Sign up error:", error);
-
+      
       // Provide more specific error messages
       if (error.message?.includes("duplicate key") || error.message?.includes("already registered")) {
         toast.error("This email is already registered. Please log in instead.");
-      } else if (error.message?.includes("rate limit")) {
-        toast.error("Too many signup attempts. Please try again later.");
-      } else if (error.message?.includes("Database error")) {
-        toast.success("Account created! Please check your email for confirmation.");
       } else {
         toast.error(error.message || "An error occurred during sign up");
       }
@@ -247,215 +199,57 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Basic validation
     if (!email || !password) {
       toast.error("Please enter both email and password");
       return;
     }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    // Password length validation
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
-      return;
-    }
-
-    // Clear any previous error messages
-    setUserExists(null);
-
+    
     try {
       setLoading(true);
-      console.log("Attempting to sign in with:", { email });
-
+      
       // Try to sign in directly
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-
-      // If there's an error, handle it
+      
+      // If there is an error, handle it
       if (error) {
         console.error("Supabase auth error:", error);
-
-        // If the error is "Invalid login credentials", check if the user exists in auth but not confirmed
+        
+        // If the error is "Invalid login credentials", check if the user exists
         if (error.message.includes("Invalid login credentials")) {
-          // First try to check if user exists via RPC function
-          const { data: userExists, error: rpcError } = await supabase.rpc('check_user_exists', {
-            user_email: email.trim()
-          });
-
-          if (rpcError) {
-            console.error('Error checking if user exists via RPC:', rpcError);
-          }
-
-          // If RPC confirms user exists or we couldn't check
-          if (userExists === true || rpcError) {
-            // Try to get user directly
-            const { data: { user }, error: getUserError } = await supabase.auth.admin.getUserByEmail(email.trim());
-
-            if (getUserError) {
-              console.error('Error getting user by email:', getUserError);
-            }
-
-            if (user) {
-              // Check if email is confirmed
-              if (!user.email_confirmed_at) {
-                // Resend confirmation email
-                const { error: resendError } = await supabase.auth.resend({
-                  type: 'signup',
-                  email: email.trim(),
-                  options: {
-                    emailRedirectTo: `${window.location.origin}/auth`
-                  }
-                });
-
-                if (resendError) {
-                  console.error("Error resending confirmation email:", resendError);
-                  toast.error("Please confirm your email before signing in. We couldn't resend the confirmation email.");
-                } else {
-                  toast.warning("Please confirm your email before signing in. We've resent the confirmation email.");
-                }
-                return;
-              } else {
-                // Email is confirmed but login failed - wrong password
-                toast.error("Invalid password. Please try again or reset your password.");
-                return;
-              }
-            }
-          }
-
-          // If we get here, user doesn't exist in auth system
-          // Ask if they want to create a new account
-          const wantToCreateAccount = window.confirm(
-            "Register/Signup to continue?"
-          );
-
-          if (wantToCreateAccount) {
-            // Try to sign up the user
-            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-              email: email.trim(),
-              password,
-              options: {
-                emailRedirectTo: `${window.location.origin}/auth`,
-                captchaToken: undefined // Skip captcha for development
-              }
-            });
-
-            if (signUpError) {
-              console.error("Sign-up error:", signUpError);
-              throw signUpError;
-            }
-
-            if (signUpData?.user) {
-              // Create profile for the new user
-              try {
-                const { error: profileError } = await supabase
-                  .from('profiles')
-                  .insert({
-                    id: signUpData.user.id,
-                    email: signUpData.user.email,
-                    is_admin: signUpData.user.email === '007postit@gmail.com',
-                    is_subscribed: signUpData.user.email === '007postit@gmail.com',
-                    has_used_generator_demo: false,
-                    has_used_viral_generator_demo: false,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                  });
-
-                if (profileError) {
-                  console.error("Error creating profile during login-signup:", profileError);
-                }
-              } catch (profileErr) {
-                console.error("Exception creating profile during login-signup:", profileErr);
-              }
-
-              toast.success("Account created! Please check your email for confirmation.");
-              return;
-            }
+          // Check if user exists in the system
+          const userExists = await checkUserExists(email.trim());
+          
+          if (userExists === true) {
+            // User exists but password is wrong
+            toast.error("Invalid password. Please try again or reset your password.");
+            return;
+          } else if (userExists === false) {
+            // User definitely does not exist
+            toast.info("Register/Signup to continue");
+            return;
           } else {
-            toast.error("Register/Signup to continue");
+            // We are not sure if user exists (null result)
+            toast.error("Login failed. Please check your credentials or register if you do not have an account.");
             return;
           }
         }
-
-        // Handle other specific error cases
-        if (error.message.includes("Email not confirmed")) {
-          // Resend confirmation email
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email: email.trim(),
-            options: {
-              emailRedirectTo: `${window.location.origin}/auth`
-            }
-          });
-
-          if (resendError) {
-            console.error("Error resending confirmation email:", resendError);
-            toast.error("Please confirm your email before signing in. We couldn't resend the confirmation email.");
-          } else {
-            toast.warning("Please confirm your email before signing in. We've resent the confirmation email.");
-          }
-          return;
-        }
-
+        
         throw error;
       }
-
-      // Login successful - check if profile exists and create if not
-      if (data?.user) {
-        // Check if profile exists
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .maybeSingle();
-
-        if (!profileData && (!profileError || profileError.code === 'PGRST116')) {
-          // Profile doesn't exist, create it
-          try {
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert({
-                id: data.user.id,
-                email: data.user.email,
-                is_admin: data.user.email === '007postit@gmail.com',
-                is_subscribed: data.user.email === '007postit@gmail.com',
-                has_used_generator_demo: false,
-                has_used_viral_generator_demo: false,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-
-            if (insertError) {
-              console.error("Error creating profile during login:", insertError);
-            } else {
-              console.log("Profile created during login");
-            }
-          } catch (insertErr) {
-            console.error("Exception creating profile during login:", insertErr);
-          }
-        }
-      }
-
+      
       console.log("Sign in successful:", data);
       toast.success("Signed in successfully!");
     } catch (error: any) {
       console.error("Sign in error:", error);
-
+      
       // Provide more helpful error messages
       if (error.message?.includes("Invalid login credentials")) {
-        toast.error("Register/Signup to continue");
-      } else if (error.message?.includes("rate limit")) {
-        toast.error("Too many login attempts. Please try again later.");
-      } else if (error.message?.includes("Email not confirmed")) {
-        toast.error("Please confirm your email before signing in. Check your inbox and spam folder.");
+        toast.error("Invalid email or password. Please try again or register if you don't have an account.");
       } else {
         toast.error(error.message || "An error occurred during sign in");
       }
@@ -466,32 +260,24 @@ export default function Auth() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Email validation
+    
     if (!email) {
       toast.error("Please enter your email address");
       return;
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
+    
     try {
       setLoading(true);
-      console.log("Attempting to send password reset email to:", email);
-
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: window.location.origin + '/auth'
       });
-
+      
       if (error) {
         console.error("Password reset error:", error);
         throw error;
       }
-
+      
       toast.success("Password reset link sent to your email");
       setResetPasswordMode(false);
     } catch (error: any) {
@@ -526,7 +312,7 @@ export default function Auth() {
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-
+            
             <TabsContent value="login">
               {resetPasswordMode ? (
                 <form onSubmit={handleResetPassword} className="space-y-4 mt-4">
@@ -586,7 +372,7 @@ export default function Auth() {
                   </div>
                   {userExists === false && email && (
                     <div className="text-sm text-amber-600 mb-2">
-                      Register/Signup to continue
+                      No account found with this email. You can create one when you sign in.
                     </div>
                   )}
                   {userExists === true && (
@@ -595,12 +381,12 @@ export default function Auth() {
                     </div>
                   )}
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Signing in..." : userExists === false ? "Create Account" : "Sign In"}
+                    {loading ? "Signing in..." : "Sign In"}
                   </Button>
                 </form>
               )}
             </TabsContent>
-
+            
             <TabsContent value="register">
               <form onSubmit={handleSignUp} className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -623,11 +409,11 @@ export default function Auth() {
                     required
                   />
                 </div>
-
+                
                 <div className="space-y-2">
                   <Label>Connect Social Media Accounts</Label>
                   <p className="text-sm text-gray-500 mb-3">Choose platforms to share your content</p>
-
+                  
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -640,7 +426,7 @@ export default function Auth() {
                         Facebook
                       </Label>
                     </div>
-
+                    
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="twitter"
@@ -652,7 +438,7 @@ export default function Auth() {
                         Twitter
                       </Label>
                     </div>
-
+                    
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="linkedin"
@@ -666,7 +452,7 @@ export default function Auth() {
                     </div>
                   </div>
                 </div>
-
+                
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>

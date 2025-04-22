@@ -84,6 +84,44 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          id: string
+          email: string
+          is_admin: boolean
+          is_subscribed: boolean
+          has_used_generator_demo: boolean
+          has_used_viral_generator_demo: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          is_admin?: boolean
+          is_subscribed?: boolean
+          has_used_generator_demo?: boolean
+          has_used_viral_generator_demo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          is_admin?: boolean
+          is_subscribed?: boolean
+          has_used_generator_demo?: boolean
+          has_used_viral_generator_demo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [{
+          foreignKeyName: "profiles_id_fkey"
+          columns: ["id"]
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        }]
+      }
       url_scans: {
         Row: {
           id: string
@@ -124,7 +162,7 @@ export type Database = {
           id?: string
           preferences?: Json
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string
@@ -173,7 +211,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_user_exists: {
+        Args: {
+          user_email: string
+        }
+        Returns: boolean
+      }
+      create_user_profile: {
+        Args: {
+          user_id: string
+          user_email: string
+          is_admin_val?: boolean
+          is_subscribed_val?: boolean
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

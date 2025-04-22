@@ -1,182 +1,443 @@
-
-import Auth from "@/components/Auth";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Facebook, Twitter, Linkedin } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
 
-export default function AuthPage() {
-  const { user, isLoading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [verifying, setVerifying] = useState(false);
-  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+type SocialMediaConnection = {
+  platform: 'facebook' | 'twitter' | 'linkedin';
+  isConnected: boolean;
+};
 
-  // Handle email verification
-  useEffect(() => {
-    const handleEmailVerification = async () => {
-      // Check if this is a verification callback
-      const hashParams = new URLSearchParams(location.hash.substring(1));
-      const type = hashParams.get('type');
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-
-      if ((type === 'signup' || type === 'recovery') && (accessToken || refreshToken)) {
-        setVerifying(true);
-        try {
-          // Process the verification
-          if (accessToken) {
-            // Set the access token in the session - this should automatically log the user in
-            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken || ''
-            });
-
-            console.log('Session set with token, session data:', sessionData);
-
-            if (sessionError) {
-              console.error('Error setting session:', sessionError);
-              setVerificationMessage('Error verifying email. Please try signing in manually.');
-              toast.error('Error verifying email. Please try signing in.');
-            } else {
-              // Get the user
-              const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
-
-              if (userError || !user) {
-                console.error('Error getting user:', userError);
-                setVerificationMessage('Error verifying email. Please try signing in manually.');
-                toast.error('Error verifying email. Please try signing in.');
-              } else {
-                // Check if profile exists and create if not
-                const { data: profileData, error: profileError } = await supabase
-                  .from('profiles')
-                  .select('*')
-                  .eq('id', user.id)
-                  .maybeSingle();
-
-                if (!profileData && (!profileError || profileError.code === 'PGRST116')) {
-                  // Profile doesn't exist, create it
-                  try {
-                    const { error: insertError } = await supabase
-                      .from('profiles')
-                      .insert({
-                        id: user.id,
-                        email: user.email,
-                        is_admin: user.email === '007postit@gmail.com',
-                        is_subscribed: user.email === '007postit@gmail.com',
-                        has_used_generator_demo: false,
-                        has_used_viral_generator_demo: false,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                      });
-
-                    if (insertError) {
-                      console.error('Error creating profile during verification:', insertError);
-                    } else {
-                      console.log('Profile created during verification');
-                    }
-                  } catch (insertErr) {
-                    console.error('Exception creating profile during verification:', insertErr);
-                  }
-                }
-
-                // Success message
-                if (type === 'recovery') {
-                  setVerificationMessage('Password reset successful! You are now signed in.');
-                  toast.success('Password reset successful! You are now signed in.');
-                } else {
-                  setVerificationMessage('Email verified successfully! You are now signed in.');
-                  toast.success('Email verified successfully! You are now signed in.');
-                }
-
-                // Force a session refresh to ensure the user is logged in
-                try {
-                  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-                  if (refreshError) {
-                    console.error('Error refreshing session:', refreshError);
-                  } else {
-                    console.log('Session refreshed successfully:', refreshData.session ? 'Session exists' : 'No session');
-                  }
-                } catch (refreshErr) {
-                  console.error('Exception refreshing session:', refreshErr);
-                }
-
-                // Redirect after a short delay
-                setTimeout(() => {
-                  navigate('/');
-                }, 1500);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error during verification:', error);
-          setVerificationMessage('Error during verification. Please try signing in manually.');
-          toast.error('Error during verification. Please try signing in.');
-        } finally {
-          setVerifying(false);
+// Helper function to check if a user exists in the database
+const checkUserExists = async (email: string) => {
+  try {
+    // First try to use the RPC function
+    const { data: exists, error: rpcError } = await supabase.rpc('check_user_exists', {
+      user_email: email
+    });
+    
+    if (!rpcError && exists === true) {
+      console.log('User found via RPC function');
+      return true;
+    }
+    
+    // Try direct auth check
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+          shouldCreateUser: false
         }
+      });
+      
+      // If no error, user exists
+      if (!error) {
+        console.log('User exists based on OTP check');
+        return true;
+      }
+      
+      // If error is not "User not found", then user likely exists
+      if (error && !error.message.includes('User not found')) {
+        console.log('User likely exists based on OTP error', error.message);
+        return true;
+      }
+    } catch (otpErr) {
+      console.error('Error checking user via OTP:', otpErr);
+    }
+    
+    // Fallback to checking profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email);
+    
+    if (!profileError && profileData && profileData.length > 0) {
+      console.log('User found in profiles table');
+      return true;
+    }
+    
+    // If we get here, user doesn't exist
+    console.log('User does not exist after all checks');
+    return false;
+  } catch (error) {
+    console.error('Error checking if user exists:', error);
+    // If there's an error, we should not assume user doesn't exist
+    return null;
+  }
+};
+
+export default function Auth() {
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [resetPasswordMode, setResetPasswordMode] = useState(false);
+  const [userExists, setUserExists] = useState<boolean | null>(null);
+  const [socialConnections, setSocialConnections] = useState<SocialMediaConnection[]>([
+    { platform: "facebook", isConnected: false },
+    { platform: "twitter", isConnected: false },
+    { platform: "linkedin", isConnected: false }
+  ]);
+
+  // Check if user exists when email changes
+  useEffect(() => {
+    const checkUser = async () => {
+      if (email && email.includes('@')) {
+        console.log('Checking if user exists:', email.trim());
+        const exists = await checkUserExists(email.trim());
+        console.log('User exists check result:', exists);
+        setUserExists(exists);
+      } else {
+        setUserExists(null);
       }
     };
 
-    handleEmailVerification();
-  }, [location.hash, navigate]);
+    // Debounce the check to avoid too many requests
+    const timeoutId = setTimeout(checkUser, 500);
+    return () => clearTimeout(timeoutId);
+  }, [email]);
 
-  // Redirect if already logged in
-  useEffect(() => {
-    // Only redirect if user is logged in, not loading, not verifying, and no verification message is showing
-    if (user && !isLoading && !verifying && !verificationMessage) {
-      console.log('User already logged in, redirecting to home');
-      navigate("/");
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
     }
-  }, [user, isLoading, navigate, verifying, verificationMessage]);
+    
+    try {
+      setLoading(true);
+      
+      // First check if the user already exists
+      const userExists = await checkUserExists(email.trim());
+      if (userExists) {
+        toast.error("This email is already registered. Please log in instead.");
+        setLoading(false);
+        return;
+      }
+      
+      // Proceed with signup
+      const { error, data } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            social_media: socialConnections
+          },
+          emailRedirectTo: `${window.location.origin}/auth`
+        }
+      });
+      
+      if (error) {
+        console.error("Supabase signup error:", error);
+        throw error;
+      }
+      
+      console.log("Sign up response:", data);
+      
+      if (!data?.user) {
+        toast.error("Failed to create account. Please try again.");
+      } else if (data?.user?.identities?.length === 0) {
+        toast.error("This email is already registered. Please log in instead.");
+      } else {
+        // Create the profile directly in the database
+        try {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              is_admin: data.user.email === '007postit@gmail.com',
+              is_subscribed: data.user.email === '007postit@gmail.com',
+              has_used_generator_demo: false,
+              has_used_viral_generator_demo: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+            
+          if (insertError) {
+            console.error("Error creating profile during signup:", insertError);
+            
+            // Try RPC function as fallback
+            const { error: rpcError } = await supabase.rpc('create_user_profile', {
+              user_id: data.user.id,
+              user_email: data.user.email,
+              is_admin_val: data.user.email === '007postit@gmail.com',
+              is_subscribed_val: data.user.email === '007postit@gmail.com'
+            });
+            
+            if (rpcError) {
+              console.error("Error creating profile via RPC:", rpcError);
+            }
+          }
+        } catch (profileErr) {
+          console.error("Exception creating profile during signup:", profileErr);
+        }
+        
+        toast.success("Account created! Please check your email for confirmation.");
+      }
+    } catch (error: any) {
+      console.error("Sign up error:", error);
+      
+      // Provide more specific error messages
+      if (error.message?.includes("duplicate key") || error.message?.includes("already registered")) {
+        toast.error("This email is already registered. Please log in instead.");
+      } else {
+        toast.error(error.message || "An error occurred during sign up");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Show verification UI if verifying
-  if (verifying) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 bg-[#F5F4FF]/30 py-10 flex items-center justify-center">
-          <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md w-full">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Verifying your email...</h2>
-            <p className="text-gray-600">Please wait while we complete the verification process.</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!email || !password) {
+      toast.error("Please enter both email and password");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Try to sign in directly
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      
+      // If there is an error, handle it
+      if (error) {
+        console.error("Supabase auth error:", error);
+        
+        // If the error is "Invalid login credentials", check if the user exists
+        if (error.message.includes("Invalid login credentials")) {
+          // Check if user exists in the system
+          const userExists = await checkUserExists(email.trim());
+          
+          if (userExists === true) {
+            // User exists but password is wrong
+            toast.error("Invalid password. Please try again or reset your password.");
+            return;
+          } else if (userExists === false) {
+            // User definitely does not exist
+            toast.info("Register/Signup to continue");
+            return;
+          } else {
+            // We are not sure if user exists (null result)
+            toast.error("Login failed. Please check your credentials or register if you do not have an account.");
+            return;
+          }
+        }
+        
+        throw error;
+      }
+      
+      console.log("Sign in successful:", data);
+      toast.success("Signed in successfully!");
+    } catch (error: any) {
+      console.error("Sign in error:", error);
+      
+      // Provide more helpful error messages
+      if (error.message?.includes("Invalid login credentials")) {
+        toast.error("Invalid email or password. Please try again or register if you don't have an account.");
+      } else {
+        toast.error(error.message || "An error occurred during sign in");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin + '/auth'
+      });
+      
+      if (error) {
+        console.error("Password reset error:", error);
+        throw error;
+      }
+      
+      toast.success("Password reset link sent to your email");
+      setResetPasswordMode(false);
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      toast.error(error.message || "Failed to send password reset email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSocialConnection = (platform: 'facebook' | 'twitter' | 'linkedin') => {
+    setSocialConnections(prev =>
+      prev.map(conn =>
+        conn.platform === platform
+          ? { ...conn, isConnected: !conn.isConnected }
+          : conn
+      )
     );
-  }
+  };
 
-  // Show verification message if available
-  if (verificationMessage) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 bg-[#F5F4FF]/30 py-10 flex items-center justify-center">
-          <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">{verificationMessage}</h2>
-            <p className="text-gray-600 mb-6">You'll be redirected to the homepage shortly.</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Show normal auth UI
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 bg-[#F5F4FF]/30 py-10">
-        <div className="container max-w-7xl mx-auto px-4">
-          <Auth />
-        </div>
-      </main>
-      <Footer />
+    <div className="flex items-center justify-center min-h-[70vh]">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Welcome to Noisy
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              {resetPasswordMode ? (
+                <form onSubmit={handleResetPassword} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email-reset">Email</Label>
+                    <Input
+                      id="email-reset"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Sending reset link..." : "Send Reset Link"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full mt-2"
+                    onClick={() => setResetPasswordMode(false)}
+                  >
+                    Back to Login
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleSignIn} className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <PasswordInput
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="px-0 text-sm"
+                    onClick={() => setResetPasswordMode(true)}
+                  >
+                    Forgot password?
+                  </Button>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Signing in..." : "Sign In"}
+                  </Button>
+                </form>
+              )}
+            </TabsContent>
+
+            <TabsContent value="register">
+              <form onSubmit={handleSignUp} className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email-register">Email</Label>
+                  <Input
+                    id="email-register"
+                    type="email"
+                    placeholder="your.email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password-register">Password</Label>
+                  <PasswordInput
+                    id="password-register"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-4">
+                  <Label>Connect Social Media (Optional)</Label>
+                  <div className="flex gap-4">
+                    <Button
+                      type="button"
+                      variant={socialConnections.find(c => c.platform === 'facebook')?.isConnected ? 'default' : 'outline'}
+                      className="flex-1"
+                      onClick={() => toggleSocialConnection('facebook')}
+                    >
+                      <Facebook className="w-4 h-4 mr-2" />
+                      Facebook
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={socialConnections.find(c => c.platform === 'twitter')?.isConnected ? 'default' : 'outline'}
+                      className="flex-1"
+                      onClick={() => toggleSocialConnection('twitter')}
+                    >
+                      <Twitter className="w-4 h-4 mr-2" />
+                      Twitter
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={socialConnections.find(c => c.platform === 'linkedin')?.isConnected ? 'default' : 'outline'}
+                      className="flex-1"
+                      onClick={() => toggleSocialConnection('linkedin')}
+                    >
+                      <Linkedin className="w-4 h-4 mr-2" />
+                      LinkedIn
+                    </Button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
