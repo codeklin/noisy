@@ -334,7 +334,7 @@ export default function Auth() {
           // If we get here, user doesn't exist in auth system
           // Ask if they want to create a new account
           const wantToCreateAccount = window.confirm(
-            "No account found with this email. Would you like to create a new account?"
+            "Register/Signup to continue?"
           );
 
           if (wantToCreateAccount) {
@@ -380,7 +380,7 @@ export default function Auth() {
               return;
             }
           } else {
-            toast.error("Sign in canceled. Please try again with correct credentials.");
+            toast.error("Register/Signup to continue");
             return;
           }
         }
@@ -451,7 +451,7 @@ export default function Auth() {
 
       // Provide more helpful error messages
       if (error.message?.includes("Invalid login credentials")) {
-        toast.error("Invalid email or password. Please try again or reset your password.");
+        toast.error("Register/Signup to continue");
       } else if (error.message?.includes("rate limit")) {
         toast.error("Too many login attempts. Please try again later.");
       } else if (error.message?.includes("Email not confirmed")) {
@@ -586,7 +586,7 @@ export default function Auth() {
                   </div>
                   {userExists === false && email && (
                     <div className="text-sm text-amber-600 mb-2">
-                      No account found with this email. You'll be prompted to create one when you try to sign in.
+                      Register/Signup to continue
                     </div>
                   )}
                   {userExists === true && (
