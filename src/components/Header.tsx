@@ -19,9 +19,6 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
-              Home
-            </Link>
             <Link to="/generator" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
               <span className="flex items-center">
                 <Zap className="h-3 w-3 mr-1 text-[#FF3B45]" />

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Sparkles, BookMarked, User, Zap, ShieldCheck } from "lucide-react";
+import { Sparkles, BookMarked, User, Zap, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 
@@ -23,16 +23,6 @@ const MobileNav = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t z-50 md:hidden">
       <div className={`flex justify-around items-center h-16 ${showAdminLink ? 'text-xs' : ''}`}>
-        <Link
-          to="/"
-          className={`${navItemClass} ${
-            isActive("/") ? "text-[#0B2D93]" : "text-gray-500"
-          }`}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        >
-          <Home className="h-5 w-5" />
-          <span className="text-xs mt-1">Home</span>
-        </Link>
 
         <Link
           to="/generator"
