@@ -55,16 +55,17 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
   if (isMobile) {
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Avatar className="h-8 w-8 border-2 border-white">
+        <div className="flex items-start gap-2 mb-4">
+          <Avatar className="h-10 w-10 border-2 border-white mt-1">
             <AvatarFallback className={`${isSuperUser ? 'bg-[#FFD700]' : 'bg-[#FF6B6B]'} text-white text-xs font-medium`}>
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
-          <div className="text-sm font-medium text-gray-500">
-            Signed in as <span className="font-bold text-[#FF6B6B]">{user.email?.split("@")[0]}</span>
+          <div className="flex flex-col text-sm font-medium text-gray-500">
+            <span>Signed in as:</span>
+            <span className="font-bold text-[#FF6B6B] truncate">{user.email}</span>
             {isSuperUser && (
-              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+              <span className="mt-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
                 <Crown className="h-3 w-3 mr-1 text-yellow-600" />
                 Admin
               </span>
@@ -108,19 +109,20 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="relative border-[#FF6B6B] bg-[#FF6B6B] text-white hover:bg-[#FF5252] hover:border-[#FF5252] p-0 overflow-hidden">
+        <Button variant="outline" className="relative border-[#FF6B6B] bg-[#FF6B6B] text-white hover:bg-[#FF5252] hover:border-[#FF5252] p-0 w-10 h-10 rounded-full">
           <Avatar className="h-9 w-9 border-2 border-white">
             <AvatarFallback className={`${isSuperUser ? 'bg-[#FFD700]' : 'bg-[#FF6B6B]'} text-white font-medium`}>
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden md:inline ml-2 mr-2">
-            {user.email?.split("@")[0]}
-            {isSuperUser && <Crown className="inline-block h-3 w-3 ml-1 text-yellow-300" />}
-          </span>
+          {isSuperUser && (
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center">
+              <Crown className="h-3 w-3 text-yellow-300" />
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="text-[#FF6B6B] font-medium">
           My Account
           {isSuperUser && (
@@ -130,6 +132,9 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
             </span>
           )}
         </DropdownMenuLabel>
+        <div className="px-2 py-1.5 text-sm text-gray-500 truncate">
+          {user.email}
+        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate("/saved-plans")} className="text-[#1a1e3a] hover:text-[#FF6B6B] focus:text-[#FF6B6B] focus:bg-[#FF6B6B]/10">
           <FileText className="h-4 w-4 mr-2 text-[#FF6B6B]" />
