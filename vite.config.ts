@@ -12,14 +12,13 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "::",
-      port: 8080,
-      // Add historyApiFallback for client-side routing
-      middlewareMode: true,
+      port: 8082, // Changed from 8080 to 8082 to avoid conflicts
+      strictPort: false, // Allow Vite to try another port if 8082 is in use
     },
     preview: {
-      port: 8080,
-      // Add historyApiFallback for client-side routing in preview mode
+      port: 8082, // Changed from 8080 to 8082 to avoid conflicts
       host: "::",
+      strictPort: false, // Allow Vite to try another port if 8082 is in use
     },
     base: "/",
     plugins: [

@@ -43,9 +43,9 @@ const App = () => {
 
   return (
   <QueryClientProvider client={queryClient}>
-    <Toaster />
-    <Sonner />
     <BrowserRouter>
+      <Toaster />
+      <Sonner />
       {process.env.NODE_ENV === 'development' && (
         <Suspense fallback={null}>
           <A11yChecker />
@@ -142,9 +142,7 @@ const App = () => {
         </AuthProvider>
       </AnalyticsProvider>
     </BrowserRouter>
-  </QueryClientProvider>
-
-  );
+  </QueryClientProvider>);
 };
 
 export default App;
