@@ -25,13 +25,9 @@ class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
-    
     // Show a toast notification about the error
     try {
-      toast({
-        title: "An error occurred",
-        description: "We've encountered an unexpected error. Please try again.",
-        variant: "destructive",
+      toast.error("An error occurred. We've encountered an unexpected error. Please try again.", {
         duration: 5000,
         closeButton: true,
         icon: <AlertTriangle className="h-5 w-5" />
@@ -40,7 +36,6 @@ class ErrorBoundary extends Component<Props, State> {
       // If toast fails, we still want to show the error UI
       console.error("Failed to show toast:", e);
     }
-    
     // In a production app, you would log this to an error reporting service
     // logErrorToService(error, errorInfo);
   }

@@ -72,6 +72,22 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ].filter(Boolean),
+    optimizeDeps: {
+      exclude: [
+        'embla-carousel-react',
+        'chunk-3TFVT2CW.js',
+        'chunk-4MBMRILA.js',
+        'chunk-R6S4VRB5.js',
+        'chunk-S77I6LSE.js',
+        'chunk-6SPNF6KQ.js',
+        'chunk-VUNZWEK6.js',
+        'chunk-4WIT4MX7.js',
+        'chunk-O563XVIW.js',
+        'chunk-ZMRDNIFS.js',
+        'chunk-IWVYZN3G.js',
+        'chunk-PJHKFFLB.js',
+      ]
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

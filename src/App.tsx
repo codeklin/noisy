@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import OfflineNotification from "@/components/OfflineNotification";
 import MobileNav from "./components/MobileNav";
 import Loading from "./components/Loading";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { initializeDatabase } from "./lib/databaseSetup";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -32,7 +33,15 @@ const A11yChecker = process.env.NODE_ENV === 'development'
   ? lazy(() => import('./components/A11yChecker'))
   : () => null;
 
-const App = () => (
+const App = () => {
+  // Initialize database when the app starts
+  useEffect(() => {
+    initializeDatabase().catch(error => {
+      console.error('Failed to initialize database:', error);
+    });
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <Toaster />
     <Sonner />
@@ -134,6 +143,8 @@ const App = () => (
       </AnalyticsProvider>
     </BrowserRouter>
   </QueryClientProvider>
-);
+
+  );
+};
 
 export default App;

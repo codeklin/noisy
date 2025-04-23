@@ -444,6 +444,7 @@ const ViralContentPage = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-gray-500 hover:text-[#FF3B45]"
+                                    aria-label="Copy Facebook template"
                                     onClick={() => {
                                       navigator.clipboard.writeText(
                                         "Unpopular opinion: [controversial statement about your industry]\n\n" +
@@ -492,6 +493,7 @@ const ViralContentPage = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-gray-500 hover:text-[#0B2D93]"
+                                    aria-label="Copy Twitter template"
                                     onClick={() => {
                                       navigator.clipboard.writeText(
                                         "I analyzed [large number] of [content type] to find what actually works in [year].\n\n" +
@@ -536,6 +538,7 @@ const ViralContentPage = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-gray-500 hover:text-[#FF3B45]"
+                                    aria-label="Copy LinkedIn template"
                                     onClick={() => {
                                       navigator.clipboard.writeText(
                                         "I've reviewed [number]+ [type of content/businesses] in the past [timeframe].\n\n" +
@@ -584,6 +587,7 @@ const ViralContentPage = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-gray-500 hover:text-[#0B2D93]"
+                                    aria-label="Copy Instagram template"
                                     onClick={() => {
                                       navigator.clipboard.writeText(
                                         "HOOK: POV: You've been doing [common activity] wrong your entire life\n\n" +

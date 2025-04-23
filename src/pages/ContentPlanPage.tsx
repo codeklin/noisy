@@ -22,24 +22,35 @@ export default function ContentPlanPage() {
 
   useEffect(() => {
     if (!user) {
+      console.log("No authenticated user, redirecting to auth page");
       navigate("/auth");
       return;
     }
 
     const loadContentPlan = async () => {
-      if (!id) return;
+      if (!id) {
+        console.log("No content plan ID provided");
+        navigate("/saved-plans");
+        return;
+      }
+
+      console.log(`Loading content plan with ID: ${id} for user: ${user.id}`);
+      setIsLoading(true);
 
       try {
         const plan = await getContentPlan(id);
         if (plan) {
+          console.log(`Successfully loaded content plan: ${plan.name}`);
           setContentPlan(plan);
         } else {
+          console.log(`Content plan with ID ${id} not found`);
           navigate("/saved-plans");
           toast.error("Content plan not found");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error loading content plan:", error);
-        toast.error("Failed to load content plan");
+        toast.error(`Failed to load content plan: ${error.message || 'Unknown error'}`);
+        navigate("/saved-plans");
       } finally {
         setIsLoading(false);
       }
@@ -49,20 +60,38 @@ export default function ContentPlanPage() {
   }, [id, user, navigate, getContentPlan]);
 
   const handleEditPost = async (postId: string, newContent: string) => {
-    if (!contentPlan) return;
+    if (!contentPlan) {
+      console.log("Cannot edit post: No content plan loaded");
+      return;
+    }
+
+    if (!id) {
+      console.log("Cannot edit post: No content plan ID");
+      return;
+    }
+
+    console.log(`Editing post with ID: ${postId}`);
 
     const updatedPosts = contentPlan.posts.map(post =>
       post.id === postId ? { ...post, content: newContent } : post
     );
 
+    // Update local state immediately for better UX
     setContentPlan({ ...contentPlan, posts: updatedPosts });
 
     try {
-      await updateContentPlan(id!, { posts: updatedPosts });
-      toast.success("Post updated successfully!");
-    } catch (error) {
+      const success = await updateContentPlan(id, { posts: updatedPosts });
+
+      if (success) {
+        console.log("Post updated successfully in database");
+        toast.success("Post updated successfully!");
+      } else {
+        console.error("Failed to update post in database");
+        toast.error("Failed to update post");
+      }
+    } catch (error: any) {
       console.error("Error updating post:", error);
-      toast.error("Failed to update post");
+      toast.error(`Failed to update post: ${error.message || 'Unknown error'}`);
     }
   };
 

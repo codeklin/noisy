@@ -252,6 +252,8 @@ export const useContentPlan = () => {
     }
 
     try {
+      console.log("Saving content plan with user ID:", user.id);
+
       const { data, error } = await supabase
         .from("content_plans")
         .insert({
@@ -263,12 +265,18 @@ export const useContentPlan = () => {
         .select("id")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error saving content plan:", error);
+        toast.error(`Failed to save content plan: ${error.message}`);
+        throw error;
+      }
 
+      console.log("Content plan saved successfully with ID:", data.id);
       return data.id;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving content plan:", error);
-      throw error;
+      toast.error(`Error saving content plan: ${error.message || 'Unknown error'}`);
+      return null;
     }
   };
 
@@ -279,6 +287,8 @@ export const useContentPlan = () => {
     }
 
     try {
+      console.log(`Fetching content plan with ID: ${id} for user: ${user.id}`);
+
       const { data, error } = await supabase
         .from("content_plans")
         .select("*")
@@ -286,17 +296,36 @@ export const useContentPlan = () => {
         .eq("user_id", user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error getting content plan:", error);
+        toast.error(`Failed to load content plan: ${error.message}`);
+        throw error;
+      }
 
-      if (!data) return null;
+      if (!data) {
+        console.log("No content plan found with ID:", id);
+        return null;
+      }
 
-      return {
-        brandInfo: parseJsonObject<BrandInfo>(data.brand_info),
-        posts: parseJsonArray<Post>(data.posts),
-        name: data.name
-      };
-    } catch (error) {
+      console.log("Content plan retrieved successfully:", data.name);
+
+      try {
+        const brandInfo = parseJsonObject<BrandInfo>(data.brand_info);
+        const posts = parseJsonArray<Post>(data.posts);
+
+        return {
+          brandInfo,
+          posts,
+          name: data.name
+        };
+      } catch (parseError) {
+        console.error("Error parsing content plan data:", parseError);
+        toast.error("Error parsing content plan data");
+        return null;
+      }
+    } catch (error: any) {
       console.error("Error getting content plan:", error);
+      toast.error(`Error loading content plan: ${error.message || 'Unknown error'}`);
       return null;
     }
   };

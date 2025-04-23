@@ -1,9 +1,8 @@
-
 import { Link } from "react-router-dom";
 import { Sparkles, Menu, Zap, ShieldCheck } from 'lucide-react';
 import { useAuth } from "@/context/AuthContext";
 import UserMenu from "./UserMenu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 
 const Header = () => {
   const { isAdmin } = useAuth();
@@ -70,6 +69,9 @@ const Header = () => {
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+              <SheetDescription id="mobile-menu-desc" className="sr-only">
+                Mobile navigation menu for Noisy. Use the links below to navigate.
+              </SheetDescription>
               <div className="flex flex-col space-y-4 mt-8">
                 <Link to="/generator" className="text-gray-800 hover:text-[#FF3B45] text-base font-medium transition-colors py-2">
                   <span className="flex items-center">

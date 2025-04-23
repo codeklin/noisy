@@ -41,33 +41,28 @@ const UsersList = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Fetch user profiles from the profiles table with their auth data
+      // Fetch user profiles from the profiles table only
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("*, users:auth.users(id, email, created_at, last_sign_in_at)");
+        .select("id, email, is_subscribed, has_used_generator_demo, has_used_viral_generator_demo, is_admin, created_at");
 
       if (profilesError) {
         throw profilesError;
       }
 
       // Format the user data
-      const combinedUsers = profiles.map((profile) => {
-        const authUser = profile.users || {};
-        return {
-          id: profile.id,
-          email: authUser.email || "No email",
-          created_at: authUser.created_at
-            ? new Date(authUser.created_at).toLocaleString()
-            : new Date().toLocaleString(),
-          last_sign_in_at: authUser.last_sign_in_at
-            ? new Date(authUser.last_sign_in_at).toLocaleString()
-            : null,
-          is_subscribed: profile.is_subscribed || false,
-          has_used_generator_demo: profile.has_used_generator_demo || false,
-          has_used_viral_generator_demo: profile.has_used_viral_generator_demo || false,
-          is_admin: profile.is_admin || false,
-        };
-      });
+      const combinedUsers = (profiles || []).map((profile: any) => ({
+        id: profile.id,
+        email: profile.email || "No email",
+        created_at: profile.created_at
+          ? new Date(profile.created_at).toLocaleString()
+          : new Date().toLocaleString(),
+        last_sign_in_at: null, // Not available in profiles table
+        is_subscribed: profile.is_subscribed || false,
+        has_used_generator_demo: profile.has_used_generator_demo || false,
+        has_used_viral_generator_demo: profile.has_used_viral_generator_demo || false,
+        is_admin: profile.is_admin || false,
+      }));
 
       setUsers(combinedUsers);
       setFilteredUsers(combinedUsers);

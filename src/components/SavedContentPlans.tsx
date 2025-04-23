@@ -24,12 +24,23 @@ export default function SavedContentPlans() {
 
   useEffect(() => {
     if (user) {
+      console.log("User authenticated, loading content plans for user ID:", user.id);
       loadContentPlans();
+    } else {
+      console.log("No user authenticated, cannot load content plans");
+      setIsLoading(false);
     }
   }, [user, loadContentPlans]);
 
   const loadContentPlans = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("Cannot load content plans: No user authenticated");
+      setIsLoading(false);
+      return;
+    }
+
+    console.log("Loading content plans for user ID:", user.id);
+    setIsLoading(true);
 
     try {
       const { data, error } = await supabase
@@ -38,20 +49,31 @@ export default function SavedContentPlans() {
         .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error loading content plans:", error);
+        toast.error(`Failed to load your saved content plans: ${error.message}`);
+        throw error;
+      }
 
-      setContentPlans(data as ContentPlanItem[]);
-    } catch (error) {
+      console.log(`Successfully loaded ${data?.length || 0} content plans`);
+      setContentPlans(data as ContentPlanItem[] || []);
+    } catch (error: any) {
       console.error("Error loading content plans:", error);
-      toast.error("Failed to load your saved content plans");
+      toast.error(`Failed to load your saved content plans: ${error.message || 'Unknown error'}`);
+      setContentPlans([]);
     } finally {
       setIsLoading(false);
     }
   }, [user, setContentPlans, setIsLoading]);
 
   const handleDeletePlan = async (id: string) => {
-    if (!user) return;
+    if (!user) {
+      console.log("Cannot delete content plan: No user authenticated");
+      toast.error("You must be logged in to delete content plans");
+      return;
+    }
 
+    console.log(`Attempting to delete content plan with ID: ${id}`);
     setIsDeleting(prev => ({ ...prev, [id]: true }));
 
     try {
@@ -61,13 +83,18 @@ export default function SavedContentPlans() {
         .eq("id", id)
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error deleting content plan:", error);
+        toast.error(`Failed to delete content plan: ${error.message}`);
+        throw error;
+      }
 
+      console.log(`Successfully deleted content plan with ID: ${id}`);
       setContentPlans(prev => prev.filter(plan => plan.id !== id));
       toast.success("Content plan deleted successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting content plan:", error);
-      toast.error("Failed to delete content plan");
+      toast.error(`Failed to delete content plan: ${error.message || 'Unknown error'}`);
     } finally {
       setIsDeleting(prev => ({ ...prev, [id]: false }));
     }

@@ -3,7 +3,7 @@ import App from './App.tsx'
 import './index.css'
 
 // Register service worker for PWA
-if ('serviceWorker' in navigator && window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
   window.addEventListener('load', async () => {
     try {
       // Unregister any existing service workers first to avoid conflicts
