@@ -76,7 +76,12 @@ export function ShareContent({ post }: ShareContentProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1"
+          aria-label="Share content to social media"
+        >
           <Share2 className="h-4 w-4" />
           Share
         </Button>
@@ -103,14 +108,17 @@ export function ShareContent({ post }: ShareContentProps) {
             <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
               <div className="space-y-2">
                 {connectedAccounts.map((account) => (
-                <div
+                <button
                   key={account.platform}
-                  className={`flex items-center p-2 rounded-md cursor-pointer ${
+                  type="button"
+                  className={`flex items-center p-2 rounded-md cursor-pointer w-full text-left ${
                     selectedPlatforms.includes(account.platform)
                       ? 'bg-primary/10 border border-primary/30'
                       : 'hover:bg-muted border'
                   }`}
                   onClick={() => togglePlatform(account.platform)}
+                  aria-label={`Select ${account.platform} for sharing`}
+                  aria-pressed={selectedPlatforms.includes(account.platform)}
                 >
                   {account.platform === 'facebook' && <Facebook className="h-5 w-5 mr-2 text-blue-600" />}
                   {account.platform === 'twitter' && <Twitter className="h-5 w-5 mr-2 text-blue-400" />}
@@ -119,7 +127,7 @@ export function ShareContent({ post }: ShareContentProps) {
                   {selectedPlatforms.includes(account.platform) && (
                     <Check className="h-4 w-4 text-primary" />
                   )}
-                </div>
+                </button>
               ))}
               </div>
             </div>

@@ -109,14 +109,24 @@ export default function UserMenu({ isMobile = false }: UserMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="relative border-[#FF6B6B] bg-[#FF6B6B] text-white hover:bg-[#FF5252] hover:border-[#FF5252] p-0 w-10 h-10 rounded-full">
+        <Button
+          variant="outline"
+          className="relative border-[#FF6B6B] bg-[#FF6B6B] text-white hover:bg-[#FF5252] hover:border-[#FF5252] p-0 w-10 h-10 rounded-full"
+          aria-label={`User menu for ${user.email}`}
+        >
           <Avatar className="h-9 w-9 border-2 border-white">
-            <AvatarFallback className={`${isSuperUser ? 'bg-[#FFD700]' : 'bg-[#FF6B6B]'} text-white font-medium`}>
+            <AvatarFallback
+              className={`${isSuperUser ? 'bg-[#FFD700]' : 'bg-[#FF6B6B]'} text-white font-medium`}
+              aria-hidden="true"
+            >
               {getUserInitials()}
             </AvatarFallback>
           </Avatar>
           {isSuperUser && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center">
+            <span
+              className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center"
+              aria-label="Admin user"
+            >
               <Crown className="h-3 w-3 text-yellow-300" />
             </span>
           )}

@@ -92,21 +92,28 @@ const TryFreeDemo = ({ type, className = "" }: TryFreeDemoProps) => {
         onClick={handleTryDemo}
         className={`gap-2 ${className}`}
         variant={isPaidUser ? "default" : hasUsedDemo ? "outline" : "default"}
+        aria-label={
+          isPaidUser
+            ? `Access ${type === "both" ? "content generators" : type === "generator" ? "content generator" : "viral content generator"}`
+            : (type === "both" && hasUsedGeneratorDemo && hasUsedViralGeneratorDemo) || (type !== "both" && hasUsedDemo)
+              ? "Subscribe to access premium features"
+              : `Try free ${type === "both" ? "generators" : type} demo`
+        }
       >
         {isPaidUser ? (
           <>
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
             {type === "both" ? "Access Generators" : (type === "generator" ? "Go to Generator" : "Go to Viral Generator")}
           </>
         ) : (type === "both" && hasUsedGeneratorDemo && hasUsedViralGeneratorDemo) ||
            (type !== "both" && hasUsedDemo) ? (
           <>
-            <Lock className="h-4 w-4" />
+            <Lock className="h-4 w-4" aria-hidden="true" />
             Subscribe to Access
           </>
         ) : (
           <>
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
             Try Free Demo
           </>
         )}
@@ -121,11 +128,19 @@ const TryFreeDemo = ({ type, className = "" }: TryFreeDemoProps) => {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex flex-col sm:flex-row sm:justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setDialogOpen(false)}
+              aria-label="Cancel and close dialog"
+            >
               Cancel
             </Button>
-            <Button onClick={handleLoginClick} className="gap-2">
-              <Sparkles className="h-4 w-4" />
+            <Button
+              onClick={handleLoginClick}
+              className="gap-2"
+              aria-label="Go to login and registration page"
+            >
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
               Login / Register
             </Button>
           </DialogFooter>

@@ -90,20 +90,21 @@ const HeroSection = () => {
               <Button
                 onClick={handleViralContentClick}
                 className="bg-gradient-to-r from-[#FF3B45] to-[#FF8E53] hover:from-[#FF8E53] hover:to-[#FF3B45] text-white border-0 shadow-lg gap-2 px-6 py-6 text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+                aria-label={isPaidUser ? "Create viral content" : hasUsedViralGeneratorDemo ? "Subscribe for access" : "Try viral content generator"}
               >
                 {isPaidUser ? (
                   <>
-                    <Sparkles className="h-5 w-5" />
+                    <Sparkles className="h-5 w-5" aria-hidden="true" />
                     Create Viral Content
                   </>
                 ) : hasUsedViralGeneratorDemo ? (
                   <>
-                    <Lock className="h-5 w-5" />
+                    <Lock className="h-5 w-5" aria-hidden="true" />
                     Subscribe for Access
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-5 w-5" />
+                    <Sparkles className="h-5 w-5" aria-hidden="true" />
                     Create Viral Content
                   </>
                 )}
@@ -122,7 +123,7 @@ const HeroSection = () => {
               <div className="relative rounded-2xl bg-[#1a1a2e]/80 p-3 md:p-4 shadow-2xl border border-white/10">
                 <img
                   src="/hero-image.jpeg"
-                  alt="Viral Creator"
+                  alt="Social media content creator using Noisy to generate viral content"
                   className="w-full h-auto rounded-lg shadow-md transition-all duration-300 hover:shadow-lg object-cover"
                 />
 

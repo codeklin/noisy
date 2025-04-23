@@ -59,8 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, currentSession) => {
         console.log('Auth state changed:', event, currentSession ? 'Session exists' : 'No session');
 
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
+        // Only update session and user if the event is not INITIAL_SESSION
+        // This prevents unnecessary state updates during page loads
+        if (event !== 'INITIAL_SESSION') {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+        }
 
         if (event === "SIGNED_IN") {
           console.log('User signed in');
