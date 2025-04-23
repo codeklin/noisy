@@ -1,0 +1,147 @@
+-- Step 1: Add missing columns to the profiles table
+ALTER TABLE profiles 
+ADD COLUMN IF NOT EXISTS has_used_generator_demo BOOLEAN DEFAULT false,
+ADD COLUMN IF NOT EXISTS has_used_viral_generator_demo BOOLEAN DEFAULT false;
+
+-- Step 2: Create or update indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_is_admin ON profiles(is_admin);
+CREATE INDEX IF NOT EXISTS idx_profiles_is_subscribed ON profiles(is_subscribed);
+
+-- Step 3: Create a trigger function to update the profiles updated_at timestamp
+CREATE OR REPLACE FUNCTION update_profile_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Step 4: Create the trigger
+DROP TRIGGER IF EXISTS update_profile_timestamp ON profiles;
+CREATE TRIGGER update_profile_timestamp
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION update_profile_timestamp();
+
+-- Step 5: Enable Row Level Security if not already enabled
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Step 6: Create RLS policies for the profiles table
+-- Allow users to read their own profile
+DROP POLICY IF EXISTS "Users can read their own profile" ON profiles;
+CREATE POLICY "Users can read their own profile"
+  ON profiles
+  FOR SELECT
+  USING (auth.uid() = id);
+
+-- Allow users to update their own profile
+DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+CREATE POLICY "Users can update their own profile"
+  ON profiles
+  FOR UPDATE
+  USING (auth.uid() = id);
+
+-- Allow users to insert their own profile
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+CREATE POLICY "Users can insert their own profile"
+  ON profiles
+  FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+-- Step 7: Create a function to handle new user creation
+DROP FUNCTION IF EXISTS handle_new_user() CASCADE;
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (
+    id, 
+    email, 
+    is_admin,
+    is_subscribed,
+    has_used_generator_demo,
+    has_used_viral_generator_demo,
+    created_at, 
+    updated_at
+  )
+  VALUES (
+    new.id, 
+    new.email, 
+    false,
+    false,
+    false,
+    false,
+    now(), 
+    now()
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Step 8: Create the trigger on auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- Step 9: Create a function to check if a user exists
+DROP FUNCTION IF EXISTS check_user_exists(TEXT);
+CREATE OR REPLACE FUNCTION check_user_exists(user_email TEXT)
+RETURNS BOOLEAN AS $$
+DECLARE
+  user_exists BOOLEAN;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1 FROM auth.users WHERE email = user_email
+  ) INTO user_exists;
+  
+  RETURN user_exists;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Step 10: Drop the existing create_user_profile function first
+DROP FUNCTION IF EXISTS create_user_profile(UUID, TEXT, BOOLEAN, BOOLEAN);
+
+-- Step 11: Create a function to create or update a user profile
+CREATE OR REPLACE FUNCTION create_user_profile(
+  user_id UUID,
+  user_email TEXT,
+  is_admin_val BOOLEAN DEFAULT false,
+  is_subscribed_val BOOLEAN DEFAULT false
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  INSERT INTO public.profiles (
+    id,
+    email,
+    is_admin,
+    is_subscribed,
+    has_used_generator_demo,
+    has_used_viral_generator_demo,
+    created_at,
+    updated_at
+  )
+  VALUES (
+    user_id,
+    user_email,
+    is_admin_val,
+    is_subscribed_val,
+    false,
+    false,
+    now(),
+    now()
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET
+    email = user_email,
+    is_admin = is_admin_val,
+    is_subscribed = is_subscribed_val,
+    updated_at = now();
+  
+  RETURN true;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE 'Error in create_user_profile: %', SQLERRM;
+    RETURN false;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

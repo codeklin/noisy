@@ -22,16 +22,6 @@ export default function SavedContentPlans() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      console.log("User authenticated, loading content plans for user ID:", user.id);
-      loadContentPlans();
-    } else {
-      console.log("No user authenticated, cannot load content plans");
-      setIsLoading(false);
-    }
-  }, [user, loadContentPlans]);
-
   const loadContentPlans = useCallback(async () => {
     if (!user) {
       console.log("Cannot load content plans: No user authenticated");
@@ -65,6 +55,16 @@ export default function SavedContentPlans() {
       setIsLoading(false);
     }
   }, [user, setContentPlans, setIsLoading]);
+
+  useEffect(() => {
+    if (user) {
+      console.log("User authenticated, loading content plans for user ID:", user.id);
+      loadContentPlans();
+    } else {
+      console.log("No user authenticated, cannot load content plans");
+      setIsLoading(false);
+    }
+  }, [user, loadContentPlans]);
 
   const handleDeletePlan = async (id: string) => {
     if (!user) {
