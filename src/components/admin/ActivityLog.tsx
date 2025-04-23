@@ -27,7 +27,7 @@ interface ActivityEvent {
   user_email: string;
   event_type: string;
   event_name: string;
-  details: any;
+  details: Record<string, unknown>;
   created_at: string;
 }
 
@@ -159,7 +159,7 @@ const ActivityLog = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold">Activity Log</h2>
         <div className="flex flex-wrap items-center gap-2">
-          <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as any)}>
+          <Tabs value={timeframe} onValueChange={(value: string) => setTimeframe(value as "all" | "month" | "week" | "day")}>
             <TabsList>
               <TabsTrigger value="all">All Time</TabsTrigger>
               <TabsTrigger value="month">Month</TabsTrigger>

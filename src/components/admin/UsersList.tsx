@@ -21,6 +21,27 @@ import { toast } from "sonner";
 import { Search, UserCheck, UserX, RefreshCw } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 
+interface AuthData {
+  id: string;
+  last_sign_in_at: string | null;
+}
+
+interface SignInData {
+  user_id: string;
+  last_sign_in: string | null;
+}
+
+interface ProfileData {
+  id: string;
+  email: string | null;
+  is_subscribed: boolean;
+  has_used_generator_demo: boolean;
+  has_used_viral_generator_demo: boolean;
+  is_admin: boolean;
+  created_at: string;
+  last_sign_in_at: string | null;
+}
+
 interface User {
   id: string;
   email: string;
@@ -78,7 +99,7 @@ const UsersList = () => {
         } else {
           console.log("Successfully fetched sign in times:", signInData?.length || 0, "records");
           // Convert the data format to match what we expect
-          authData = (signInData || []).map((item: any) => ({
+          authData = (signInData || []).map((item: SignInData) => ({
             id: item.user_id,
             last_sign_in_at: item.last_sign_in
           }));
@@ -89,13 +110,13 @@ const UsersList = () => {
       }
 
       // Create a map of user IDs to auth data for quick lookup
-      const authDataMap = (authData || []).reduce((map: Record<string, any>, user: any) => {
+      const authDataMap = (authData || []).reduce((map: Record<string, AuthData>, user: AuthData) => {
         map[user.id] = user;
         return map;
-      }, {});
+      }, {} as Record<string, AuthData>);
 
       // Format the user data
-      const combinedUsers = (profiles || []).map((profile: any) => {
+      const combinedUsers = (profiles || []).map((profile: ProfileData) => {
         const authUser = authDataMap[profile.id];
         return {
           id: profile.id,

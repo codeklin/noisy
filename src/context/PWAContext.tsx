@@ -19,31 +19,40 @@ const PWAContext = createContext<PWAContextType | undefined>(undefined);
 export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isInstalled, setIsInstalled] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  
-  const { 
-    isOnline, 
-    wasOffline, 
-    checkConnection 
+
+  const {
+    isOnline,
+    wasOffline,
+    checkConnection
   } = useOnlineStatus();
-  
-  const { 
-    syncSupported, 
-    periodicSyncSupported, 
-    registerSync, 
-    registerPeriodicSync 
+
+  const {
+    syncSupported,
+    periodicSyncSupported,
+    registerSync,
+    registerPeriodicSync
   } = useBackgroundSync();
 
   useEffect(() => {
     // Check if the app is installed
     const checkInstallState = () => {
       // Check if in standalone mode (installed)
-      const isInStandaloneMode = () => 
-        window.matchMedia('(display-mode: standalone)').matches || 
-        (window.navigator as any).standalone || 
-        document.referrer.includes('android-app://');
-      
+      const isInStandaloneMode = () => {
+        // Check if the app is in standalone mode
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+        // Check for iOS standalone mode
+        const nav = window.navigator as Navigator & { standalone?: boolean };
+        const isIOSStandalone = nav.standalone === true;
+
+        // Check for Android app
+        const isAndroidApp = document.referrer.includes('android-app://');
+
+        return isStandalone || isIOSStandalone || isAndroidApp;
+      };
+
       setIsStandalone(isInStandaloneMode());
-      
+
       // Also check for installation event
       window.addEventListener('appinstalled', () => {
         setIsInstalled(true);

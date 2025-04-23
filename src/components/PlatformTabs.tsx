@@ -12,7 +12,7 @@ interface PlatformTabsProps {
 }
 
 const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
-  const [activeTab, setActiveTab] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<'all' | 'facebook' | 'twitter' | 'linkedin'>("all");
 
   const filteredPosts = activeTab === "all"
     ? posts
@@ -44,7 +44,7 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
 
         <div className="flex space-x-2">
           <button
-            onClick={() => onExport(activeTab as any)}
+            onClick={() => onExport(activeTab)}
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs sm:text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-primary text-primary-foreground shadow hover:bg-primary/90 h-7 sm:h-9 px-2 sm:px-4 py-1 sm:py-2"
           >
             Export {activeTab === "all" ? "All" : activeTab === "facebook" ? "FB" : activeTab === "twitter" ? "Twitter" : "LinkedIn"}

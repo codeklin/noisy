@@ -250,7 +250,7 @@ const AnalyticsOverview = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Analytics Overview</h2>
         <div className="flex items-center gap-2">
-          <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as any)}>
+          <Tabs value={timeframe} onValueChange={(value: string) => setTimeframe(value as "all" | "month" | "week" | "day")}>
             <TabsList>
               <TabsTrigger value="all">All Time</TabsTrigger>
               <TabsTrigger value="month">Month</TabsTrigger>

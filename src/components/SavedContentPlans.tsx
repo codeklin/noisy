@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { AppError } from "@/types/error";
 
 interface ContentPlanItem {
   id: string;
@@ -47,9 +48,10 @@ export default function SavedContentPlans() {
 
       console.log(`Successfully loaded ${data?.length || 0} content plans`);
       setContentPlans(data as ContentPlanItem[] || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const appError = error as AppError;
       console.error("Error loading content plans:", error);
-      toast.error(`Failed to load your saved content plans: ${error.message || 'Unknown error'}`);
+      toast.error(`Failed to load your saved content plans: ${appError.message || 'Unknown error'}`);
       setContentPlans([]);
     } finally {
       setIsLoading(false);
@@ -92,9 +94,10 @@ export default function SavedContentPlans() {
       console.log(`Successfully deleted content plan with ID: ${id}`);
       setContentPlans(prev => prev.filter(plan => plan.id !== id));
       toast.success("Content plan deleted successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const appError = error as AppError;
       console.error("Error deleting content plan:", error);
-      toast.error(`Failed to delete content plan: ${error.message || 'Unknown error'}`);
+      toast.error(`Failed to delete content plan: ${appError.message || 'Unknown error'}`);
     } finally {
       setIsDeleting(prev => ({ ...prev, [id]: false }));
     }
