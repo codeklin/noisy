@@ -63,12 +63,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentSession?.user ?? null);
 
         if (event === "SIGNED_IN") {
-          console.log('User signed in, navigating to home');
-          navigate("/");
+          console.log('User signed in');
+          // Only navigate to home if this is a new sign-in, not a page reload
+          if (window.location.pathname === '/auth') {
+            console.log('Navigating to home after sign-in');
+            navigate("/");
+          }
         }
         if (event === "SIGNED_OUT") {
-          console.log('User signed out, navigating to auth');
-          navigate("/auth");
+          console.log('User signed out');
+          // Only navigate to auth if this is an actual sign-out, not a page reload
+          if (window.location.pathname !== '/auth') {
+            console.log('Navigating to auth after sign-out');
+            navigate("/auth");
+          }
         }
         if (event === "TOKEN_REFRESHED") {
           console.log('Token refreshed');

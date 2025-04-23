@@ -13,6 +13,13 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
+      // Add historyApiFallback for client-side routing
+      middlewareMode: true,
+    },
+    preview: {
+      port: 8080,
+      // Add historyApiFallback for client-side routing in preview mode
+      host: "::",
     },
     base: "/",
     plugins: [

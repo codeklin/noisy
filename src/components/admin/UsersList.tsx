@@ -41,28 +41,80 @@ const UsersList = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Fetch user profiles from the profiles table only
+      // Fetch user profiles from the profiles table including last_sign_in_at
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, is_subscribed, has_used_generator_demo, has_used_viral_generator_demo, is_admin, created_at");
+        .select("id, email, is_subscribed, has_used_generator_demo, has_used_viral_generator_demo, is_admin, created_at, last_sign_in_at");
 
       if (profilesError) {
         throw profilesError;
       }
 
+      // Fetch user auth data including last sign in time
+      // Try both functions to see which one works
+      let authData = [];
+      let authError = null;
+
+      try {
+        // First try the get_last_sign_in_times function
+        console.log("Attempting to fetch last sign in times...");
+        const { data: signInData, error: signInError } = await supabase
+          .rpc('get_last_sign_in_times');
+
+        if (signInError) {
+          console.warn("Error fetching sign in times:", signInError);
+          // If that fails, try the get_user_auth_data function
+          console.log("Attempting to fetch user auth data...");
+          const { data: userData, error: userError } = await supabase
+            .rpc('get_user_auth_data');
+
+          if (userError) {
+            console.warn("Error fetching user auth data:", userError);
+            authError = userError;
+          } else {
+            console.log("Successfully fetched user auth data:", userData?.length || 0, "records");
+            authData = userData || [];
+          }
+        } else {
+          console.log("Successfully fetched sign in times:", signInData?.length || 0, "records");
+          // Convert the data format to match what we expect
+          authData = (signInData || []).map((item: any) => ({
+            id: item.user_id,
+            last_sign_in_at: item.last_sign_in
+          }));
+        }
+      } catch (error) {
+        console.error("Exception fetching auth data:", error);
+        authError = error;
+      }
+
+      // Create a map of user IDs to auth data for quick lookup
+      const authDataMap = (authData || []).reduce((map: Record<string, any>, user: any) => {
+        map[user.id] = user;
+        return map;
+      }, {});
+
       // Format the user data
-      const combinedUsers = (profiles || []).map((profile: any) => ({
-        id: profile.id,
-        email: profile.email || "No email",
-        created_at: profile.created_at
-          ? new Date(profile.created_at).toLocaleString()
-          : new Date().toLocaleString(),
-        last_sign_in_at: null, // Not available in profiles table
-        is_subscribed: profile.is_subscribed || false,
-        has_used_generator_demo: profile.has_used_generator_demo || false,
-        has_used_viral_generator_demo: profile.has_used_viral_generator_demo || false,
-        is_admin: profile.is_admin || false,
-      }));
+      const combinedUsers = (profiles || []).map((profile: any) => {
+        const authUser = authDataMap[profile.id];
+        return {
+          id: profile.id,
+          email: profile.email || "No email",
+          created_at: profile.created_at
+            ? new Date(profile.created_at).toLocaleString()
+            : new Date().toLocaleString(),
+          // Try to get last_sign_in_at from profile first, then fall back to auth data
+          last_sign_in_at: profile.last_sign_in_at
+            ? new Date(profile.last_sign_in_at).toLocaleString()
+            : authUser?.last_sign_in_at
+              ? new Date(authUser.last_sign_in_at).toLocaleString()
+              : null,
+          is_subscribed: profile.is_subscribed || false,
+          has_used_generator_demo: profile.has_used_generator_demo || false,
+          has_used_viral_generator_demo: profile.has_used_viral_generator_demo || false,
+          is_admin: profile.is_admin || false,
+        };
+      });
 
       setUsers(combinedUsers);
       setFilteredUsers(combinedUsers);
@@ -81,9 +133,7 @@ const UsersList = () => {
   useEffect(() => {
     if (searchQuery) {
       const filtered = users.filter(
-        (user) =>
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.id.toLowerCase().includes(searchQuery.toLowerCase())
+        (user) => user.email.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredUsers(filtered);
     } else {
@@ -160,7 +210,7 @@ const UsersList = () => {
           <div className="relative flex-1">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by email or ID..."
+              placeholder="Search by email..."
               className="pl-8"
               value={searchQuery}
               onChange={handleSearch}
@@ -211,14 +261,15 @@ const UsersList = () => {
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span>{user.email}</span>
-                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                          {user.id}
-                        </span>
                       </div>
                     </TableCell>
                     <TableCell>{user.created_at}</TableCell>
                     <TableCell>
-                      {user.last_sign_in_at || "Never signed in"}
+                      {user.last_sign_in_at ? (
+                        <span className="text-green-600">{user.last_sign_in_at}</span>
+                      ) : (
+                        <span className="text-gray-500">Never signed in</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1">
