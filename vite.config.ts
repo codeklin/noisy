@@ -106,7 +106,9 @@ export default defineConfig(({ mode }) => {
       'process.env.GROQ_API_KEY': JSON.stringify(env.GROQ_API_KEY),
       'process.env.DEEPSEEK_API_KEY': JSON.stringify(env.DEEPSEEK_API_KEY),
       'process.env.MISTRAL_API_KEY': JSON.stringify(env.MISTRAL_API_KEY),
-      'process.env.VITE_PAYSTACK_PUBLIC_KEY': JSON.stringify(env.VITE_PAYSTACK_PUBLIC_KEY),
+      'process.env.VITE_PAYSTACK_PUBLIC_KEY_TEST': JSON.stringify(env.VITE_PAYSTACK_PUBLIC_KEY_TEST),
+      'process.env.VITE_PAYSTACK_PUBLIC_KEY_LIVE': JSON.stringify(env.VITE_PAYSTACK_PUBLIC_KEY_LIVE),
+      'process.env.VITE_PAYSTACK_MODE': JSON.stringify(env.VITE_PAYSTACK_MODE),
     }
   };
 });

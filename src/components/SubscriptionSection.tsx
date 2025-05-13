@@ -25,12 +25,22 @@ const SubscriptionSection = () => {
   // Generate a unique reference for this transaction
   const reference = `noisy_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 
+  // Get the appropriate Paystack key based on the environment mode
+  const getPaystackKey = () => {
+    const mode = import.meta.env.VITE_PAYSTACK_MODE || 'TEST';
+    if (mode === 'LIVE') {
+      return import.meta.env.VITE_PAYSTACK_PUBLIC_KEY_LIVE;
+    } else {
+      return import.meta.env.VITE_PAYSTACK_PUBLIC_KEY_TEST;
+    }
+  };
+
   // Paystack configuration
   const config: PaystackConfig = {
     reference,
     email: user?.email || "customer@example.com",
     amount: 100000, // Amount in kobo (N1000)
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "pk_test_your_public_key_here",
+    publicKey: getPaystackKey() || "pk_test_your_public_key_here",
   };
 
   const initializePayment = usePaystackPayment(config);
