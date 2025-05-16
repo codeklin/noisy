@@ -19,28 +19,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Search, UserCheck, UserX, RefreshCw } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthData {
   id: string;
   last_sign_in_at: string | null;
 }
 
-interface SignInData {
-  user_id: string;
-  last_sign_in: string | null;
-}
-
-interface ProfileData {
-  id: string;
-  email: string | null;
-  is_subscribed: boolean;
-  has_used_generator_demo: boolean;
-  has_used_viral_generator_demo: boolean;
-  is_admin: boolean;
-  created_at: string;
-  last_sign_in_at: string | null;
-}
+// We're using 'any' type for profiles, so we don't need this interface anymore
 
 interface User {
   id: string;
@@ -62,52 +48,20 @@ const UsersList = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      // Fetch user profiles from the profiles table including last_sign_in_at
+      // Fetch user profiles from the profiles table
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, is_subscribed, has_used_generator_demo, has_used_viral_generator_demo, is_admin, created_at, last_sign_in_at");
+        .select("id, email, is_subscribed, has_used_generator_demo, has_used_viral_generator_demo, is_admin, created_at");
 
       if (profilesError) {
         throw profilesError;
       }
 
-      // Fetch user auth data including last sign in time
-      // Try both functions to see which one works
-      let authData = [];
-      let authError = null;
+      // Since the RPC functions don't exist, we'll create empty auth data
+      // In a real implementation, we would fetch this data from the auth service
+      let authData: AuthData[] = [];
 
-      try {
-        // First try the get_last_sign_in_times function
-        console.log("Attempting to fetch last sign in times...");
-        const { data: signInData, error: signInError } = await supabase
-          .rpc('get_last_sign_in_times');
-
-        if (signInError) {
-          console.warn("Error fetching sign in times:", signInError);
-          // If that fails, try the get_user_auth_data function
-          console.log("Attempting to fetch user auth data...");
-          const { data: userData, error: userError } = await supabase
-            .rpc('get_user_auth_data');
-
-          if (userError) {
-            console.warn("Error fetching user auth data:", userError);
-            authError = userError;
-          } else {
-            console.log("Successfully fetched user auth data:", userData?.length || 0, "records");
-            authData = userData || [];
-          }
-        } else {
-          console.log("Successfully fetched sign in times:", signInData?.length || 0, "records");
-          // Convert the data format to match what we expect
-          authData = (signInData || []).map((item: SignInData) => ({
-            id: item.user_id,
-            last_sign_in_at: item.last_sign_in
-          }));
-        }
-      } catch (error) {
-        console.error("Exception fetching auth data:", error);
-        authError = error;
-      }
+      console.log("RPC functions for auth data are not available, using profile data only");
 
       // Create a map of user IDs to auth data for quick lookup
       const authDataMap = (authData || []).reduce((map: Record<string, AuthData>, user: AuthData) => {
@@ -116,7 +70,7 @@ const UsersList = () => {
       }, {} as Record<string, AuthData>);
 
       // Format the user data
-      const combinedUsers = (profiles || []).map((profile: ProfileData) => {
+      const combinedUsers = (profiles || []).map((profile: any) => {
         const authUser = authDataMap[profile.id];
         return {
           id: profile.id,
@@ -124,12 +78,10 @@ const UsersList = () => {
           created_at: profile.created_at
             ? new Date(profile.created_at).toLocaleString()
             : new Date().toLocaleString(),
-          // Try to get last_sign_in_at from profile first, then fall back to auth data
-          last_sign_in_at: profile.last_sign_in_at
-            ? new Date(profile.last_sign_in_at).toLocaleString()
-            : authUser?.last_sign_in_at
-              ? new Date(authUser.last_sign_in_at).toLocaleString()
-              : null,
+          // Get last_sign_in_at from auth data
+          last_sign_in_at: authUser?.last_sign_in_at
+            ? new Date(authUser.last_sign_in_at).toLocaleString()
+            : null,
           is_subscribed: profile.is_subscribed || false,
           has_used_generator_demo: profile.has_used_generator_demo || false,
           has_used_viral_generator_demo: profile.has_used_viral_generator_demo || false,

@@ -102,7 +102,7 @@ const SubscriptionSection = () => {
     {
       name: "Sarah Johnson",
       role: "Marketing Manager",
-      avatar: "/testimonial2.png",
+      avatar: "/images/testimonial2.png",
       content: "Noisy has completely transformed our social media strategy. We're seeing 3x more engagement with half the effort!",
       rating: 5
     },
@@ -116,7 +116,7 @@ const SubscriptionSection = () => {
     {
       name: "Amara Okafor",
       role: "Content Creator",
-      avatar: "/testimonial3.png",
+      avatar: "/images/testimonial3.png",
       content: "I've tried many content tools, but Noisy's viral strategies are on another level. Worth every naira!",
       rating: 5
     }
@@ -324,10 +324,9 @@ const SubscriptionSection = () => {
                 transition={{ duration: 0.4, delay: 0.5 + (index * 0.1) }}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <Avatar>
-                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                    <AvatarFallback>{testimonial.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                  </Avatar>
+                  <div className="relative h-10 w-10 rounded-full bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] flex items-center justify-center text-white font-semibold">
+                    {testimonial.name.split(' ').map(n => n[0]).join('')}
+                  </div>
                   <div>
                     <h4 className="font-semibold text-gray-800">{testimonial.name}</h4>
                     <p className="text-sm text-gray-500">{testimonial.role}</p>

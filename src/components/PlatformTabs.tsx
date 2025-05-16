@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PostPlan } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PostList from "./PostList";
-import { Facebook, Linkedin, Twitter } from "lucide-react";
+import { MessageSquare, Share2, MessageCircle } from "lucide-react";
 
 interface PlatformTabsProps {
   posts: PostPlan;
@@ -19,7 +19,7 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
     : posts.filter(post => post.platform === activeTab);
 
   return (
-    <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+    <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveTab(value as 'all' | 'facebook' | 'twitter' | 'linkedin')}>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4">
         <div className="overflow-x-auto pb-2 -mx-2 px-2">
           <TabsList className="h-auto p-1 w-max sm:w-auto">
@@ -27,16 +27,16 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
             All
           </TabsTrigger>
           <TabsTrigger value="facebook" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
-            <Facebook className="h-3 w-3 sm:h-4 sm:w-4" />
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">FB</span>
             <span className="hidden sm:inline">acebook</span>
           </TabsTrigger>
           <TabsTrigger value="twitter" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
-            <Twitter className="h-3 w-3 sm:h-4 sm:w-4" />
+            <Share2 className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Twitter</span>
           </TabsTrigger>
           <TabsTrigger value="linkedin" className="flex items-center gap-1 text-xs sm:text-sm py-1.5 px-2 sm:px-3">
-            <Linkedin className="h-3 w-3 sm:h-4 sm:w-4" />
+            <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">LinkedIn</span>
           </TabsTrigger>
         </TabsList>

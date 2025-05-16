@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { AlertTriangle } from 'lucide-react';
 
 interface A11yIssue {
   type: string;
   element: string;
   message: string;
+  context?: string;
+  stack?: string;
 }
 
 /**
@@ -140,7 +141,6 @@ const A11yChecker = () => {
           `${newIssues.length} new accessibility issues found. Check the console for details.`,
           {
             duration: 10000,
-            closeButton: true,
           }
         );
 

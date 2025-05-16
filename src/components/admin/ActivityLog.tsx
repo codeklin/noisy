@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { RefreshCw, Search, Filter, FileText, Zap } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
   SelectContent,
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ActivityEvent {
   id: string;
@@ -27,7 +27,7 @@ interface ActivityEvent {
   user_email: string;
   event_type: string;
   event_name: string;
-  details: Record<string, unknown>;
+  details: any; // Using any to accommodate different data types from event_data
   created_at: string;
 }
 
@@ -44,7 +44,7 @@ const ActivityLog = () => {
     try {
       // Build the query
       let query = supabase
-        .from("activity_logs")
+        .from("analytics")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -74,20 +74,22 @@ const ActivityLog = () => {
       if (error) throw error;
 
       // Get user emails
-      const userIds = data.map(activity => activity.user_id).filter(Boolean);
+      const userIds = data
+        .map(activity => activity.user_id)
+        .filter(Boolean);
 
-      const userEmailMap = {};
+      const userEmailMap: Record<string, string> = {};
       if (userIds.length > 0) {
         const { data: users, error: usersError } = await supabase
           .from('profiles')
-          .select('id, email:users(email)')
+          .select('id, email')
           .in('id', userIds);
 
         if (usersError) throw usersError;
 
         // Create a map of user IDs to emails
         users.forEach(user => {
-          userEmailMap[user.id] = user.email?.email || 'Unknown';
+          userEmailMap[user.id] = user.email || 'Unknown';
         });
       }
 
@@ -97,8 +99,8 @@ const ActivityLog = () => {
         user_id: activity.user_id,
         user_email: activity.user_id ? (userEmailMap[activity.user_id] || "Unknown") : "System",
         event_type: activity.event_type,
-        event_name: activity.event_name,
-        details: activity.details,
+        event_name: activity.event_type, // Use event_type as event_name since it doesn't exist
+        details: activity.event_data || {}, // Use event_data as details
         created_at: new Date(activity.created_at).toLocaleString(),
       }));
 

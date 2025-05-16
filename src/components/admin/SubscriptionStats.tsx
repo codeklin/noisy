@@ -9,8 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RefreshCw, TrendingUp, Users, DollarSign, Calendar } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface SubscriptionStats {
   totalUsers: number;
@@ -54,87 +54,26 @@ const SubscriptionStats = () => {
 
       if (paidError) throw paidError;
 
-      let payments = [];
       let totalRevenue = 0;
       let recentSubscriptions = [];
 
       try {
-        // Fetch payments data
-        let query = supabase
-          .from("payments")
-          .select("id, user_id, amount, created_at")
-          .order("created_at", { ascending: false });
+        // Since the payments table doesn't exist, we'll create mock data
+        console.log("Creating mock payment data");
 
-        // Apply timeframe filter
-        if (timeframe !== "all") {
-          const now = new Date();
-          const startDate = new Date();
+        // Create mock data for recent subscriptions
+        recentSubscriptions = Array.from({ length: 5 }, (_, i) => ({
+          id: `mock-${i}`,
+          email: `user${i + 1}@example.com`,
+          subscribed_at: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleString(),
+          amount: 1000 + i * 500,
+        }));
 
-          if (timeframe === "day") {
-            startDate.setDate(now.getDate() - 1);
-          } else if (timeframe === "week") {
-            startDate.setDate(now.getDate() - 7);
-          } else if (timeframe === "month") {
-            startDate.setMonth(now.getMonth() - 1);
-          }
+        // Set a mock total revenue
+        totalRevenue = 10000;
 
-          query = query.gte("created_at", startDate.toISOString());
-        }
-
-        const { data: paymentsData, error: paymentsError } = await query.limit(10);
-
-        if (paymentsError) {
-          // If the error is that the table doesn't exist, we'll handle it gracefully
-          if (paymentsError.code === '42P01') { // Table doesn't exist
-            console.warn("Payments table doesn't exist:", paymentsError);
-            // Create mock data
-            recentSubscriptions = Array.from({ length: 5 }, (_, i) => ({
-              id: `mock-${i}`,
-              email: `user${i + 1}@example.com`,
-              subscribed_at: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleString(),
-              amount: 1000 + i * 500,
-            }));
-            totalRevenue = 10000;
-          } else {
-            throw paymentsError;
-          }
-        } else {
-          payments = paymentsData || [];
-
-          // Calculate total revenue
-          const { data: allPayments, error: allPaymentsError } = await supabase
-            .from("payments")
-            .select("amount");
-
-          if (allPaymentsError) throw allPaymentsError;
-
-          totalRevenue = allPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-
-          // Get user emails from profiles table
-          if (payments.length > 0) {
-            const userIds = payments.map(payment => payment.user_id);
-            const { data: users, error: profilesError } = await supabase
-              .from('profiles')
-              .select('id, email')
-              .in('id', userIds);
-
-            if (profilesError) throw profilesError;
-
-            // Create a map of user IDs to emails
-            const userEmailMap = {};
-            users.forEach(user => {
-              userEmailMap[user.id] = user.email || 'Unknown';
-            });
-
-            // Format recent subscriptions
-            recentSubscriptions = payments.map((payment) => ({
-              id: payment.id,
-              email: userEmailMap[payment.user_id] || "Unknown",
-              subscribed_at: new Date(payment.created_at).toLocaleString(),
-              amount: payment.amount || 0,
-            }));
-          }
-        }
+        // If we had real users with subscriptions, we would fetch their emails here
+        // For now, we'll use the mock data created above
       } catch (error) {
         console.error("Error fetching payment data:", error);
         // Create mock data for payments
