@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { PostPlan } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import PostList from "./PostList";
 import { MessageSquare, Share2, MessageCircle } from "lucide-react";
 
@@ -20,7 +21,14 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
     return (
       <div className="p-6 bg-red-50 rounded-lg border border-red-200 text-center">
         <p className="text-red-600 mb-4">There was an error loading your content.</p>
-        <p className="text-gray-600 text-sm">Please try refreshing the page or contact support if the issue persists.</p>
+        <p className="text-gray-600 mb-4">Please try refreshing the page or contact support if the issue persists.</p>
+        <Button
+          onClick={() => window.location.reload()}
+          size="sm"
+          className="mx-auto"
+        >
+          Refresh Page
+        </Button>
       </div>
     );
   }
@@ -29,15 +37,33 @@ const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
     return (
       <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 text-center">
         <p className="text-gray-600 mb-4">No content found in this plan.</p>
-        <p className="text-gray-500 text-sm">Try generating new content or contact support if you believe this is an error.</p>
+        <p className="text-gray-500 mb-4">Try generating new content or contact support if you believe this is an error.</p>
+        <Button
+          onClick={() => window.location.reload()}
+          size="sm"
+          variant="outline"
+          className="mx-auto"
+        >
+          Refresh Page
+        </Button>
       </div>
     );
   }
 
+  // Ensure all posts have the required fields
+  const validPosts = posts.filter(post =>
+    post && post.id && post.platform && post.content && post.date && Array.isArray(post.hashtags)
+  );
+
+  // Show warning if some posts were filtered out
+  if (validPosts.length < posts.length) {
+    console.warn(`Filtered out ${posts.length - validPosts.length} invalid posts`);
+  }
+
   // Filter posts by platform, with additional error handling
   const filteredPosts = activeTab === "all"
-    ? posts
-    : posts.filter(post => post && post.platform === activeTab);
+    ? validPosts
+    : validPosts.filter(post => post.platform === activeTab);
 
   return (
     <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveTab(value as 'all' | 'facebook' | 'twitter' | 'linkedin')}>

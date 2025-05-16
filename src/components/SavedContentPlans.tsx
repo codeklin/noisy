@@ -153,7 +153,29 @@ export default function SavedContentPlans() {
               variant="outline"
               size="sm"
               className="flex-1"
-              onClick={() => navigate(`/plan/${plan.id}`)}
+              onClick={() => {
+                // Show loading toast
+                const loadingToast = toast.loading("Loading content plan...");
+
+                // Pre-fetch the content plan data before navigation
+                // This helps ensure data is ready before rendering the page
+                try {
+                  // Navigate with state to indicate this is a direct view action
+                  navigate(`/plan/${plan.id}`, {
+                    state: {
+                      fromSavedPlans: true,
+                      timestamp: Date.now()
+                    }
+                  });
+
+                  // Dismiss the loading toast after navigation
+                  setTimeout(() => toast.dismiss(loadingToast), 500);
+                } catch (error) {
+                  console.error("Navigation error:", error);
+                  toast.error("Failed to open content plan. Please try again.");
+                  toast.dismiss(loadingToast);
+                }
+              }}
             >
               View
             </Button>

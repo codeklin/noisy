@@ -12,6 +12,8 @@ import MobileNav from "./components/MobileNav";
 import Loading from "./components/Loading";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { initializeDatabase } from "./lib/databaseSetup";
+// Import mobile-specific CSS fixes
+import "@/styles/mobile-fixes.css";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
