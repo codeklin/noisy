@@ -3,11 +3,10 @@ import { useState } from "react";
 import { Post } from "@/types";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Facebook, Linkedin, Twitter } from "lucide-react";
+import { MessageSquare, Share2, MessageCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PostActions } from "./PostActions";
-import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 interface PostListProps {
@@ -22,17 +21,40 @@ const platformColors = {
 };
 
 const platformIcons = {
-  facebook: <Facebook className="h-4 w-4" />,
-  twitter: <Twitter className="h-4 w-4" />,
-  linkedin: <Linkedin className="h-4 w-4" />
+  facebook: <MessageSquare className="h-4 w-4" />,
+  twitter: <Share2 className="h-4 w-4" />,
+  linkedin: <MessageCircle className="h-4 w-4" />
 };
 
 const PostList = ({ posts, onEditPost }: PostListProps) => {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
-  const { user } = useAuth();
+
+  // Validate posts data
+  if (!Array.isArray(posts)) {
+    console.error("PostList: posts is not an array", posts);
+    return (
+      <div className="p-6 bg-red-50 rounded-lg border border-red-200 text-center">
+        <p className="text-red-600 mb-4">There was an error loading your content.</p>
+        <p className="text-gray-600 text-sm">Please try refreshing the page or contact support if the issue persists.</p>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 text-center">
+        <p className="text-gray-600 mb-4">No content found for this platform.</p>
+      </div>
+    );
+  }
 
   const handleEditClick = (post: Post) => {
+    if (!post || !post.id || !post.content) {
+      console.error("Cannot edit post: Invalid post data", post);
+      toast.error("Cannot edit this post due to invalid data");
+      return;
+    }
     setEditingPostId(post.id);
     setEditedContent(post.content);
   };
@@ -49,7 +71,14 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
 
   return (
     <div className="grid grid-cols-1 gap-6">
-      {posts.map((post) => (
+      {posts.map((post) => {
+        // Skip rendering invalid posts
+        if (!post || !post.id || !post.platform) {
+          console.error("Invalid post data:", post);
+          return null;
+        }
+
+        return (
         <Card key={post.id} className="overflow-hidden">
           <CardHeader className="bg-gray-50 py-3 px-4 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
@@ -110,7 +139,8 @@ const PostList = ({ posts, onEditPost }: PostListProps) => {
             )}
           </CardContent>
         </Card>
-      ))}
+        );
+      })}
     </div>
   );
 };

@@ -14,9 +14,30 @@ interface PlatformTabsProps {
 const PlatformTabs = ({ posts, onEditPost, onExport }: PlatformTabsProps) => {
   const [activeTab, setActiveTab] = useState<'all' | 'facebook' | 'twitter' | 'linkedin'>("all");
 
+  // Validate posts data
+  if (!Array.isArray(posts)) {
+    console.error("PlatformTabs: posts is not an array", posts);
+    return (
+      <div className="p-6 bg-red-50 rounded-lg border border-red-200 text-center">
+        <p className="text-red-600 mb-4">There was an error loading your content.</p>
+        <p className="text-gray-600 text-sm">Please try refreshing the page or contact support if the issue persists.</p>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="p-6 bg-gray-50 rounded-lg border border-gray-200 text-center">
+        <p className="text-gray-600 mb-4">No content found in this plan.</p>
+        <p className="text-gray-500 text-sm">Try generating new content or contact support if you believe this is an error.</p>
+      </div>
+    );
+  }
+
+  // Filter posts by platform, with additional error handling
   const filteredPosts = activeTab === "all"
     ? posts
-    : posts.filter(post => post.platform === activeTab);
+    : posts.filter(post => post && post.platform === activeTab);
 
   return (
     <Tabs defaultValue="all" className="w-full" onValueChange={(value) => setActiveTab(value as 'all' | 'facebook' | 'twitter' | 'linkedin')}>

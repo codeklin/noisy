@@ -308,10 +308,36 @@ export const useContentPlan = () => {
       }
 
       console.log("Content plan retrieved successfully:", data.name);
+      console.log("Raw content plan data:", data);
 
       try {
+        // Check if brand_info exists and is valid
+        if (!data.brand_info) {
+          console.error("Content plan has no brand_info field");
+          toast.error("Content plan data is corrupted (missing brand info)");
+          return null;
+        }
+
+        // Check if posts exists and is valid
+        if (!data.posts) {
+          console.error("Content plan has no posts field");
+          toast.error("Content plan data is corrupted (missing posts)");
+          return null;
+        }
+
         const brandInfo = parseJsonObject<BrandInfo>(data.brand_info);
         const posts = parseJsonArray<Post>(data.posts);
+
+        // Validate that we have at least some posts
+        if (!Array.isArray(posts) || posts.length === 0) {
+          console.error("Content plan has no valid posts");
+          toast.error("Content plan contains no valid posts");
+          return null;
+        }
+
+        // Log the parsed data for debugging
+        console.log("Parsed brand info:", brandInfo);
+        console.log("Parsed posts:", posts);
 
         return {
           brandInfo,
@@ -320,7 +346,7 @@ export const useContentPlan = () => {
         };
       } catch (parseError) {
         console.error("Error parsing content plan data:", parseError);
-        toast.error("Error parsing content plan data");
+        toast.error("Error parsing content plan data. The saved content may be corrupted.");
         return null;
       }
     } catch (error: any) {

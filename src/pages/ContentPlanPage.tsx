@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import PlatformTabs from "@/components/PlatformTabs";
 import { toast } from "sonner";
-import { parseJsonArray } from "@/types/supabase";
 
 export default function ContentPlanPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,14 +38,44 @@ export default function ContentPlanPage() {
 
       try {
         const plan = await getContentPlan(id);
-        if (plan) {
-          console.log(`Successfully loaded content plan: ${plan.name}`);
-          setContentPlan(plan);
-        } else {
+
+        if (!plan) {
           console.log(`Content plan with ID ${id} not found`);
           navigate("/saved-plans");
           toast.error("Content plan not found");
+          return;
         }
+
+        // Validate the plan structure
+        if (!plan.posts || !Array.isArray(plan.posts) || plan.posts.length === 0) {
+          console.error("Invalid posts data in content plan:", plan.posts);
+          toast.error("The content plan contains invalid data. Please try again or contact support.");
+          navigate("/saved-plans");
+          return;
+        }
+
+        // Validate each post has the required fields
+        const invalidPosts = plan.posts.filter(post =>
+          !post.id || !post.platform || !post.content || !post.date || !Array.isArray(post.hashtags)
+        );
+
+        if (invalidPosts.length > 0) {
+          console.error("Some posts have invalid structure:", invalidPosts);
+          // Try to fix the posts by adding missing fields with defaults
+          const fixedPosts = plan.posts.map(post => ({
+            id: post.id || crypto.randomUUID(),
+            platform: post.platform || 'facebook',
+            content: post.content || 'No content available',
+            date: post.date || new Date().toISOString(),
+            hashtags: Array.isArray(post.hashtags) ? post.hashtags : []
+          }));
+
+          plan.posts = fixedPosts;
+          toast.warning("Some content had issues and was automatically fixed");
+        }
+
+        console.log(`Successfully loaded content plan: ${plan.name} with ${plan.posts.length} posts`);
+        setContentPlan(plan);
       } catch (error: any) {
         console.error("Error loading content plan:", error);
         toast.error(`Failed to load content plan: ${error.message || 'Unknown error'}`);
