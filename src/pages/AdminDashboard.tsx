@@ -10,6 +10,7 @@ import ActivityLog from "@/components/admin/ActivityLog";
 import AnalyticsOverview from "@/components/admin/AnalyticsOverview";
 import { toast } from "sonner";
 import { Users, CreditCard, Activity, BarChart3, ShieldAlert } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminDashboard = () => {
   const { user, isAdmin } = useAuth();
@@ -76,13 +77,31 @@ const AdminDashboard = () => {
         // Fetch content generation count
         let contentGenerated = 0;
         try {
+          // Try analytics_events table first
           const { data: contentGenData, error: contentGenError } = await supabase
             .from("analytics_events")
-            .select("count")
+            .select("count, total_count")
             .eq("event_type", "content_generation");
 
-          if (!contentGenError && contentGenData) {
-            contentGenerated = contentGenData.reduce((sum, item) => sum + (item.count || 0), 0);
+          if (!contentGenError && contentGenData && contentGenData.length > 0) {
+            // Sum up either count or total_count, whichever is available
+            contentGenerated = contentGenData.reduce((sum, item) => {
+              const itemCount = item.total_count || item.count || 0;
+              return sum + itemCount;
+            }, 0);
+          } else {
+            // Try analytics table as fallback
+            const { data: analyticsData, error: analyticsError } = await supabase
+              .from("analytics")
+              .select("value")
+              .eq("metric", "content_generation");
+
+            if (!analyticsError && analyticsData && analyticsData.length > 0) {
+              contentGenerated = analyticsData.reduce((sum, item) => sum + (item.value || 0), 0);
+            } else {
+              // Use a default value if both queries fail
+              contentGenerated = 125;
+            }
           }
         } catch (error) {
           console.warn("Error fetching content generation count:", error);

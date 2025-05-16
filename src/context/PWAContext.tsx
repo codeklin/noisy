@@ -65,10 +65,18 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Register for periodic sync when online
   useEffect(() => {
-    if (isOnline && periodicSyncSupported) {
-      registerPeriodicSync();
+    // Only try to register if we're online, the feature is supported, and we're in a PWA context
+    if (isOnline && periodicSyncSupported && (isInstalled || isStandalone)) {
+      // Add a small delay to ensure service worker is fully registered
+      const timer = setTimeout(() => {
+        registerPeriodicSync().catch(err => {
+          console.log('Could not register periodic sync:', err);
+        });
+      }, 2000);
+
+      return () => clearTimeout(timer);
     }
-  }, [isOnline, periodicSyncSupported, registerPeriodicSync]);
+  }, [isOnline, periodicSyncSupported, registerPeriodicSync, isInstalled, isStandalone]);
 
   const value = {
     isInstalled,

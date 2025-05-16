@@ -44,12 +44,30 @@ export function useBackgroundSync() {
     }
 
     try {
+      // Check if service worker is ready
+      if (!navigator.serviceWorker.controller) {
+        console.log('Service worker not controlling the page yet');
+        return false;
+      }
+
       const registration = await navigator.serviceWorker.ready;
+
+      // Additional check to ensure sync is available
+      if (!registration.sync) {
+        console.log('Background sync API not available in this context');
+        setSyncSupported(false);
+        return false;
+      }
+
       await registration.sync.register(tag);
       console.log('Background sync registered:', tag);
       return true;
     } catch (error) {
-      console.error('Error registering background sync:', error);
+      // If we get an error about Background Sync being disabled, update our state
+      console.log('Error registering background sync:', error);
+      if (error.toString().includes('disabled')) {
+        setSyncSupported(false);
+      }
       return false;
     }
   };
@@ -65,7 +83,21 @@ export function useBackgroundSync() {
     }
 
     try {
+      // Check if service worker is ready
+      if (!navigator.serviceWorker.controller) {
+        console.log('Service worker not controlling the page yet');
+        return false;
+      }
+
       const registration = await navigator.serviceWorker.ready;
+
+      // Check if periodicSync is available
+      if (!(registration as any).periodicSync) {
+        console.log('Periodic background sync API not available in this context');
+        setPeriodicSyncSupported(false);
+        return false;
+      }
+
       const periodicSync = (registration as any).periodicSync;
 
       // Check if we already have a registration for this tag
@@ -83,15 +115,27 @@ export function useBackgroundSync() {
       console.log('Periodic background sync registered:', tag);
       return true;
     } catch (error) {
-      console.error('Error registering periodic background sync:', error);
+      console.log('Error registering periodic background sync:', error);
+      // If we get an error about Periodic Sync being disabled, update our state
+      if (error.toString().includes('disabled')) {
+        setPeriodicSyncSupported(false);
+      }
       return false;
     }
   };
 
   // Trigger a sync when coming back online
   useEffect(() => {
+    // Only attempt to register sync if we're online and the feature is supported
     if (isOnline && syncSupported) {
-      registerSync();
+      // Add a small delay to ensure service worker is fully registered
+      const timer = setTimeout(() => {
+        registerSync().catch(err => {
+          console.log('Could not register sync on coming online:', err);
+        });
+      }, 2000);
+
+      return () => clearTimeout(timer);
     }
   }, [isOnline, syncSupported]);
 

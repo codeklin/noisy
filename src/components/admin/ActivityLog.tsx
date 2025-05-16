@@ -22,12 +22,11 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ActivityEvent {
-  id: string;
+  id: number;
   user_id: string;
   user_email: string;
-  event_type: string;
-  event_name: string;
-  details: any; // Using any to accommodate different data types from event_data
+  action: string;
+  details: any;
   created_at: string;
 }
 
@@ -36,7 +35,7 @@ const ActivityLog = () => {
   const [filteredActivities, setFilteredActivities] = useState<ActivityEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
+  const [actionFilter, setActionFilter] = useState<string>("all");
   const [timeframe, setTimeframe] = useState<"all" | "month" | "week" | "day">("all");
 
   const fetchActivities = useCallback(async () => {
@@ -44,7 +43,7 @@ const ActivityLog = () => {
     try {
       // Build the query
       let query = supabase
-        .from("analytics")
+        .from("activity_logs")
         .select("*")
         .order("created_at", { ascending: false });
 
@@ -64,9 +63,9 @@ const ActivityLog = () => {
         query = query.gte("created_at", startDate.toISOString());
       }
 
-      // Apply event type filter if not "all"
-      if (eventTypeFilter !== "all") {
-        query = query.eq("event_type", eventTypeFilter);
+      // Apply action filter if not "all"
+      if (actionFilter !== "all") {
+        query = query.eq("action", actionFilter);
       }
 
       const { data, error } = await query.limit(100);
@@ -98,9 +97,8 @@ const ActivityLog = () => {
         id: activity.id,
         user_id: activity.user_id,
         user_email: activity.user_id ? (userEmailMap[activity.user_id] || "Unknown") : "System",
-        event_type: activity.event_type,
-        event_name: activity.event_type, // Use event_type as event_name since it doesn't exist
-        details: activity.event_data || {}, // Use event_data as details
+        action: activity.action,
+        details: activity.details || {},
         created_at: new Date(activity.created_at).toLocaleString(),
       }));
 
@@ -112,18 +110,18 @@ const ActivityLog = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [setIsLoading, setActivities, setFilteredActivities, timeframe, eventTypeFilter]);
+  }, [setIsLoading, setActivities, setFilteredActivities, timeframe, actionFilter]);
 
   useEffect(() => {
     fetchActivities();
-  }, [timeframe, eventTypeFilter, fetchActivities]);
+  }, [timeframe, actionFilter, fetchActivities]);
 
   useEffect(() => {
     if (searchQuery) {
       const filtered = activities.filter(
         (activity) =>
           activity.user_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          activity.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          activity.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (activity.details &&
             JSON.stringify(activity.details).toLowerCase().includes(searchQuery.toLowerCase()))
       );
@@ -137,22 +135,28 @@ const ActivityLog = () => {
     setSearchQuery(e.target.value);
   };
 
-  const getEventTypeBadge = (eventType: string) => {
-    switch (eventType) {
+  const getActionBadge = (action: string) => {
+    switch (action.toLowerCase()) {
       case "content_generation":
+      case "generate":
+      case "content":
         return <Badge className="bg-green-500">Content</Badge>;
       case "user_action":
+      case "action":
         return <Badge className="bg-blue-500">Action</Badge>;
       case "page_view":
+      case "view":
         return <Badge className="bg-gray-500">View</Badge>;
       case "error":
         return <Badge className="bg-red-500">Error</Badge>;
       case "auth":
+      case "login":
+      case "signup":
         return <Badge className="bg-purple-500">Auth</Badge>;
       case "payment":
         return <Badge className="bg-yellow-500">Payment</Badge>;
       default:
-        return <Badge variant="outline">{eventType}</Badge>;
+        return <Badge variant="outline">{action}</Badge>;
     }
   };
 
@@ -197,20 +201,20 @@ const ActivityLog = () => {
               />
             </div>
             <Select
-              value={eventTypeFilter}
-              onValueChange={setEventTypeFilter}
+              value={actionFilter}
+              onValueChange={setActionFilter}
             >
               <SelectTrigger className="w-full sm:w-[180px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by type" />
+                <SelectValue placeholder="Filter by action" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Events</SelectItem>
-                <SelectItem value="content_generation">Content Generation</SelectItem>
-                <SelectItem value="user_action">User Actions</SelectItem>
-                <SelectItem value="page_view">Page Views</SelectItem>
+                <SelectItem value="all">All Actions</SelectItem>
+                <SelectItem value="content">Content Generation</SelectItem>
+                <SelectItem value="action">User Actions</SelectItem>
+                <SelectItem value="view">Page Views</SelectItem>
                 <SelectItem value="error">Errors</SelectItem>
-                <SelectItem value="auth">Authentication</SelectItem>
+                <SelectItem value="login">Authentication</SelectItem>
                 <SelectItem value="payment">Payments</SelectItem>
               </SelectContent>
             </Select>
@@ -234,7 +238,7 @@ const ActivityLog = () => {
                 >
                   <div className="flex items-start gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mt-1">
-                      {activity.event_type === "content_generation" ? (
+                      {activity.action.toLowerCase().includes("content") ? (
                         <FileText className="h-4 w-4 text-primary" />
                       ) : (
                         <Zap className="h-4 w-4 text-primary" />
@@ -242,8 +246,8 @@ const ActivityLog = () => {
                     </div>
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-medium">{activity.event_name}</p>
-                        {getEventTypeBadge(activity.event_type)}
+                        <p className="text-sm font-medium">{activity.action}</p>
+                        {getActionBadge(activity.action)}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {activity.user_email} • {activity.created_at}

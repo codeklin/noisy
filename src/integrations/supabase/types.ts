@@ -11,25 +11,82 @@ export type Database = {
     Tables: {
       analytics: {
         Row: {
-          created_at: string
-          event_data: Json
-          event_type: string
-          id: string
+          id: number
           user_id: string
+          metric: string
+          value: number
+          recorded_at: string
         }
         Insert: {
-          created_at?: string
-          event_data?: Json
-          event_type: string
-          id?: string
-          user_id: string
+          id?: number
+          user_id?: string
+          metric: string
+          value: number
+          recorded_at?: string
         }
         Update: {
-          created_at?: string
-          event_data?: Json
-          event_type?: string
-          id?: string
+          id?: number
           user_id?: string
+          metric?: string
+          value?: number
+          recorded_at?: string
+        }
+        Relationships: []
+      }
+      analytics_events: {
+        Row: {
+          id: string
+          event_type: string
+          event_name: string
+          count: number
+          success_count: number
+          total_count: number
+          details: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_type: string
+          event_name: string
+          count?: number
+          success_count?: number
+          total_count?: number
+          details?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_type?: string
+          event_name?: string
+          count?: number
+          success_count?: number
+          total_count?: number
+          details?: Json
+          created_at?: string
+        }
+        Relationships: []
+      }
+      activity_logs: {
+        Row: {
+          id: number
+          user_id: string
+          action: string
+          details: Json
+          created_at: string
+        }
+        Insert: {
+          id?: number
+          user_id?: string
+          action: string
+          details?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: number
+          user_id?: string
+          action?: string
+          details?: Json
+          created_at?: string
         }
         Relationships: []
       }
@@ -203,6 +260,30 @@ export type Database = {
           source?: string | null
           status?: string
           url?: string
+        }
+        Relationships: []
+      }
+      user_growth: {
+        Row: {
+          id: string
+          record_date: string
+          user_count: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          record_date: string
+          user_count: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          record_date?: string
+          user_count?: number
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
