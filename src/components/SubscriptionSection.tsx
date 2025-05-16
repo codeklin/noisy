@@ -57,7 +57,6 @@ const SubscriptionSection = () => {
     toast({
       title: "Payment Successful!",
       description: "Thank you for your purchase. You now have full access to Noisy!",
-      closeButton: true,
       duration: 5000,
     });
   };
@@ -69,7 +68,6 @@ const SubscriptionSection = () => {
       title: "Payment Cancelled",
       description: "Your payment was cancelled. Please try again when you're ready.",
       variant: "destructive",
-      closeButton: true,
       duration: 5000,
     });
   };
@@ -80,7 +78,6 @@ const SubscriptionSection = () => {
         title: "Login Required",
         description: "Please login or create an account to subscribe.",
         variant: "destructive",
-        closeButton: true,
         duration: 5000,
       });
       return;
@@ -105,21 +102,21 @@ const SubscriptionSection = () => {
     {
       name: "Sarah Johnson",
       role: "Marketing Manager",
-      avatar: "/plogo.png",
+      avatar: "/testimonial2.png",
       content: "Noisy has completely transformed our social media strategy. We're seeing 3x more engagement with half the effort!",
       rating: 5
     },
     {
       name: "David Olalade",
       role: "Small Business Owner",
-      avatar: "/plogo.png",
+      avatar: "/testimonial1.png",
       content: "The one-time payment model is perfect for small businesses like mine. No more subscription fatigue!",
       rating: 5
     },
     {
       name: "Amara Okafor",
       role: "Content Creator",
-      avatar: "/plogo.png",
+      avatar: "/testimonial3.png",
       content: "I've tried many content tools, but Noisy's viral strategies are on another level. Worth every naira!",
       rating: 5
     }
