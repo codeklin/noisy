@@ -109,7 +109,7 @@ const SubscriptionSection = () => {
     {
       name: "David Olalade",
       role: "Small Business Owner",
-      avatar: "/testimonial1.png",
+      avatar: "/images/testimonial1.png", // Fixed path to be consistent
       content: "The one-time payment model is perfect for small businesses like mine. No more subscription fatigue!",
       rating: 5
     },
@@ -324,9 +324,12 @@ const SubscriptionSection = () => {
                 transition={{ duration: 0.4, delay: 0.5 + (index * 0.1) }}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="relative h-10 w-10 rounded-full bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] flex items-center justify-center text-white font-semibold">
-                    {testimonial.name.split(' ').map(n => n[0]).join('')}
-                  </div>
+                  <Avatar className="h-10 w-10 border-2 border-white">
+                    <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
+                    <AvatarFallback className="bg-gradient-to-r from-[#FF3B45] to-[#0B2D93] text-white font-semibold">
+                      {testimonial.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
                     <h4 className="font-semibold text-gray-800">{testimonial.name}</h4>
                     <p className="text-sm text-gray-500">{testimonial.role}</p>

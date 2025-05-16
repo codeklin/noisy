@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Testimonial Images</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .image-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        img {
+            max-width: 200px;
+            height: auto;
+            display: block;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Testimonial Images Test</h1>
+    <p>This page tests if the testimonial images can be loaded correctly from their paths in the code.</p>
+
+    <div class="image-container">
+        <div class="image-item">
+            <h3>testimonial1.png (from root)</h3>
+            <img src="/testimonial1.png" alt="Testimonial 1" onerror="this.parentNode.querySelector('.status').innerHTML = 'Error: Image not found'; this.parentNode.querySelector('.status').className = 'status error';" onload="this.parentNode.querySelector('.status').innerHTML = 'Success: Image loaded'; this.parentNode.querySelector('.status').className = 'status success';">
+            <div class="status">Checking...</div>
+        </div>
+
+        <div class="image-item">
+            <h3>testimonial1.png (from /images/)</h3>
+            <img src="/images/testimonial1.png" alt="Testimonial 1" onerror="this.parentNode.querySelector('.status').innerHTML = 'Error: Image not found'; this.parentNode.querySelector('.status').className = 'status error';" onload="this.parentNode.querySelector('.status').innerHTML = 'Success: Image loaded'; this.parentNode.querySelector('.status').className = 'status success';">
+            <div class="status">Checking...</div>
+        </div>
+
+        <div class="image-item">
+            <h3>testimonial2.png (from /images/)</h3>
+            <img src="/images/testimonial2.png" alt="Testimonial 2" onerror="this.parentNode.querySelector('.status').innerHTML = 'Error: Image not found'; this.parentNode.querySelector('.status').className = 'status error';" onload="this.parentNode.querySelector('.status').innerHTML = 'Success: Image loaded'; this.parentNode.querySelector('.status').className = 'status success';">
+            <div class="status">Checking...</div>
+        </div>
+
+        <div class="image-item">
+            <h3>testimonial3.png (from /images/)</h3>
+            <img src="/images/testimonial3.png" alt="Testimonial 3" onerror="this.parentNode.querySelector('.status').innerHTML = 'Error: Image not found'; this.parentNode.querySelector('.status').className = 'status error';" onload="this.parentNode.querySelector('.status').innerHTML = 'Success: Image loaded'; this.parentNode.querySelector('.status').className = 'status success';">
+            <div class="status">Checking...</div>
+        </div>
+    </div>
+
+    <h2 style="margin-top: 30px;">Recommendations</h2>
+    <ul>
+        <li>If images are not loading, make sure they exist in the correct folders</li>
+        <li>For consistency, place all testimonial images in the /public/images/ folder</li>
+        <li>If images are missing, you can add placeholder images or use the fallback initials</li>
+    </ul>
+</body>
+</html>
