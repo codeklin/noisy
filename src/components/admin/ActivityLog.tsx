@@ -21,12 +21,16 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface ActivityEventDetails {
+  [key: string]: unknown;
+}
+
 interface ActivityEvent {
   id: number;
   user_id: string;
   user_email: string;
   action: string;
-  details: any;
+  details: ActivityEventDetails;
   created_at: string;
 }
 

@@ -26,6 +26,19 @@ export type EventAction =
   | 'register'
   | 'payment';
 
+export interface AnalyticsEventProperties {
+  success?: boolean;
+  platform?: string;
+  contentType?: string;
+  duration?: number;
+  filename?: string;
+  lineno?: number;
+  colno?: number;
+  stack?: string;
+  errorMessage?: string;
+  [key: string]: unknown;
+}
+
 export interface AnalyticsEvent {
   category: EventCategory;
   action: EventAction;
@@ -35,7 +48,7 @@ export interface AnalyticsEvent {
   timestamp?: number;
   userId?: string;
   sessionId?: string;
-  properties?: Record<string, any>;
+  properties?: AnalyticsEventProperties;
 }
 
 // Generate a unique session ID
@@ -163,7 +176,7 @@ export const trackEvent = (event: Omit<AnalyticsEvent, 'timestamp' | 'sessionId'
 };
 
 // Track a page view
-export const trackPageView = (pageName: string, properties?: Record<string, any>): void => {
+export const trackPageView = (pageName: string, properties?: AnalyticsEventProperties): void => {
   trackEvent({
     category: 'page_view',
     action: 'view',
@@ -178,7 +191,7 @@ export const trackContentGeneration = (
   contentType: string,
   success: boolean,
   duration?: number,
-  properties?: Record<string, any>
+  properties?: AnalyticsEventProperties
 ): void => {
   trackEvent({
     category: 'content_generation',
@@ -199,7 +212,7 @@ export const trackContentGeneration = (
 export const trackUserAction = (
   action: EventAction,
   label: string,
-  properties?: Record<string, any>
+  properties?: AnalyticsEventProperties
 ): void => {
   trackEvent({
     category: 'user_action',
@@ -213,7 +226,7 @@ export const trackUserAction = (
 export const trackError = (
   errorType: string,
   errorMessage: string,
-  properties?: Record<string, any>
+  properties?: AnalyticsEventProperties
 ): void => {
   trackEvent({
     category: 'error',
@@ -230,7 +243,7 @@ export const trackError = (
 export const trackPerformance = (
   metricName: string,
   value: number,
-  properties?: Record<string, any>
+  properties?: AnalyticsEventProperties
 ): void => {
   trackEvent({
     category: 'performance',

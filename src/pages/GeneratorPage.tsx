@@ -6,7 +6,7 @@ import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
 import { BrandInfo, PostPlan } from "@/types";
 import { toast } from "sonner";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Trash2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useContentPlan } from "@/hooks/useContentPlan";

@@ -7,13 +7,18 @@ import { toast } from "sonner";
  * This service should only be used by admin users
  */
 
+// Define a type for event details
+export interface EventDetails {
+  [key: string]: unknown;
+}
+
 // Helper function to safely serialize details for storage
-const safeSerializeDetails = (details: any): any => {
+const safeSerializeDetails = (details: EventDetails | null | undefined): Record<string, unknown> => {
   if (!details) return null;
 
   try {
     // Try to create a safe copy of the details by removing circular references
-    const safeDetails = {};
+    const safeDetails: Record<string, unknown> = {};
 
     // Only include primitive values and simple objects
     Object.keys(details).forEach(key => {
@@ -76,7 +81,7 @@ export interface ActivityEvent {
   user_email: string;
   event_type: string;
   event_name: string;
-  details: any;
+  details: EventDetails | null;
   created_at: string;
 }
 
@@ -462,7 +467,7 @@ export const logActivity = async (
   userId: string,
   eventType: string,
   eventName: string,
-  details: any = null
+  details: EventDetails | null = null
 ): Promise<boolean> => {
   try {
     // Safely serialize the details
@@ -511,7 +516,7 @@ export const logActivity = async (
 export const logAnalyticsEvent = async (
   eventType: string,
   eventName: string,
-  details: any = null,
+  details: EventDetails | null = null,
   success: boolean | null = null
 ): Promise<boolean> => {
   try {

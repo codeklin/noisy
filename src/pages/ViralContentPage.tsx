@@ -7,7 +7,7 @@ import PlatformTabs from "@/components/PlatformTabs";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, Sparkles, RefreshCw, Save, Lightbulb, ArrowRight, Copy, CheckCircle, AlertCircle, Zap, Flame, TrendingUp, Share2, Trash2, XCircle } from "lucide-react";
 import { useContentPlan } from "@/hooks/useContentPlan";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useAnalytics } from "@/context/AnalyticsContext";
 import { SaveContentDialog } from "@/components/SaveContentDialog";
 import { PostPlan } from "@/types";
@@ -242,7 +242,7 @@ const ViralContentPage = () => {
       window.removeEventListener('blur', handleBlur);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [posts, lastFormData, isGenerating, regenerateFromSavedData]);
+  }, [posts, lastFormData, isGenerating, regenerateFromSavedData, setPosts, toast]);
 
   // Use useEffect to log when posts state changes
   useEffect(() => {

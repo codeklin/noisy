@@ -145,7 +145,7 @@ export function useBackgroundSync() {
 
       return () => clearTimeout(timer);
     }
-  }, [isOnline, syncSupported, registerSync]);
+  }, [isOnline, syncSupported]);
 
   return {
     syncSupported,

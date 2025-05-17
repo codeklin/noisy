@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Check, Facebook, Linkedin, Share2, Twitter } from "lucide-react";
 import { SocialMediaConnection } from "@/types/socialMedia";
 import { Post } from "@/types";

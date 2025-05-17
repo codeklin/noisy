@@ -26,7 +26,15 @@ interface AuthData {
   last_sign_in_at: string | null;
 }
 
-// We're using 'any' type for profiles, so we don't need this interface anymore
+interface ProfileData {
+  id: string;
+  email?: string;
+  created_at?: string;
+  is_subscribed?: boolean;
+  has_used_generator_demo?: boolean;
+  has_used_viral_generator_demo?: boolean;
+  is_admin?: boolean;
+}
 
 interface User {
   id: string;
@@ -70,7 +78,7 @@ const UsersList = () => {
       }, {} as Record<string, AuthData>);
 
       // Format the user data
-      const combinedUsers = (profiles || []).map((profile: any) => {
+      const combinedUsers = (profiles || []).map((profile: ProfileData) => {
         const authUser = authDataMap[profile.id];
         return {
           id: profile.id,

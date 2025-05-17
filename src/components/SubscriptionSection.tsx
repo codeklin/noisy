@@ -3,7 +3,7 @@ import { usePaystackPayment } from "react-paystack";
 import { Button } from "@/components/ui/button";
 import { Check, Sparkles, Zap, Star, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";

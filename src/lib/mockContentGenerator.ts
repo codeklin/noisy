@@ -1,32 +1,46 @@
 import { v4 as uuidv4 } from 'uuid';
 import { BrandInfo, Post, PostPlan } from '@/types';
 
+// Define the ViralContentData interface
+export interface ViralContentData {
+  audience?: string[];
+  contentGoal?: 'get-followers' | 'generate-leads' | 'book-calls' | 'sell-product';
+  copyStyle?: 'friendly-expert' | 'bold-challenger' | 'smart-mentor';
+  postType?: 'storytelling' | 'how-to' | 'mistake-post' | 'listicle' | 'cta-promo';
+  tonePreference?: 'authoritative' | 'empathetic' | 'witty';
+  ageRanges?: string[];
+  targetDescription?: string;
+  useNigerianStyle?: boolean;
+  brandName?: string;
+  contentLength?: 'short' | 'mid' | 'full';
+}
+
 // Generate a mock content plan when AI generation fails
-export const generateMockContentPlan = (brandInfo: BrandInfo, viralData?: any): PostPlan => {
+export const generateMockContentPlan = (brandInfo: BrandInfo, viralData?: ViralContentData): PostPlan => {
   console.log('Generating mock content plan as fallback');
-  
+
   const platforms = ['facebook', 'twitter', 'linkedin'];
   const mockPlan: PostPlan = [];
-  
+
   // Generate 2 posts for each platform
   platforms.forEach(platform => {
     for (let i = 0; i < 2; i++) {
       mockPlan.push(generateMockPost(platform, brandInfo, viralData));
     }
   });
-  
+
   return mockPlan;
 };
 
 // Generate a single mock post
-const generateMockPost = (platform: string, brandInfo: BrandInfo, viralData?: any): Post => {
+const generateMockPost = (platform: string, brandInfo: BrandInfo, viralData?: ViralContentData): Post => {
   const brandName = brandInfo.brandName || 'Your Brand';
   const isNigerian = viralData?.useNigerianStyle || false;
-  
+
   // Generate content based on platform and viral data
   let content = '';
   let hashtags: string[] = [];
-  
+
   if (platform === 'facebook') {
     content = generateMockFacebookPost(brandName, isNigerian);
     hashtags = ['marketing', 'business', 'success'];
@@ -37,7 +51,7 @@ const generateMockPost = (platform: string, brandInfo: BrandInfo, viralData?: an
     content = generateMockLinkedInPost(brandName, isNigerian);
     hashtags = ['professional', 'career', 'networking'];
   }
-  
+
   return {
     id: uuidv4(),
     platform,

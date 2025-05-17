@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Sparkles, Menu, Zap, ShieldCheck } from 'lucide-react';
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import UserMenu from "./UserMenu";
 import { Sheet, SheetContent, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 

@@ -3,15 +3,25 @@
  */
 
 /**
+ * Type for component props that might need accessibility enhancements
+ */
+export interface AccessibleProps {
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
+  children?: React.ReactNode;
+  [key: string]: unknown;
+}
+
+/**
  * Ensures that an element has an accessible name
  * @param props The props object
  * @param defaultLabel The default label to use if no accessible name is provided
  * @returns The props object with an aria-label if needed
  */
 export function ensureAccessibleName(
-  props: Record<string, any>,
+  props: AccessibleProps,
   defaultLabel: string
-): Record<string, any> {
+): AccessibleProps {
   // If the element already has an accessible name, return the props as is
   if (
     props['aria-label'] ||
@@ -33,7 +43,7 @@ export function ensureAccessibleName(
  * @param props The props object
  * @returns The props object with aria-hidden="true"
  */
-export function markAsDecorative(props: Record<string, any>): Record<string, any> {
+export function markAsDecorative(props: AccessibleProps): AccessibleProps {
   return {
     ...props,
     'aria-hidden': 'true',
@@ -41,11 +51,21 @@ export function markAsDecorative(props: Record<string, any>): Record<string, any
 }
 
 /**
+ * Interface for props that can have keyboard event handlers
+ */
+export interface KeyboardProps extends AccessibleProps {
+  onClick?: (event: React.MouseEvent | React.KeyboardEvent) => void;
+  onKeyDown?: (event: React.KeyboardEvent) => void;
+  tabIndex?: number;
+  role?: string;
+}
+
+/**
  * Adds keyboard navigation support to a clickable element
  * @param props The props object
  * @returns The props object with keyboard event handlers
  */
-export function addKeyboardSupport(props: Record<string, any>): Record<string, any> {
+export function addKeyboardSupport(props: KeyboardProps): KeyboardProps {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Handle original onKeyDown if it exists
     if (props.onKeyDown) {

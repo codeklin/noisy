@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { generateContentPlan } from "@/lib/postGenerator";
 import { generateAIContentPlan } from "@/lib/llmContentGenerator";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { parseJsonArray, parseJsonObject } from "@/types/supabase";
 import { Json } from "@/integrations/supabase/types";

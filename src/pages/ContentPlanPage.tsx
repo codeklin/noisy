@@ -5,7 +5,7 @@ import { useContentPlan } from "@/hooks/useContentPlan";
 import { BrandInfo, PostPlan } from "@/types";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import PlatformTabs from "@/components/PlatformTabs";

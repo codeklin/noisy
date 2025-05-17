@@ -116,65 +116,63 @@ const A11yChecker = () => {
   const [reportedIssueIds, setReportedIssueIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (issues.length > 0) {
-      // Filter out already reported issues
-      const newIssues = issues.filter(issue => {
-        // Create a unique ID for each issue based on its properties
-        const issueId = `${issue.type}-${issue.message}-${issue.context || ''}`;
-        if (reportedIssueIds.has(issueId)) {
-          return false;
-        }
-        return true;
-      });
+    // Skip if there are no issues to report
+    if (issues.length === 0) return;
 
-      // Update the set of reported issues
-      if (newIssues.length > 0) {
-        const newIssueIds = new Set(reportedIssueIds);
-        newIssues.forEach(issue => {
-          const issueId = `${issue.type}-${issue.message}-${issue.context || ''}`;
-          newIssueIds.add(issueId);
-        });
-        setReportedIssueIds(newIssueIds);
+    // Create a function to generate a unique ID for each issue
+    const getIssueId = (issue: A11yIssue) => `${issue.type}-${issue.message}-${issue.context || ''}`;
 
-        // Only show toast for new issues
-        toast.warning(
-          `${newIssues.length} new accessibility issues found. Check the console for details.`,
-          {
-            duration: 10000,
-          }
-        );
+    // Filter out already reported issues
+    const newIssues = issues.filter(issue => !reportedIssueIds.has(getIssueId(issue)));
 
-        console.group('Accessibility Issues');
-        newIssues.forEach(issue => {
-          // Extract HTML from context to help identify the element
-          let elementHtml = '';
-          if (issue.context) {
-            const contextMatch = issue.context.match(/<[^>]+>/g);
-            if (contextMatch) {
-              elementHtml = contextMatch[0];
-            }
-          }
+    // If there are no new issues, we're done
+    if (newIssues.length === 0) return;
 
-          console.warn(`[${issue.type}] ${issue.message}`);
-          console.warn(`Element HTML: ${elementHtml || 'Not available'}`);
+    // Update the set of reported issues
+    const newIssueIds = new Set(reportedIssueIds);
+    newIssues.forEach(issue => {
+      newIssueIds.add(getIssueId(issue));
+    });
+    setReportedIssueIds(newIssueIds);
 
-          // Log the component stack to help identify the component with the issue
-          if (issue.stack) {
-            console.warn('Component Stack:', issue.stack);
-          }
-          console.warn('---');
-        });
-        console.groupEnd();
-
-        // Log a helpful message about how to fix common issues
-        console.info('Common accessibility fixes:\n' +
-          '- button-name: Add text content, aria-label, or aria-labelledby to buttons\n' +
-          '- image-alt: Add alt text to images\n' +
-          '- link-name: Add text content, aria-label, or aria-labelledby to links\n' +
-          '- form-field-multiple-labels: Ensure form fields have only one label');
+    // Only show toast for new issues
+    toast.warning(
+      `${newIssues.length} new accessibility issues found. Check the console for details.`,
+      {
+        duration: 10000,
       }
-    }
-  }, [issues, reportedIssueIds]);
+    );
+
+    // Log detailed information to the console
+    console.group('Accessibility Issues');
+    newIssues.forEach(issue => {
+      // Extract HTML from context to help identify the element
+      let elementHtml = '';
+      if (issue.context) {
+        const contextMatch = issue.context.match(/<[^>]+>/g);
+        if (contextMatch) {
+          elementHtml = contextMatch[0];
+        }
+      }
+
+      console.warn(`[${issue.type}] ${issue.message}`);
+      console.warn(`Element HTML: ${elementHtml || 'Not available'}`);
+
+      // Log the component stack to help identify the component with the issue
+      if (issue.stack) {
+        console.warn('Component Stack:', issue.stack);
+      }
+      console.warn('---');
+    });
+    console.groupEnd();
+
+    // Log a helpful message about how to fix common issues
+    console.info('Common accessibility fixes:\n' +
+      '- button-name: Add text content, aria-label, or aria-labelledby to buttons\n' +
+      '- image-alt: Add alt text to images\n' +
+      '- link-name: Add text content, aria-label, or aria-labelledby to links\n' +
+      '- form-field-multiple-labels: Ensure form fields have only one label');
+  }, [issues, reportedIssueIds, toast]);
 
   // This component doesn't render anything
   return null;

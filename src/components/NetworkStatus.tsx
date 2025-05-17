@@ -35,7 +35,7 @@ const NetworkStatus = () => {
       window.removeEventListener('online', handleStatusChange);
       window.removeEventListener('offline', handleStatusChange);
     };
-  }, []);
+  }, [toast]);
 
   // Only show the offline indicator
   if (isOnline) {
