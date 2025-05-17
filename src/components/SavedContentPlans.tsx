@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppError } from "@/types/error";
+import { useAnalytics } from "@/context/AnalyticsContext";
 
 interface ContentPlanItem {
   id: string;
@@ -20,8 +20,10 @@ export default function SavedContentPlans() {
   const [contentPlans, setContentPlans] = useState<ContentPlanItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({});
+  const [viewingId, setViewingId] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const analytics = useAnalytics();
 
   const loadContentPlans = useCallback(async () => {
     if (!user) {
@@ -153,31 +155,33 @@ export default function SavedContentPlans() {
               variant="outline"
               size="sm"
               className="flex-1"
-              onClick={() => {
-                // Show loading toast
+              disabled={viewingId === plan.id}
+              onClick={async () => {
+                setViewingId(plan.id);
+                analytics?.trackUserAction?.('click', 'View Saved Content Plan', { planId: plan.id });
                 const loadingToast = toast.loading("Loading content plan...");
-
-                // Pre-fetch the content plan data before navigation
-                // This helps ensure data is ready before rendering the page
                 try {
-                  // Navigate with state to indicate this is a direct view action
                   navigate(`/plan/${plan.id}`, {
                     state: {
                       fromSavedPlans: true,
                       timestamp: Date.now()
                     }
                   });
-
-                  // Dismiss the loading toast after navigation
                   setTimeout(() => toast.dismiss(loadingToast), 500);
                 } catch (error) {
                   console.error("Navigation error:", error);
                   toast.error("Failed to open content plan. Please try again.");
                   toast.dismiss(loadingToast);
+                } finally {
+                  setViewingId(null);
                 }
               }}
             >
-              View
+              {viewingId === plan.id ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                "View"
+              )}
             </Button>
             <Button
               variant="destructive"
