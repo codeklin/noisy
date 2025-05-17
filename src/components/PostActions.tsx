@@ -5,9 +5,9 @@ import {
   Copy,
   Pencil,
   Save,
-  Share2,
+  
   Check,
-  Download
+  
 } from "lucide-react";
 import { toast } from "sonner";
 import { ShareContent } from "./ShareContent";

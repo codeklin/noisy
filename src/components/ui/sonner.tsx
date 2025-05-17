@@ -1,3 +1,4 @@
+import * as React from "react"
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, toast } from "sonner"
 
@@ -11,7 +12,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       closeButton={true}
-      closeButtonAriaLabel="Close notification"
       duration={5000}
       toastOptions={{
         classNames: {

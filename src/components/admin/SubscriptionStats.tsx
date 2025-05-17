@@ -87,7 +87,7 @@ const SubscriptionStats = () => {
       }
 
       // Calculate conversion rate
-      const conversionRate = totalUsers ? (paidUsers / totalUsers) * 100 : 0;
+      const conversionRate = totalUsers ? ((paidUsers || 0) / totalUsers) * 100 : 0;
 
       setStats({
         totalUsers: totalUsers || 0,
@@ -122,7 +122,7 @@ const SubscriptionStats = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Subscription Statistics</h2>
         <div className="flex items-center gap-2">
-          <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as "all" | "month" | "week" | "day")}>
+          <Tabs value={timeframe} onValueChange={(value: string) => setTimeframe(value as "all" | "month" | "week" | "day")}>
             <TabsList>
               <TabsTrigger value="all">All Time</TabsTrigger>
               <TabsTrigger value="month">Month</TabsTrigger>

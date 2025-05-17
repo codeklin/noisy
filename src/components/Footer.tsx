@@ -1,5 +1,5 @@
 
-import { Heart, Calendar } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Facebook, Twitter, LinkedIn } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 

@@ -26,10 +26,11 @@ interface ActivityEventDetails {
 }
 
 interface ActivityEvent {
-  id: number;
+  id: number | string;
   user_id: string;
   user_email: string;
-  action: string;
+  event_type: string;
+  event_name: string;
   details: ActivityEventDetails;
   created_at: string;
 }
@@ -48,7 +49,7 @@ const ActivityLog = () => {
       // Build the query
       let query = supabase
         .from("activity_logs")
-        .select("*")
+        .select("id, user_id, event_type, event_name, details, created_at")
         .order("created_at", { ascending: false });
 
       // Apply timeframe filter
@@ -69,17 +70,23 @@ const ActivityLog = () => {
 
       // Apply action filter if not "all"
       if (actionFilter !== "all") {
-        query = query.eq("action", actionFilter);
+        query = query.eq("event_type", actionFilter);
       }
 
       const { data, error } = await query.limit(100);
 
       if (error) throw error;
 
+      // Ensure data is an array
+      const activityData = Array.isArray(data) ? data : [];
+
       // Get user emails
-      const userIds = data
-        .map(activity => activity.user_id)
-        .filter(Boolean);
+      const userIds: string[] = [];
+      activityData.forEach((activity: any) => {
+        if (activity && typeof activity === 'object' && 'user_id' in activity && activity.user_id) {
+          userIds.push(activity.user_id as string);
+        }
+      });
 
       const userEmailMap: Record<string, string> = {};
       if (userIds.length > 0) {
@@ -91,19 +98,22 @@ const ActivityLog = () => {
         if (usersError) throw usersError;
 
         // Create a map of user IDs to emails
-        users.forEach(user => {
-          userEmailMap[user.id] = user.email || 'Unknown';
-        });
+        if (users) {
+          users.forEach(user => {
+            userEmailMap[user.id] = user.email || 'Unknown';
+          });
+        }
       }
 
       // Format the activities
-      const formattedActivities = data.map((activity) => ({
-        id: activity.id,
-        user_id: activity.user_id,
+      const formattedActivities = activityData.map((activity: any) => ({
+        id: activity.id || 'unknown',
+        user_id: activity.user_id || '',
         user_email: activity.user_id ? (userEmailMap[activity.user_id] || "Unknown") : "System",
-        action: activity.action,
+        event_type: activity.event_type || 'unknown',
+        event_name: activity.event_name || '',
         details: activity.details || {},
-        created_at: new Date(activity.created_at).toLocaleString(),
+        created_at: activity.created_at ? new Date(activity.created_at).toLocaleString() : new Date().toLocaleString(),
       }));
 
       setActivities(formattedActivities);
@@ -125,7 +135,8 @@ const ActivityLog = () => {
       const filtered = activities.filter(
         (activity) =>
           activity.user_email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          activity.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          activity.event_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          activity.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (activity.details &&
             JSON.stringify(activity.details).toLowerCase().includes(searchQuery.toLowerCase()))
       );
@@ -139,8 +150,8 @@ const ActivityLog = () => {
     setSearchQuery(e.target.value);
   };
 
-  const getActionBadge = (action: string) => {
-    switch (action.toLowerCase()) {
+  const getActionBadge = (eventType: string) => {
+    switch (eventType.toLowerCase()) {
       case "content_generation":
       case "generate":
       case "content":
@@ -160,7 +171,7 @@ const ActivityLog = () => {
       case "payment":
         return <Badge className="bg-yellow-500">Payment</Badge>;
       default:
-        return <Badge variant="outline">{action}</Badge>;
+        return <Badge variant="outline">{eventType}</Badge>;
     }
   };
 
@@ -242,7 +253,7 @@ const ActivityLog = () => {
                 >
                   <div className="flex items-start gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mt-1">
-                      {activity.action.toLowerCase().includes("content") ? (
+                      {activity.event_type.toLowerCase().includes("content") ? (
                         <FileText className="h-4 w-4 text-primary" />
                       ) : (
                         <Zap className="h-4 w-4 text-primary" />
@@ -250,8 +261,8 @@ const ActivityLog = () => {
                     </div>
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-medium">{activity.action}</p>
-                        {getActionBadge(activity.action)}
+                        <p className="text-sm font-medium">{activity.event_name}</p>
+                        {getActionBadge(activity.event_type)}
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {activity.user_email} • {activity.created_at}

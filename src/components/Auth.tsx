@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Facebook, Twitter, Linkedin } from "lucide-react";
+import { Globe } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 
 type SocialMediaConnection = {
@@ -22,27 +22,27 @@ const checkUserExists = async (email: string) => {
     const { data: exists, error: rpcError } = await supabase.rpc('check_user_exists', {
       user_email: email
     });
-    
+
     if (!rpcError && exists === true) {
       console.log('User found via RPC function');
       return true;
     }
-    
+
     // Try direct auth check
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
           shouldCreateUser: false
         }
       });
-      
+
       // If no error, user exists
       if (!error) {
         console.log('User exists based on OTP check');
         return true;
       }
-      
+
       // If error is not "User not found", then user likely exists
       if (error && !error.message.includes('User not found')) {
         console.log('User likely exists based on OTP error', error.message);
@@ -51,18 +51,18 @@ const checkUserExists = async (email: string) => {
     } catch (otpErr) {
       console.error('Error checking user via OTP:', otpErr);
     }
-    
+
     // Fallback to checking profiles table
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('email')
       .eq('email', email);
-    
+
     if (!profileError && profileData && profileData.length > 0) {
       console.log('User found in profiles table');
       return true;
     }
-    
+
     // If we get here, user doesn't exist
     console.log('User does not exist after all checks');
     return false;
@@ -105,16 +105,16 @@ export default function Auth() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!email || !password) {
       toast.error("Please enter both email and password");
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       // First check if the user already exists
       const userExists = await checkUserExists(email.trim());
       if (userExists) {
@@ -122,7 +122,7 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      
+
       // Proceed with signup
       const { error, data } = await supabase.auth.signUp({
         email: email.trim(),
@@ -134,14 +134,14 @@ export default function Auth() {
           emailRedirectTo: `${window.location.origin}/auth`
         }
       });
-      
+
       if (error) {
         console.error("Supabase signup error:", error);
         throw error;
       }
-      
+
       console.log("Sign up response:", data);
-      
+
       if (!data?.user) {
         toast.error("Failed to create account. Please try again.");
       } else if (data?.user?.identities?.length === 0) {
@@ -152,8 +152,8 @@ export default function Auth() {
           const { error: insertError } = await supabase
             .from('profiles')
             .insert({
-              id: data.user.id,
-              email: data.user.email,
+              id: data.user.id || '',
+              email: data.user.email || '',
               is_admin: data.user.email === '007postit@gmail.com',
               is_subscribed: data.user.email === '007postit@gmail.com',
               has_used_generator_demo: false,
@@ -161,18 +161,18 @@ export default function Auth() {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString()
             });
-            
+
           if (insertError) {
             console.error("Error creating profile during signup:", insertError);
-            
+
             // Try RPC function as fallback
             const { error: rpcError } = await supabase.rpc('create_user_profile', {
-              user_id: data.user.id,
-              user_email: data.user.email,
+              user_id: data.user.id || '',
+              user_email: data.user.email || '',
               is_admin_val: data.user.email === '007postit@gmail.com',
               is_subscribed_val: data.user.email === '007postit@gmail.com'
             });
-            
+
             if (rpcError) {
               console.error("Error creating profile via RPC:", rpcError);
             }
@@ -180,7 +180,7 @@ export default function Auth() {
         } catch (profileErr) {
           console.error("Exception creating profile during signup:", profileErr);
         }
-        
+
         toast.success("Account created! Please check your email for confirmation.");
       }
     } catch (error: unknown) {
@@ -203,31 +203,31 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!email || !password) {
       toast.error("Please enter both email and password");
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       // Try to sign in directly
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-      
+
       // If there is an error, handle it
       if (error) {
         console.error("Supabase auth error:", error);
-        
+
         // If the error is "Invalid login credentials", check if the user exists
         if (error.message.includes("Invalid login credentials")) {
           // Check if user exists in the system
           const userExists = await checkUserExists(email.trim());
-          
+
           if (userExists === true) {
             // User exists but password is wrong
             toast.error("Invalid password. Please try again or reset your password.");
@@ -242,10 +242,10 @@ export default function Auth() {
             return;
           }
         }
-        
+
         throw error;
       }
-      
+
       console.log("Sign in successful:", data);
       toast.success("Signed in successfully!");
     } catch (error: unknown) {
@@ -268,24 +268,24 @@ export default function Auth() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email) {
       toast.error("Please enter your email address");
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: window.location.origin + '/auth'
       });
-      
+
       if (error) {
         console.error("Password reset error:", error);
         throw error;
       }
-      
+
       toast.success("Password reset link sent to your email");
       setResetPasswordMode(false);
     } catch (error: unknown) {
@@ -325,7 +325,7 @@ export default function Auth() {
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               {resetPasswordMode ? (
                 <form onSubmit={handleResetPassword} className="space-y-4 mt-4">
@@ -399,7 +399,7 @@ export default function Auth() {
                 </form>
               )}
             </TabsContent>
-            
+
             <TabsContent value="register">
               <form onSubmit={handleSignUp} className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -422,11 +422,11 @@ export default function Auth() {
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Connect Social Media Accounts</Label>
                   <p className="text-sm text-gray-500 mb-3">Choose platforms to share your content</p>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -435,11 +435,11 @@ export default function Auth() {
                         onCheckedChange={() => toggleSocialConnection('facebook')}
                       />
                       <Label htmlFor="facebook" className="flex items-center">
-                        <Facebook className="h-4 w-4 mr-2 text-blue-600" />
+                        <Globe className="h-4 w-4 mr-2 text-blue-600" />
                         Facebook
                       </Label>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="twitter"
@@ -447,11 +447,11 @@ export default function Auth() {
                         onCheckedChange={() => toggleSocialConnection('twitter')}
                       />
                       <Label htmlFor="twitter" className="flex items-center">
-                        <Twitter className="h-4 w-4 mr-2 text-blue-400" />
+                        <Globe className="h-4 w-4 mr-2 text-blue-400" />
                         Twitter
                       </Label>
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="linkedin"
@@ -459,13 +459,13 @@ export default function Auth() {
                         onCheckedChange={() => toggleSocialConnection('linkedin')}
                       />
                       <Label htmlFor="linkedin" className="flex items-center">
-                        <Linkedin className="h-4 w-4 mr-2 text-blue-700" />
+                        <Globe className="h-4 w-4 mr-2 text-blue-700" />
                         LinkedIn
                       </Label>
                     </div>
                   </div>
                 </div>
-                
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>

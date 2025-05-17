@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Zap, TrendingUp, Clock, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 
