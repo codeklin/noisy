@@ -21,7 +21,7 @@ export function useBackgroundSync() {
         try {
           const registration = await navigator.serviceWorker.ready;
           const permission = await navigator.permissions.query({
-            name: 'periodic-background-sync' as any,
+            name: 'periodic-background-sync' as PermissionName,
           });
 
           if (permission.state === 'granted') {
@@ -92,13 +92,21 @@ export function useBackgroundSync() {
       const registration = await navigator.serviceWorker.ready;
 
       // Check if periodicSync is available
-      if (!(registration as any).periodicSync) {
+      if (!('periodicSync' in registration)) {
         console.log('Periodic background sync API not available in this context');
         setPeriodicSyncSupported(false);
         return false;
       }
 
-      const periodicSync = (registration as any).periodicSync;
+      // Use type assertion with interface
+      interface PeriodicSyncRegistration extends ServiceWorkerRegistration {
+        periodicSync: {
+          getTags: () => Promise<string[]>;
+          register: (tag: string, options: { minInterval: number }) => Promise<void>;
+        };
+      }
+
+      const periodicSync = (registration as PeriodicSyncRegistration).periodicSync;
 
       // Check if we already have a registration for this tag
       const tags = await periodicSync.getTags();
@@ -137,7 +145,7 @@ export function useBackgroundSync() {
 
       return () => clearTimeout(timer);
     }
-  }, [isOnline, syncSupported]);
+  }, [isOnline, syncSupported, registerSync]);
 
   return {
     syncSupported,

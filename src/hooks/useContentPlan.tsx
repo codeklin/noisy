@@ -10,8 +10,21 @@ import { toast } from "sonner";
 import { parseJsonArray, parseJsonObject } from "@/types/supabase";
 import { Json } from "@/integrations/supabase/types";
 
+// Define the ViralContentData type
+export interface ViralContentData {
+  audience: string[];
+  contentGoal: 'get-followers' | 'generate-leads' | 'book-calls' | 'sell-product';
+  copyStyle: 'friendly-expert' | 'bold-challenger' | 'smart-mentor';
+  postType: 'storytelling' | 'how-to' | 'mistake-post' | 'listicle' | 'cta-promo';
+  tonePreference: 'authoritative' | 'empathetic' | 'witty';
+  ageRanges: string[];
+  targetDescription: string;
+  useNigerianStyle: boolean;
+  brandName: string;
+}
+
 // Generate a mock content plan when AI generation fails
-const generateMockContentPlan = (brandInfo: BrandInfo, viralData?: any): PostPlan => {
+const generateMockContentPlan = (brandInfo: BrandInfo, viralData?: ViralContentData): PostPlan => {
   console.log('Generating mock content plan as fallback');
 
   const platforms = ['facebook', 'twitter', 'linkedin'];
@@ -28,7 +41,7 @@ const generateMockContentPlan = (brandInfo: BrandInfo, viralData?: any): PostPla
 };
 
 // Generate a single mock post
-const generateMockPost = (platform: string, brandInfo: BrandInfo, viralData?: any): Post => {
+const generateMockPost = (platform: string, brandInfo: BrandInfo, viralData?: ViralContentData): Post => {
   const brandName = brandInfo.brandName || 'Your Brand';
   const isNigerian = viralData?.useNigerianStyle || false;
 
@@ -134,11 +147,11 @@ export const useContentPlan = () => {
 
   // Track whether we're using viral content generation
   const [useViralContent, setUseViralContent] = useState<boolean>(false);
-  const [viralContentData, setViralContentData] = useState<any>(null);
+  const [viralContentData, setViralContentData] = useState<ViralContentData | null>(null);
 
   // Store form data for regeneration after window switching
   const [lastBrandInfo, setLastBrandInfo] = useState<BrandInfo | null>(null);
-  const [lastViralData, setLastViralData] = useState<any>(null);
+  const [lastViralData, setLastViralData] = useState<ViralContentData | null>(null);
 
   // Function to cancel ongoing generation
   const cancelGeneration = () => {
@@ -148,7 +161,7 @@ export const useContentPlan = () => {
     }
   };
 
-  const generatePlan = async (brandInfo: BrandInfo, viralData?: any): Promise<PostPlan> => {
+  const generatePlan = async (brandInfo: BrandInfo, viralData?: ViralContentData): Promise<PostPlan> => {
     // Reset cancellation flag
     cancelGenerationRef.current = false;
     setIsGenerating(true);
@@ -225,11 +238,11 @@ export const useContentPlan = () => {
 
       console.log(`Successfully generated ${contentPlan.length} posts`);
       return contentPlan;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error generating content plan:", error);
 
       // If generation was cancelled, return empty array
-      if (cancelGenerationRef.current || error.message === 'Content generation cancelled') {
+      if (cancelGenerationRef.current || (error instanceof Error && error.message === 'Content generation cancelled')) {
         cancelGenerationRef.current = false;
         return [];
       }
@@ -273,9 +286,10 @@ export const useContentPlan = () => {
 
       console.log("Content plan saved successfully with ID:", data.id);
       return data.id;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving content plan:", error);
-      toast.error(`Error saving content plan: ${error.message || 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Error saving content plan: ${errorMessage}`);
       return null;
     }
   };
@@ -349,9 +363,10 @@ export const useContentPlan = () => {
         toast.error("Error parsing content plan data. The saved content may be corrupted.");
         return null;
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error getting content plan:", error);
-      toast.error(`Error loading content plan: ${error.message || 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Error loading content plan: ${errorMessage}`);
       return null;
     }
   };
@@ -370,7 +385,7 @@ export const useContentPlan = () => {
     }
 
     try {
-      const updateData: any = {};
+      const updateData: Record<string, string> = {};
 
       if (updates.name) updateData.name = updates.name;
       if (updates.brandInfo) updateData.brand_info = JSON.stringify(updates.brandInfo);

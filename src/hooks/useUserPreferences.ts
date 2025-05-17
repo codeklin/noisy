@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -14,7 +13,7 @@ interface Preferences {
     twitter?: { connected: boolean, username?: string },
     linkedin?: { connected: boolean, username?: string }
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const useUserPreferences = () => {

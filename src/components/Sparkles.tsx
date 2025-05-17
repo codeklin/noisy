@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useRandomInterval } from '@/hooks/use-random-interval';
+import { useRandomInterval } from '@/hooks/use-random-interval.ts';
 
 interface SparkleProps {
   color: string;
@@ -83,7 +83,7 @@ const Sparkles = ({
       });
 
       setSparkles(sparkles => [...sparkles, sparkle]);
-      
+
       setTimeout(() => {
         setSparkles(sparkles => sparkles.filter(s => s.id !== sparkle.id));
       }, 600);

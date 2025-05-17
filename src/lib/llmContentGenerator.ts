@@ -15,8 +15,27 @@ const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
 
 import { createBrandContentPrompt, createViralNigerianContentPrompt, createViralSalesCopyPrompt } from './promptTemplates';
 
+// Define types for viral content data
+interface ViralContentData {
+  audience: string[];
+  contentGoal: 'get-followers' | 'generate-leads' | 'book-calls' | 'sell-product';
+  copyStyle: 'friendly-expert' | 'bold-challenger' | 'smart-mentor';
+  postType: 'storytelling' | 'how-to' | 'mistake-post' | 'listicle' | 'cta-promo';
+  tonePreference: 'authoritative' | 'empathetic' | 'witty';
+  ageRanges: string[];
+  targetDescription: string;
+  useNigerianStyle: boolean;
+  brandName: string;
+}
+
 // Create platform-specific prompts based on input parameters
-const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', theme: string, brandInfo: BrandInfo, viralContentData?: any, characterLimit: number = 0): string => {
+const createPromptForPlatform = (
+  platform: 'facebook' | 'twitter' | 'linkedin',
+  theme: string,
+  brandInfo: BrandInfo,
+  viralContentData?: ViralContentData,
+  characterLimit: number = 0
+): string => {
   // If viral content data is provided, use the appropriate viral content prompt
   if (viralContentData) {
     const { audience, contentGoal, copyStyle, postType, tonePreference, ageRanges, targetDescription, useNigerianStyle, brandName } = viralContentData;
@@ -41,15 +60,21 @@ const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', 
     const audienceStr = audience.join(', ');
     const ageRangeStr = ageRanges.join(', ');
 
+    // Define types for mapped values
+    type GoalType = 'Get followers' | 'Generate leads' | 'Book calls' | 'Sell product';
+    type StyleType = 'Friendly Expert' | 'Bold Challenger' | 'Smart Mentor';
+    type PostType = 'Storytelling' | 'How-To' | 'Mistake Post' | 'Listicle' | 'CTA Promo';
+    type ToneType = 'Authoritative' | 'Empathetic' | 'Witty';
+
     // Use Nigerian content style if selected, otherwise use sales copy style
     if (useNigerianStyle) {
       return createViralNigerianContentPrompt(
         platform,
         audienceStr,
-        mappedGoal as any,
-        mappedStyle as any,
-        mappedPostType as any,
-        mappedTone as any,
+        mappedGoal as GoalType,
+        mappedStyle as StyleType,
+        mappedPostType as PostType,
+        mappedTone as ToneType,
         ageRangeStr,
         targetDescription,
         characterLimit,
@@ -59,10 +84,10 @@ const createPromptForPlatform = (platform: 'facebook' | 'twitter' | 'linkedin', 
       return createViralSalesCopyPrompt(
         platform,
         audienceStr,
-        mappedGoal as any,
-        mappedStyle as any,
-        mappedPostType as any,
-        mappedTone as any,
+        mappedGoal as GoalType,
+        mappedStyle as StyleType,
+        mappedPostType as PostType,
+        mappedTone as ToneType,
         ageRangeStr,
         targetDescription,
         characterLimit,
@@ -173,8 +198,8 @@ const generateWithHuggingFace = async (prompt: string): Promise<string | null> =
     const data = await response.json();
     console.log('HuggingFace API response received');
     return data.generated_text?.trim() || null;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
       console.error('HuggingFace request timed out');
     } else {
       console.error('HuggingFace generation error:', error);
@@ -232,8 +257,8 @@ const generateWithMistral = async (prompt: string): Promise<string | null> => {
     const data = await parseJsonResponse(response);
     console.log('Mistral API response received');
     return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
       console.error('Mistral request timed out');
     } else {
       handleApiError(error, 'Failed to generate content with Mistral API.');
@@ -291,8 +316,8 @@ const generateWithDeepSeek = async (prompt: string): Promise<string | null> => {
     const data = await response.json();
     console.log('DeepSeek API response received');
     return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
       console.error('DeepSeek request timed out');
     } else {
       console.error('DeepSeek generation error:', error);
@@ -350,8 +375,8 @@ const generateWithGroq = async (prompt: string): Promise<string | null> => {
     const data = await response.json();
     console.log('Groq API response received');
     return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
       console.error('Groq request timed out');
     } else {
       console.error('Groq generation error:', error);
@@ -403,8 +428,8 @@ const generateWithTogether = async (prompt: string): Promise<string | null> => {
     const data = await response.json();
     console.log('Together API response received');
     return data.choices?.[0]?.text?.trim() || null;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
       console.error('Together.ai request timed out');
     } else {
       console.error('Together.ai generation error:', error);
@@ -490,7 +515,7 @@ const generateContentWithLLM = async (
   platform: 'facebook' | 'twitter' | 'linkedin',
   theme: string,
   brandInfo: BrandInfo,
-  viralContentData?: any
+  viralContentData?: ViralContentData
 ): Promise<string> => {
   // Start tracking generation time
   const startTime = Date.now();
@@ -678,7 +703,7 @@ export const generateAIPost = async (
   platform: 'facebook' | 'twitter' | 'linkedin',
   theme: string,
   brandInfo: BrandInfo,
-  viralContentData?: any
+  viralContentData?: ViralContentData
 ): Promise<Post> => {
   // Generate content using LLM with optional viral content data
   const content = await generateContentWithLLM(platform, theme, brandInfo, viralContentData);
@@ -696,7 +721,7 @@ export const generateAIPost = async (
 };
 
 // Generate a full content plan using LLM
-export const generateAIContentPlan = async (brandInfo: BrandInfo, viralContentData?: any): Promise<PostPlan> => {
+export const generateAIContentPlan = async (brandInfo: BrandInfo, viralContentData?: ViralContentData): Promise<PostPlan> => {
   const startDate = new Date();
   const numDays = 14; // Generate 2 weeks worth of content
   const platforms: ('facebook' | 'twitter' | 'linkedin')[] = ['facebook', 'twitter', 'linkedin'];
